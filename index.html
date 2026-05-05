@@ -22,9 +22,6 @@
 
   <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  
-  <!-- EmailJS for sending verification codes -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
   <style>
     .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -653,9 +650,6 @@
       measurementId: "G-KYY1FTGSQ1"
     };
 
-    // --- EMAILJS INIT (Required to send verification code without a server) ---
-    emailjs.init("TwVM6oQd-89_2HxjC"); 
-
     let db = null;
     let auth = null;
     let currentUser = null;
@@ -813,6 +807,11 @@
 
           currentUser = user;
           
+          if (user && user.email !== 'bexlebeau30@students.cumberlandschools.org') {
+              window.isAuthorizedAdmin = false;
+              localStorage.removeItem('nexus_admin_verified');
+          }
+
           const loginBtn = document.getElementById('login-btn');
           const profileEl = document.getElementById('user-profile');
 
@@ -1213,8 +1212,7 @@
 
     window.navigate = function(viewName, targetData = null) {
       if (viewName === 'admin') {
-        if (!window.isAuthorizedAdmin) {
-            showModal('Access Denied', 'Administrator privileges are restricted. Type the secret code to verify your identity.');
+        if (!window.isAuthorizedAdmin || !currentUser || currentUser.email !== 'bexlebeau30@students.cumberlandschools.org') {
             return;
         }
       }
@@ -2194,43 +2192,11 @@
       
       if (secretBuffer === secretCode) {
         secretBuffer = ''; 
-        if (window.isAuthorizedAdmin) {
+        if (currentUser && currentUser.email === 'bexlebeau30@students.cumberlandschools.org') {
+            window.isAuthorizedAdmin = true;
+            localStorage.setItem('nexus_admin_verified', 'true');
             navigate('admin');
-        } else {
-            const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
-            
-            try {
-                emailjs.send("service_igvd2re", "template_u0mf8qo", {
-                    to_email: "bexlebeau30@students.cumberlandschools.org",
-                    message: "Your Admin Verification Code is: " + verifyCode
-                }).then(
-                    function(response) { console.log("SUCCESS!", response.status, response.text); }, 
-                    function(error) { console.log("FAILED...", error); }
-                );
-            } catch (err) {
-                console.log("EmailJS Error:", err);
-            }
-
-            showPromptModal(
-                'Admin Authentication',
-                'A 6-digit verification code has been sent to your email.',
-                'Enter 6-digit code...',
-                'Verify',
-                'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/30',
-                (val, modalId) => {
-                    if (val === verifyCode) {
-                        window.isAuthorizedAdmin = true;
-                        localStorage.setItem('nexus_admin_verified', 'true');
-                        document.getElementById(modalId).remove();
-                        showModal('Success', 'Admin mode unlocked permanently on this browser.');
-                        navigate('admin');
-                        if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
-                    } else {
-                        document.getElementById(modalId).remove();
-                        showModal('Access Denied', 'Incorrect verification code.');
-                    }
-                }
-            );
+            if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
         }
       }
     });
