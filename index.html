@@ -46,12 +46,26 @@
 </head>
 <body class="bg-[#f4f4f6] dark:bg-slate-950 text-slate-900 dark:text-slate-200 transition-colors duration-300 min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
 
+  <!-- GLOBAL LOGIN OVERLAY -->
+  <div id="global-login-overlay" class="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-slate-900 px-4">
+    <div class="bg-slate-800 p-10 rounded-[3rem] shadow-2xl max-w-md w-full text-center border border-slate-700 animate-zoom-in">
+      <div class="w-24 h-24 mx-auto bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center mb-8 shadow-xl shadow-indigo-500/30">
+        <i class="ph-fill ph-lock-key text-5xl text-white"></i>
+      </div>
+      <h1 class="text-3xl font-black text-white mb-4 tracking-tight">NexusStore</h1>
+      <p class="text-slate-400 mb-8 font-medium">You must sign in with a verified Google account to access the platform.</p>
+      <button data-click="signInWithGoogle" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl shadow-blue-500/30 flex items-center justify-center gap-3">
+        <i class="ph-bold ph-google-logo text-2xl"></i> Sign In
+      </button>
+    </div>
+  </div>
+
   <!-- APP ROOT -->
-  <div id="app-root">
+  <div id="app-root" class="hidden">
 
   <!-- Banned Overlay -->
   <div id="banned-overlay" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950 px-4">
-    <div class="max-w-md w-full text-center">
+    <div class="max-w-md w-full text-center animate-zoom-in">
       <div class="w-24 h-24 mx-auto bg-red-500/20 text-red-500 rounded-3xl flex items-center justify-center mb-6 border border-red-500/30">
         <i class="ph-bold ph-prohibit text-5xl animate-pulse"></i>
       </div>
@@ -178,12 +192,9 @@
       </div>
 
       <div class="flex items-center gap-4">
-        <button id="login-btn" data-click="signInWithGoogle" class="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700 font-bold text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 transition-colors">
-          <i class="ph-bold ph-sign-in"></i> Sign In
-        </button>
-        <div id="user-profile" class="hidden items-center gap-3 pr-4 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity" data-click="profileLink" title="View My Profile">
+        <div id="user-profile" class="flex items-center gap-3 pr-4 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity" data-click="profileLink" title="View My Profile">
           <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1" class="w-9 h-9 rounded-full object-cover border-2 border-indigo-500 shadow-sm" />
-          <span id="user-name" class="font-bold text-sm text-slate-700 dark:text-slate-200 hidden sm:block"></span>
+          <span id="user-name" class="font-bold text-sm text-slate-700 dark:text-slate-200 hidden sm:block">Loading...</span>
         </div>
         <button id="theme-toggle" class="p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-yellow-400 dark:hover:bg-slate-700 dark:border-transparent" title="Toggle Dark Mode">
           <i class="ph ph-sun text-xl dark:hidden"></i>
@@ -660,6 +671,7 @@
     let allowedDevs = [];
     let devRequests = [];
     let publicListenersAttached = false;
+    let publicUnsubs = [];
     let privateUnsubs = [];
 
     const handleUserStatus = (status) => {
@@ -691,13 +703,13 @@
         auth = getAuth(app);
         db = getFirestore(app);
 
-        // SETUP PUBLIC LISTENERS (Does not require Auth to fetch if DB rules permit public reads)
+        // SETUP PUBLIC LISTENERS
         const setupPublicListeners = () => {
             if (publicListenersAttached) return;
             publicListenersAttached = true;
 
             // Apps
-            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps')), (snapshot) => {
+            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps')), (snapshot) => {
               const fetchedApps = snapshot.docs.map(doc => {
                 const d = doc.data();
                 if (d.visibility === 'private' && (!currentUser || d.authorId !== currentUser.uid)) return null;
@@ -711,10 +723,10 @@
               if (currentView === 'profile' && selectedAppId) renderProfile(selectedAppId); 
               if (currentView === 'admin') renderAdmin(); 
               if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
-            }, (error) => console.warn("Firestore apps error:", error));
+            }, (error) => console.warn("Firestore apps error:", error)));
 
             // Users
-            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'users')), (snapshot) => {
+            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'users')), (snapshot) => {
               systemUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
               if (currentView === 'admin') renderAdminUsers();
               if (currentView === 'profile' && selectedAppId) renderProfile(selectedAppId);
@@ -723,153 +735,169 @@
                 const me = systemUsers.find(u => u.uid === currentUser.uid);
                 if (me) handleUserStatus(me.status);
               }
-            }, (error) => console.warn("Firestore users error:", error));
+            }, (error) => console.warn("Firestore users error:", error)));
 
             // Allowed Devs
-            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'allowed_devs')), (snapshot) => {
+            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'allowed_devs')), (snapshot) => {
                allowedDevs = snapshot.docs.map(doc => doc.id); // Storing email as doc ID
                if (currentView === 'admin') renderAdminDevs();
-            }, (error) => console.warn("Firestore allowed devs error:", error));
+            }, (error) => console.warn("Firestore allowed devs error:", error)));
 
             // Developer Requests
-            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'developer_requests')), (snapshot) => {
+            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'developer_requests')), (snapshot) => {
                devRequests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                if (currentView === 'admin') renderAdminDevs();
-            }, (error) => console.warn("Firestore developer requests error:", error));
+            }, (error) => console.warn("Firestore developer requests error:", error)));
 
             // Activity Logs
-            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'activity_logs')), (snapshot) => {
+            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'activity_logs')), (snapshot) => {
               activityLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
               activityLogs.sort((a, b) => b.timestamp - a.timestamp); // Newest first
               if (currentView === 'admin') renderAdminLogs();
-            }, (error) => console.warn("Firestore logs error:", error));
+            }, (error) => console.warn("Firestore logs error:", error)));
 
             // News Banners
-            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'news')), (snapshot) => {
+            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'news')), (snapshot) => {
               newsItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
               newsItems.sort((a, b) => b.timestamp - a.timestamp);
               
               if (isNewsPanelOpen) renderNewsFeed();
               if (currentView === 'admin') renderAdminNews();
-            }, (error) => console.warn("Firestore news error:", error));
+            }, (error) => console.warn("Firestore news error:", error)));
 
             // Direct Messages
-            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'user_messages')), (snapshot) => {
+            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'user_messages')), (snapshot) => {
               const allMsgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
               if (currentUser) {
                   userMessages = allMsgs.filter(m => m.recipientId === currentUser.uid).sort((a, b) => b.timestamp - a.timestamp);
                   updateInboxBookmark();
                   if (isInboxOpen) renderInboxFeed();
               }
-            }, (error) => console.warn("Firestore messages error:", error));
+            }, (error) => console.warn("Firestore messages error:", error)));
 
             // App Reviews
-            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'app_reviews')), (snapshot) => {
+            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'app_reviews')), (snapshot) => {
               appReviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
               appReviews.sort((a, b) => b.timestamp - a.timestamp);
               if (currentView === 'home') renderHome();
               if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
-            }, (error) => console.warn("Firestore reviews error:", error));
+            }, (error) => console.warn("Firestore reviews error:", error)));
 
             // Admin Feedback
-            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'feedback')), (snapshot) => {
+            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'feedback')), (snapshot) => {
               feedbackItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
               feedbackItems.sort((a, b) => b.timestamp - a.timestamp);
               if (currentView === 'admin') renderAdminFeedback();
-            }, (error) => console.warn("Firestore feedback error:", error));
+            }, (error) => console.warn("Firestore feedback error:", error)));
         };
 
-        setupPublicListeners();
-
-        let isFirstAuthCheck = true;
+        const initAuth = async () => {
+          try {
+            const token = typeof window.__initial_auth_token !== 'undefined' && window.__initial_auth_token ? window.__initial_auth_token : null;
+            if (token) {
+              await signInWithCustomToken(auth, token);
+            }
+          } catch (err) {
+            console.warn("Custom token invalid.", err);
+          }
+        };
+        initAuth();
 
         onAuthStateChanged(auth, async (user) => {
-          if (isFirstAuthCheck && !user) {
-            isFirstAuthCheck = false;
-            try {
-              const token = typeof window.__initial_auth_token !== 'undefined' && window.__initial_auth_token ? window.__initial_auth_token : null;
-              if (token) {
-                try {
-                  await signInWithCustomToken(auth, token);
-                } catch (tokenErr) {
-                  console.warn("Custom token invalid. Falling back to anonymous.");
-                  await signInAnonymously(auth);
-                }
-              } else {
-                await signInAnonymously(auth);
-              }
-            } catch (err) {
-              console.warn("Anonymous Auth disabled or failed. Proceeding as guest.", err);
-            }
-            return;
-          }
-          isFirstAuthCheck = false;
-
           currentUser = user;
-          
-          if (user && user.email !== 'bexlebeau30@students.cumberlandschools.org') {
+          const loginOverlay = document.getElementById('global-login-overlay');
+          const appRoot = document.getElementById('app-root');
+
+          if (!user) {
+              // Show login gatekeeper
+              loginOverlay.classList.remove('hidden');
+              loginOverlay.classList.add('flex');
+              appRoot.classList.add('hidden');
+              
+              // Clean up state if signed out
+              window.isAuthorizedAdmin = false;
+              localStorage.removeItem('nexus_admin_verified');
+              
+              publicUnsubs.forEach(unsub => unsub());
+              publicUnsubs = [];
+              publicListenersAttached = false;
+              
+              privateUnsubs.forEach(unsub => unsub());
+              privateUnsubs = [];
+              myFavorites.clear();
+              userMessages = [];
+              updateInboxBookmark();
+              return;
+          }
+
+          // User is Authenticated -> Hide overlay, show app
+          loginOverlay.classList.add('hidden');
+          loginOverlay.classList.remove('flex');
+          appRoot.classList.remove('hidden');
+
+          // Immediate Targeted Ban Check
+          if (user.email === 'jajmills30@students.cumberlandschools.org') {
+              handleUserStatus('banned');
+              try {
+                  const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
+                  await setDoc(userRef, { 
+                      uid: user.uid, 
+                      email: user.email,
+                      status: 'banned',
+                      usernameSet: true
+                  }, { merge: true });
+              } catch(e) {}
+              return; // Halt further initialization for this user
+          }
+
+          // Admin Validation
+          if (user.email !== 'bexlebeau30@students.cumberlandschools.org') {
               window.isAuthorizedAdmin = false;
               localStorage.removeItem('nexus_admin_verified');
           }
 
-          const loginBtn = document.getElementById('login-btn');
-          const profileEl = document.getElementById('user-profile');
+          // Start listeners for authenticated users
+          setupPublicListeners();
 
-          if (user) {
-            // Update UI for auth state
-            if (loginBtn) { loginBtn.classList.add('hidden'); loginBtn.classList.remove('flex'); }
-            if (profileEl) { profileEl.classList.remove('hidden'); profileEl.classList.add('flex'); }
+          // Manage User Document for moderation and Username logic
+          const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
+          const userSnap = await getDoc(userRef);
+          
+          if (!userSnap.exists()) {
+            await setDoc(userRef, {
+              uid: user.uid,
+              email: user.email || '',
+              username: '',
+              displayName: '',
+              bio: '',
+              usernameSet: false,
+              status: 'active',
+              role: 'user',
+              joinedAt: Date.now()
+            });
+            handleUserStatus('active');
+            showOnboarding();
+          } else {
+            const userData = userSnap.data();
+            handleUserStatus(userData.status || 'active');
 
-            // Manage User Document for moderation and Username logic
-            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
-            const userSnap = await getDoc(userRef);
-            
-            if (!userSnap.exists()) {
-              await setDoc(userRef, {
-                uid: user.uid,
-                username: '',
-                displayName: '',
-                bio: '',
-                usernameSet: false,
-                status: 'active',
-                role: 'user',
-                joinedAt: Date.now()
-              });
-              handleUserStatus('active');
+            if (!userData.usernameSet) {
               showOnboarding();
             } else {
-              const userData = userSnap.data();
-              handleUserStatus(userData.status || 'active');
-
-              if (!userData.usernameSet) {
-                showOnboarding();
-              } else {
-                currentUser.customDisplayName = userData.username || userData.displayName;
-                updateUserProfileUI(currentUser);
-              }
+              currentUser.customDisplayName = userData.username || userData.displayName;
+              updateUserProfileUI(currentUser);
             }
-
-            // SETUP PRIVATE LISTENERS
-            const favsUnsub = onSnapshot(query(collection(db, 'artifacts', appId, 'users', user.uid, 'favorites')), (snapshot) => {
-              myFavorites = new Set(snapshot.docs.map(doc => doc.id));
-              if (currentView === 'profile') renderProfile(selectedAppId);
-              if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
-            }, (error) => console.warn("Firestore favorites error:", error));
-            privateUnsubs.push(favsUnsub);
-
-          } else {
-            // Clean up state if signed out
-            if (loginBtn) { loginBtn.classList.remove('hidden'); loginBtn.classList.add('flex'); }
-            if (profileEl) { profileEl.classList.add('hidden'); profileEl.classList.remove('flex'); }
-
-            privateUnsubs.forEach(unsub => unsub());
-            privateUnsubs = [];
-            myFavorites.clear();
-            userMessages = [];
-            updateInboxBookmark();
           }
 
-          // Trigger re-render of current view to update private app visibility and user UI elements
+          // SETUP PRIVATE LISTENERS
+          const favsUnsub = onSnapshot(query(collection(db, 'artifacts', appId, 'users', user.uid, 'favorites')), (snapshot) => {
+            myFavorites = new Set(snapshot.docs.map(doc => doc.id));
+            if (currentView === 'profile') renderProfile(selectedAppId);
+            if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
+          }, (error) => console.warn("Firestore favorites error:", error));
+          privateUnsubs.push(favsUnsub);
+
+          // Trigger re-render of current view to update app visibility and user UI elements
           if (currentView === 'home') renderHome();
           if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
         });
@@ -1051,7 +1079,7 @@
             await signInWithPopup(auth, provider);
         } catch(err) {
             console.error("Manual Google Sign-In Error:", err);
-            showModal('Auth Error', 'Could not sign in with Google.');
+            showModal('Auth Error', 'Could not sign in with Google. Make sure popups are allowed.');
         }
     };
 
@@ -1153,28 +1181,7 @@
 
     // --- APP LOGIC ---
     window.handlePublishClick = async () => {
-      if (!currentUser || !currentUser.email) {
-        showPromptModal(
-          'Developer Verification',
-          'To ensure a secure community, publishing requires you to link a verified Google Account.',
-          null, // No input text required
-          'Sign in with Google',
-          'bg-blue-600 hover:bg-blue-500',
-          async (_, modalId) => {
-            document.getElementById(modalId).remove();
-            try {
-              const provider = new GoogleAuthProvider();
-              await signInWithPopup(auth, provider);
-              // Re-run the flow after a short delay so auth state settles
-              setTimeout(window.handlePublishClick, 1000);
-            } catch(err) {
-              showModal('Authentication Failed', 'Could not verify your Google Account.');
-              console.error(err);
-            }
-          }
-        );
-        return;
-      }
+      if (!currentUser || !currentUser.email) return;
 
       // Check if email is allowed or if user is an admin
       if (allowedDevs.includes(currentUser.email) || window.isAuthorizedAdmin) {
@@ -1700,7 +1707,9 @@
                   ${(() => {
                     const appRevs = appReviews.filter(r => r.targetAppId === appId);
                     if (appRevs.length === 0) return `<div class="text-slate-500 font-medium italic">No reviews yet. Be the first!</div>`;
-                    return appRevs.map(r => `
+                    return appRevs.map(r => {
+                      const canDelete = isAuthorizedAdmin || (currentUser && currentUser.uid === r.uid);
+                      return `
                       <div class="p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
                         <div class="flex items-center justify-between mb-3">
                           <div class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -1709,14 +1718,18 @@
                             </div>
                             ${r.author}
                           </div>
-                          <div class="text-xs font-bold text-slate-400 uppercase tracking-widest">${new Date(r.timestamp).toLocaleDateString()}</div>
+                          <div class="flex items-center gap-3">
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-widest">${new Date(r.timestamp).toLocaleDateString()}</div>
+                            ${canDelete ? `<button data-click="deleteReview" data-arg="${r.id}" class="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors p-1" title="Delete Review"><i class="ph-bold ph-trash text-lg"></i></button>` : ''}
+                          </div>
                         </div>
                         <div class="flex items-center gap-1 mb-2">
                           ${[1,2,3,4,5].map(i => `<i class="${i <= r.rating ? 'ph-fill text-yellow-400' : 'ph text-slate-300 dark:text-slate-700'} ph-star text-lg"></i>`).join('')}
                         </div>
                         <p class="text-slate-600 dark:text-slate-300 font-medium leading-relaxed">${r.text}</p>
                       </div>
-                    `).join('');
+                      `;
+                    }).join('');
                   })()}
                 </div>
               </div>
@@ -1936,6 +1949,34 @@
             btn.innerHTML = 'Post Review';
         }
       }
+    };
+
+    window.deleteReview = (reviewId) => {
+      const modalId = `modal-${Date.now()}`;
+      const modalHtml = `
+        <div id="${modalId}" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4">
+          <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
+            <h3 class="text-2xl font-black mb-2 text-slate-900 dark:text-white">Delete Review?</h3>
+            <p class="text-slate-500 mb-8 font-medium">This action cannot be undone.</p>
+            <div class="flex gap-4">
+              <button data-click="closeModal" data-arg="${modalId}" class="flex-1 px-4 py-3 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white transition-colors">Cancel</button>
+              <button id="confirm-btn-${modalId}" class="flex-1 px-4 py-3 rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg transition-all">Delete</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+      document.getElementById(`confirm-btn-${modalId}`).addEventListener('click', async () => {
+        const btn = document.getElementById(`confirm-btn-${modalId}`);
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>';
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_reviews', reviewId));
+          document.getElementById(modalId).remove();
+          showToast('Deleted', 'Review has been removed.', 'ph-trash', 'slate');
+        } catch(e) { console.error(e); btn.innerHTML = 'Error'; }
+      });
     };
 
     window.deleteApp = async (targetAppId) => {
@@ -2880,6 +2921,7 @@
       else if (action === 'adminRejectDev') window.adminRejectDev(arg1);
       else if (action === 'adminRemoveDevEmail') window.adminRemoveDevEmail(arg1);
       else if (action === 'signInWithGoogle') window.signInWithGoogle();
+      else if (action === 'deleteReview') window.deleteReview(arg1);
     });
 
     document.addEventListener('submit', (e) => {
