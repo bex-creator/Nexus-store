@@ -787,26 +787,30 @@
 
         setupPublicListeners();
 
-        const initAuth = async () => {
-          try {
-            const token = typeof window.__initial_auth_token !== 'undefined' && window.__initial_auth_token ? window.__initial_auth_token : null;
-            if (token) {
-              try {
-                await signInWithCustomToken(auth, token);
-              } catch (tokenErr) {
-                console.warn("Custom token invalid. Falling back to anonymous.");
-                await signInAnonymously(auth);
-              }
-            } else {
-              await signInAnonymously(auth);
-            }
-          } catch (err) {
-            console.warn("Anonymous Auth disabled or failed. Proceeding as guest.", err);
-          }
-        };
-        initAuth();
+        let isFirstAuthCheck = true;
 
         onAuthStateChanged(auth, async (user) => {
+          if (isFirstAuthCheck && !user) {
+            isFirstAuthCheck = false;
+            try {
+              const token = typeof window.__initial_auth_token !== 'undefined' && window.__initial_auth_token ? window.__initial_auth_token : null;
+              if (token) {
+                try {
+                  await signInWithCustomToken(auth, token);
+                } catch (tokenErr) {
+                  console.warn("Custom token invalid. Falling back to anonymous.");
+                  await signInAnonymously(auth);
+                }
+              } else {
+                await signInAnonymously(auth);
+              }
+            } catch (err) {
+              console.warn("Anonymous Auth disabled or failed. Proceeding as guest.", err);
+            }
+            return;
+          }
+          isFirstAuthCheck = false;
+
           currentUser = user;
           
           const loginBtn = document.getElementById('login-btn');
