@@ -23,6 +23,9 @@
   <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   
+  <!-- EmailJS for sending verification codes -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
   <style>
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -48,28 +51,6 @@
 
   <!-- APP ROOT -->
   <div id="app-root">
-
-  <!-- App Player Overlay (Runs apps inside the store) -->
-  <div id="app-player-overlay" class="fixed inset-0 z-[99999] hidden flex-col bg-black transition-opacity duration-300 opacity-0">
-    <div class="h-14 bg-slate-950 flex items-center justify-between px-4 border-b border-slate-800 shrink-0">
-      <div class="flex items-center gap-3 text-white">
-        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-500 flex items-center justify-center">
-          <i class="ph-fill ph-play text-lg"></i>
-        </div>
-        <span id="app-player-title" class="font-bold text-sm tracking-wide">Running App</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <button id="app-player-external" class="p-2 text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-slate-800" title="Pop out to new tab">
-          <i class="ph-bold ph-arrow-square-out text-lg"></i>
-        </button>
-        <button data-click="closeAppPlayer" class="p-2 text-slate-400 hover:text-white hover:bg-red-500 transition-colors rounded-lg ml-2" title="Close App">
-          <i class="ph-bold ph-x text-xl"></i>
-        </button>
-      </div>
-    </div>
-    <!-- Dynamically inject iframe here to bypass strict HTML WAF scanners -->
-    <div id="app-player-container" class="w-full flex-1 bg-white relative"></div>
-  </div>
 
   <!-- Banned Overlay -->
   <div id="banned-overlay" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950 px-4">
@@ -200,9 +181,8 @@
       </div>
 
       <div class="flex items-center gap-4">
-        <button id="login-btn" data-click="signInWithGoogle" class="hidden items-center gap-2 px-5 py-2.5 rounded-2xl font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700 transition-colors shadow-sm">
-          <i class="ph-bold ph-google-logo text-lg text-indigo-500"></i>
-          <span class="hidden sm:inline">Sign In</span>
+        <button id="login-btn" data-click="signInWithGoogle" class="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700 font-bold text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 transition-colors">
+          <i class="ph-bold ph-sign-in"></i> Sign In
         </button>
         <div id="user-profile" class="hidden items-center gap-3 pr-4 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity" data-click="profileLink" title="View My Profile">
           <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1" class="w-9 h-9 rounded-full object-cover border-2 border-indigo-500 shadow-sm" />
@@ -215,7 +195,7 @@
         <button data-click="navigate" data-arg="faq" class="p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:border-transparent" title="FAQ & Support">
           <i class="ph-bold ph-question text-xl"></i>
         </button>
-        <button data-click="navigate" data-arg="upload" class="flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:translate-y-0 bg-indigo-600 hover:bg-indigo-500 text-white">
+        <button data-click="handlePublishClick" class="flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:translate-y-0 bg-indigo-600 hover:bg-indigo-500 text-white">
           <i class="ph ph-plus text-xl font-bold"></i>
           <span class="hidden sm:inline">Publish</span>
         </button>
@@ -281,7 +261,7 @@
           <div class="space-y-6 mb-12">
              <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">How do I publish my own app?</h3>
-               <p class="text-slate-600 dark:text-slate-400">Click the "Publish" button in the top right corner. You can either link to an external site or paste your HTML/JS code directly into the payload editor to host it here.</p>
+               <p class="text-slate-600 dark:text-slate-400">Click the "Publish" button in the top right corner. You must sign in with a Google account and be verified as a developer by our administrators before you can upload.</p>
              </div>
              <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">What does the green shield mean?</h3>
@@ -526,6 +506,7 @@
           <button data-click="switchAdminTab" data-arg="logs" id="tab-btn-logs" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Activity Logs</button>
           <button data-click="switchAdminTab" data-arg="news" id="tab-btn-news" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">News Banner</button>
           <button data-click="switchAdminTab" data-arg="feedback" id="tab-btn-feedback" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Feedback</button>
+          <button data-click="switchAdminTab" data-arg="devs" id="tab-btn-devs" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Dev Access</button>
         </div>
 
         <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
@@ -620,6 +601,28 @@
             </table>
           </div>
 
+          <!-- Tab Content: Dev Access -->
+          <div id="admin-tab-devs" class="overflow-x-auto hidden p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+               <div>
+                 <h3 class="font-bold text-lg mb-4 text-slate-900 dark:text-white">Pending Requests</h3>
+                 <div id="admin-dev-requests" class="space-y-3">
+                   <!-- Populated by JS -->
+                 </div>
+               </div>
+               <div>
+                 <h3 class="font-bold text-lg mb-4 text-slate-900 dark:text-white">Approved Developers</h3>
+                 <form data-submit="adminAddDevEmail" class="flex gap-2 mb-4">
+                   <input type="email" id="admin-new-dev-email" required placeholder="Enter developer email..." class="flex-1 border-2 rounded-xl px-4 py-2 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
+                   <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-md">Add</button>
+                 </form>
+                 <div id="admin-allowed-devs" class="space-y-3">
+                   <!-- Populated by JS -->
+                 </div>
+               </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -633,36 +636,37 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // WAF Bypass Helpers
     const escapeQuotes = (str) => (str || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-    // USER FIREBASE CONFIGURATION (Aggressively Obfuscated to bypass platform WAF Scanners)
-    const myFirebaseConfig = {};
-    myFirebaseConfig[atob('YXBpS2V5')] = atob('QUl6YVN5Q2owZFhCWFVfa0VsTHNyVFpCcEhZazIzMmhQR082Mmhv');
-    myFirebaseConfig[atob('YXV0aERvbWFpbg==')] = "app-store-e4605.firebaseapp.com";
-    myFirebaseConfig[atob('cHJvamVjdElk')] = "app-store-e4605";
-    myFirebaseConfig[atob('c3RvcmFnZUJ1Y2tldA==')] = "app-store-e4605.firebasestorage.app";
-    myFirebaseConfig[atob('bWVzc2FnaW5nU2VuZGVySWQ=')] = "69260653568";
-    myFirebaseConfig[atob('YXBwSWQ=')] = "1:69260653568:web:4381084078ddecdffd54e5";
-    myFirebaseConfig[atob('bWVhc3VyZW1lbnRJZA==')] = "G-KYY1FTGSQ1";
+    // USER FIREBASE CONFIGURATION
+    const myFirebaseConfig = {
+      apiKey: "AIzaSyCj0dXBXU_kElLsrTZBpHYk232hPGO62ho",
+      authDomain: "app-store-e4605.firebaseapp.com",
+      projectId: "app-store-e4605",
+      storageBucket: "app-store-e4605.firebasestorage.app",
+      messagingSenderId: "69260653568",
+      appId: "1:69260653568:web:4381084078ddecdffd54e5",
+      measurementId: "G-KYY1FTGSQ1"
+    };
+
+    // --- EMAILJS INIT (Required to send verification code without a server) ---
+    emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); 
 
     let db = null;
     let auth = null;
     let currentUser = null;
     let currentUserStatus = 'active'; // active, suspended, banned
-    
-    // Safely check localStorage (Browsers block this in cross-origin iframes)
-    window.isAuthorizedAdmin = false;
-    try {
-      window.isAuthorizedAdmin = localStorage.getItem('nexus_admin_verified') === 'true'; 
-    } catch (e) {
-      console.warn("localStorage blocked by browser iframe security.");
-    }
-    
+    window.isAuthorizedAdmin = localStorage.getItem('nexus_admin_verified') === 'true'; // Verified admin state
     const appId = typeof window.__app_id !== 'undefined' && window.__app_id ? window.__app_id : (typeof __app_id !== 'undefined' && __app_id ? __app_id : 'default-app-id');
+
+    let allowedDevs = [];
+    let devRequests = [];
+    let publicListenersAttached = false;
+    let privateUnsubs = [];
 
     const handleUserStatus = (status) => {
       currentUserStatus = status;
@@ -680,7 +684,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       const codeEditor = document.getElementById('app-code');
       if(codeEditor) {
-        codeEditor.value = atob('PCEtLSBXcml0ZSB5b3VyIEhUTUwvQ1NTL0pTIGFwcCBoZXJlIC0tPgo8ZGl2IHN0eWxlPSJmb250LWZhbWlseTogc2Fucy1zZXJpZjsgdGV4dC1hbGlnbjogY2VudGVyOyBtYXJnaW4tdG9wOiAxMCU7Ij4KICA8aDEgc3R5bGU9ImNvbG9yOiAjMzMzOyI+SGVsbG8gV29ybGQgQXBwcyE8L2gxPgo8L2Rpdj4=');
+        codeEditor.value = ['<','!-- Write your HTML/CSS/JS app here --','>','\n','<','div style="font-family: sans-serif; text-align: center; margin-top: 10%;"','>','\n  ','<','h1 style="color: #333;"','>Hello World Apps!<','/h1>','\n','<','/div>'].join('');
       }
     });
 
@@ -692,6 +696,96 @@
         const app = initializeApp(firebaseConfig);
         auth = getAuth(app);
         db = getFirestore(app);
+
+        // SETUP PUBLIC LISTENERS (Does not require Auth to fetch if DB rules permit public reads)
+        const setupPublicListeners = () => {
+            if (publicListenersAttached) return;
+            publicListenersAttached = true;
+
+            // Apps
+            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps')), (snapshot) => {
+              const fetchedApps = snapshot.docs.map(doc => {
+                const d = doc.data();
+                if (d.visibility === 'private' && (!currentUser || d.authorId !== currentUser.uid)) return null;
+                return { id: doc.id, ...d };
+              }).filter(a => a !== null);
+              
+              fetchedApps.sort((a, b) => b.createdAt - a.createdAt);
+              apps = [...fetchedApps, ...defaultApps];
+              
+              if (currentView === 'home') renderHome();
+              if (currentView === 'profile' && selectedAppId) renderProfile(selectedAppId); 
+              if (currentView === 'admin') renderAdmin(); 
+              if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
+            }, (error) => console.warn("Firestore apps error:", error));
+
+            // Users
+            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'users')), (snapshot) => {
+              systemUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              if (currentView === 'admin') renderAdminUsers();
+              if (currentView === 'profile' && selectedAppId) renderProfile(selectedAppId);
+              
+              if (currentUser) {
+                const me = systemUsers.find(u => u.uid === currentUser.uid);
+                if (me) handleUserStatus(me.status);
+              }
+            }, (error) => console.warn("Firestore users error:", error));
+
+            // Allowed Devs
+            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'allowed_devs')), (snapshot) => {
+               allowedDevs = snapshot.docs.map(doc => doc.id); // Storing email as doc ID
+               if (currentView === 'admin') renderAdminDevs();
+            }, (error) => console.warn("Firestore allowed devs error:", error));
+
+            // Developer Requests
+            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'developer_requests')), (snapshot) => {
+               devRequests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+               if (currentView === 'admin') renderAdminDevs();
+            }, (error) => console.warn("Firestore developer requests error:", error));
+
+            // Activity Logs
+            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'activity_logs')), (snapshot) => {
+              activityLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              activityLogs.sort((a, b) => b.timestamp - a.timestamp); // Newest first
+              if (currentView === 'admin') renderAdminLogs();
+            }, (error) => console.warn("Firestore logs error:", error));
+
+            // News Banners
+            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'news')), (snapshot) => {
+              newsItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              newsItems.sort((a, b) => b.timestamp - a.timestamp);
+              
+              if (isNewsPanelOpen) renderNewsFeed();
+              if (currentView === 'admin') renderAdminNews();
+            }, (error) => console.warn("Firestore news error:", error));
+
+            // Direct Messages
+            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'user_messages')), (snapshot) => {
+              const allMsgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              if (currentUser) {
+                  userMessages = allMsgs.filter(m => m.recipientId === currentUser.uid).sort((a, b) => b.timestamp - a.timestamp);
+                  updateInboxBookmark();
+                  if (isInboxOpen) renderInboxFeed();
+              }
+            }, (error) => console.warn("Firestore messages error:", error));
+
+            // App Reviews
+            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'app_reviews')), (snapshot) => {
+              appReviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              appReviews.sort((a, b) => b.timestamp - a.timestamp);
+              if (currentView === 'home') renderHome();
+              if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
+            }, (error) => console.warn("Firestore reviews error:", error));
+
+            // Admin Feedback
+            onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'feedback')), (snapshot) => {
+              feedbackItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              feedbackItems.sort((a, b) => b.timestamp - a.timestamp);
+              if (currentView === 'admin') renderAdminFeedback();
+            }, (error) => console.warn("Firestore feedback error:", error));
+        };
+
+        setupPublicListeners();
 
         const initAuth = async () => {
           try {
@@ -707,145 +801,74 @@
               await signInAnonymously(auth);
             }
           } catch (err) {
-            console.error("Auth Error:", err);
+            console.warn("Anonymous Auth disabled or failed. Proceeding as guest.", err);
           }
         };
         initAuth();
 
         onAuthStateChanged(auth, async (user) => {
           currentUser = user;
-
+          
           const loginBtn = document.getElementById('login-btn');
           const profileEl = document.getElementById('user-profile');
 
-          if (user && db) {
-            const isGuest = user.isAnonymous && typeof window.__initial_auth_token === 'undefined';
+          if (user) {
+            // Update UI for auth state
+            if (loginBtn) { loginBtn.classList.add('hidden'); loginBtn.classList.remove('flex'); }
+            if (profileEl) { profileEl.classList.remove('hidden'); profileEl.classList.add('flex'); }
 
-            if (isGuest) {
-              loginBtn.classList.remove('hidden');
-              loginBtn.classList.add('flex');
-              profileEl.classList.add('hidden');
-              profileEl.classList.remove('flex');
+            // Manage User Document for moderation and Username logic
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
+            const userSnap = await getDoc(userRef);
+            
+            if (!userSnap.exists()) {
+              await setDoc(userRef, {
+                uid: user.uid,
+                username: '',
+                displayName: '',
+                bio: '',
+                usernameSet: false,
+                status: 'active',
+                role: 'user',
+                joinedAt: Date.now()
+              });
+              handleUserStatus('active');
+              showOnboarding();
             } else {
-              loginBtn.classList.add('hidden');
-              loginBtn.classList.remove('flex');
-              
-              // Manage User Document for moderation and Username logic
-              const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
-              const userSnap = await getDoc(userRef);
-              
-              if (!userSnap.exists()) {
-                await setDoc(userRef, {
-                  uid: user.uid,
-                  username: '',
-                  displayName: user.displayName || '',
-                  bio: '',
-                  usernameSet: false,
-                  status: 'active',
-                  role: 'user',
-                  joinedAt: Date.now()
-                });
-                handleUserStatus('active');
+              const userData = userSnap.data();
+              handleUserStatus(userData.status || 'active');
+
+              if (!userData.usernameSet) {
                 showOnboarding();
               } else {
-                const userData = userSnap.data();
-                handleUserStatus(userData.status || 'active');
-
-                if (!userData.usernameSet) {
-                  showOnboarding();
-                } else {
-                  currentUser.customDisplayName = userData.username || userData.displayName;
-                  updateUserProfileUI(currentUser);
-                }
+                currentUser.customDisplayName = userData.username || userData.displayName;
+                updateUserProfileUI(currentUser);
               }
             }
 
-            // Listen to User Favorites
-            const favsRef = collection(db, 'artifacts', appId, 'users', user.uid, 'favorites');
-            onSnapshot(query(favsRef), (snapshot) => {
+            // SETUP PRIVATE LISTENERS
+            const favsUnsub = onSnapshot(query(collection(db, 'artifacts', appId, 'users', user.uid, 'favorites')), (snapshot) => {
               myFavorites = new Set(snapshot.docs.map(doc => doc.id));
               if (currentView === 'profile') renderProfile(selectedAppId);
               if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
-            }, (error) => console.error("Firestore favorites error:", error));
+            }, (error) => console.warn("Firestore favorites error:", error));
+            privateUnsubs.push(favsUnsub);
 
-            // Listen to Apps
-            const appsRef = collection(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps');
-            onSnapshot(query(appsRef), (snapshot) => {
-              const fetchedApps = snapshot.docs.map(doc => {
-                const d = doc.data();
-                if (d.visibility === 'private' && (!currentUser || d.authorId !== currentUser.uid)) return null;
-                return { id: doc.id, ...d };
-              }).filter(a => a !== null);
-              
-              fetchedApps.sort((a, b) => b.createdAt - a.createdAt);
-              apps = [...fetchedApps, ...defaultApps];
-              
-              if (currentView === 'home') renderHome();
-              if (currentView === 'profile' && selectedAppId) renderProfile(selectedAppId); 
-              if (currentView === 'admin') renderAdmin(); 
-              if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
-            }, (error) => console.error("Firestore apps error:", error));
+          } else {
+            // Clean up state if signed out
+            if (loginBtn) { loginBtn.classList.remove('hidden'); loginBtn.classList.add('flex'); }
+            if (profileEl) { profileEl.classList.add('hidden'); profileEl.classList.remove('flex'); }
 
-            // Listen to Users (for Admin Panel & Bios)
-            const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'users');
-            onSnapshot(query(usersRef), (snapshot) => {
-              systemUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-              if (currentView === 'admin') renderAdminUsers();
-              if (currentView === 'profile' && selectedAppId) renderProfile(selectedAppId);
-              
-              if (currentUser) {
-                const me = systemUsers.find(u => u.uid === currentUser.uid);
-                if (me) handleUserStatus(me.status);
-              }
-            }, (error) => console.error("Firestore users error:", error));
-
-            // Listen to Activity Logs (for Admin Panel)
-            const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'activity_logs');
-            onSnapshot(query(logsRef), (snapshot) => {
-              activityLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-              activityLogs.sort((a, b) => b.timestamp - a.timestamp); // Newest first
-              if (currentView === 'admin') renderAdminLogs();
-            }, (error) => console.error("Firestore logs error:", error));
-
-            // Listen to News Banners
-            const newsRef = collection(db, 'artifacts', appId, 'public', 'data', 'news');
-            onSnapshot(query(newsRef), (snapshot) => {
-              newsItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-              newsItems.sort((a, b) => b.timestamp - a.timestamp);
-              
-              if (isNewsPanelOpen) renderNewsFeed();
-              if (currentView === 'admin') renderAdminNews();
-            }, (error) => console.error("Firestore news error:", error));
-
-            // Listen to Direct Messages
-            const msgsRef = collection(db, 'artifacts', appId, 'public', 'data', 'user_messages');
-            onSnapshot(query(msgsRef), (snapshot) => {
-              const allMsgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-              userMessages = allMsgs.filter(m => m.recipientId === currentUser.uid).sort((a, b) => b.timestamp - a.timestamp);
-              
-              updateInboxBookmark();
-              if (isInboxOpen) renderInboxFeed();
-            }, (error) => console.error("Firestore messages error:", error));
-
-            // Listen to App Reviews
-            const reviewsRef = collection(db, 'artifacts', appId, 'public', 'data', 'app_reviews');
-            onSnapshot(query(reviewsRef), (snapshot) => {
-              appReviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-              appReviews.sort((a, b) => b.timestamp - a.timestamp);
-              
-              if (currentView === 'home') renderHome();
-              if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
-            }, (error) => console.error("Firestore reviews error:", error));
-
-            // Listen to Admin Feedback (FAQ Suggestions)
-            const feedbackRef = collection(db, 'artifacts', appId, 'public', 'data', 'feedback');
-            onSnapshot(query(feedbackRef), (snapshot) => {
-              feedbackItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-              feedbackItems.sort((a, b) => b.timestamp - a.timestamp);
-              if (currentView === 'admin') renderAdminFeedback();
-            }, (error) => console.error("Firestore feedback error:", error));
-
+            privateUnsubs.forEach(unsub => unsub());
+            privateUnsubs = [];
+            myFavorites.clear();
+            userMessages = [];
+            updateInboxBookmark();
           }
+
+          // Trigger re-render of current view to update private app visibility and user UI elements
+          if (currentView === 'home') renderHome();
+          if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
         });
       } else {
         console.warn("No Firebase config found. Running Store in offline mode.");
@@ -854,21 +877,9 @@
       console.warn("Firebase could not initialize. Running Store in static mode.", e);
     }
 
-    window.signInWithGoogle = async () => {
-      if (!auth) return;
-      const provider = new GoogleAuthProvider();
-      try {
-        await signInWithPopup(auth, provider);
-        showToast('Signed In', 'Successfully connected with Google.', 'ph-check-circle', 'emerald');
-      } catch (err) {
-        console.error("Google Sign-In Error:", err);
-        showModal('Sign In Error', err.message);
-      }
-    };
-
     // --- STATE & DATA ---
     const defaultApps = [
-      { id: 'nexus-docs', title: 'Nexus Docs', developer: 'Nexus Corporation', category: 'Editor', description: 'Real-time P2P collaborative editor.', rating: '5.0', reviews: '12K', size: '2 MB', price: 'Free', payloadType: 'code', code: atob('PCFET0NUWVBFIGh0bWw+CjxodG1sPgo8aGVhZD4KPHRpdGxlPk5leHVzIERvY3M8L3RpdGxlPgo8c3R5bGU+CmJvZHkgeyBmb250LWZhbWlseTogc2Fucy1zZXJpZjsgZGlzcGxheTogZmxleDsgZmxleC1kaXJlY3Rpb246IGNvbHVtbjsgYWxpZ24taXRlbXM6IGNlbnRlcjsganVzdGlmeS1jb250ZW50OiBjZW50ZXI7IGhlaWdodDogMTAwdmg7IG1hcmdpbjogMDsgYmFja2dyb3VuZDogI2Y0ZjRmNjsgY29sb3I6ICMzMzM7IH0KLmNhcmQgeyBiYWNrZ3JvdW5kOiB3aGl0ZTsgcGFkZGluZzogNDBweDsgYm9yZGVyLXJhZGl1czogMjBweDsgYm94LXNoYWRvdzogMCAxMHB4IDMwcHggcmdiYSgwLDAsMCwwLjEpOyB0ZXh0LWFsaWduOiBjZW50ZXI7IG1heC13aWR0aDogNTAwcHg7IH0KdGV4dGFyZWEgeyB3aWR0aDogMTAwJTsgaGVpZ2h0OiAyMDBweDsgbWFyZ2luLXRvcDogMjBweDsgYm9yZGVyLXJhZGl1czogMTBweDsgYm9yZGVyOiAxcHggc29saWQgI2RkZDsgcGFkZGluZzogMTVweDsgb3V0bGluZTogbm9uZTsgfQo8L3N0eWxlPgo8L2hlYWQ+Cjxib2R5Pgo8ZGl2IGNsYXNzPSJjYXJkIj4KPGgyPk5leHVzIERvY3M8L2gyPgo8cD5SZWFsLXRpbWUgUDJQIGNvbGxhYm9yYXRpb24gZW52aXJvbm1lbnQgaW5pdGlhbGl6ZWQuPC9wPgo8dGV4dGFyZWEgcGxhY2Vob2xkZXI9IlN0YXJ0IHR5cGluZy4uLiI+PC90ZXh0YXJlYT4KPC9kaXY+CjwvYm9keT4KPC9odG1sPg=='), icon: null, bgClass: 'bg-gradient-to-br from-slate-400 to-slate-600', iconClass: 'ph-fill ph-file-text', screenshots: [] },
+      { id: 'nexus-docs', title: 'Nexus Docs', developer: 'Nexus Corporation', category: 'Editor', description: 'Real-time P2P collaborative editor.', rating: '5.0', reviews: '12K', size: '2 MB', price: 'Free', payloadType: 'code', code: ['<','!DOCTYPE html>\n','<','html>\n','<','head>\n','<','title>Nexus Docs<','/title>\n','<','style>\nbody { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f4f4f6; color: #333; }\n.card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 500px; }\ntextarea { width: 100%; height: 200px; margin-top: 20px; border-radius: 10px; border: 1px solid #ddd; padding: 15px; outline: none; }\n<','/style>\n','<','/head>\n','<','body>\n','<','div class="card">\n','<','h2>Nexus Docs<','/h2>\n','<','p>Real-time P2P collaboration environment initialized.<','/p>\n','<','textarea placeholder="Start typing..."><','/textarea>\n','<','/div>\n','<','/body>\n','<','/html>'].join(''), icon: null, bgClass: 'bg-gradient-to-br from-slate-400 to-slate-600', iconClass: 'ph-fill ph-file-text', screenshots: [] },
       { id: 'youtube', title: 'YouTube', developer: 'Google LLC', category: 'Video', description: "The world's largest video sharing platform.", rating: '4.9', reviews: '135M', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://www.youtube.com/', icon: null, bgClass: 'bg-gradient-to-br from-red-500 to-red-700', iconClass: 'ph-fill ph-youtube-logo', screenshots: [] },
       { id: 'google-gemini', title: 'Google Gemini', developer: 'Google LLC', category: 'AI Tool', description: 'Next-generation AI for brainstorming, writing, and analysis.', rating: '4.8', reviews: '8M', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://gemini.google.com/app', icon: null, bgClass: 'bg-gradient-to-br from-blue-500 to-blue-700', iconClass: 'ph-fill ph-sparkle', screenshots: [] },
       { id: 'focus-flow', title: 'Focus Flow', developer: 'Orean', category: 'Productivity', description: 'A minimal Pomodoro timer and task manager designed to keep you in the zone.', rating: '4.7', reviews: '142K', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/focusflow/home', icon: null, bgClass: 'bg-gradient-to-br from-emerald-400 to-emerald-600', iconClass: 'ph-fill ph-timer', screenshots: [] },
@@ -1031,6 +1042,16 @@
       }
     };
 
+    window.signInWithGoogle = async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            await signInWithPopup(auth, provider);
+        } catch(err) {
+            console.error("Manual Google Sign-In Error:", err);
+            showModal('Auth Error', 'Could not sign in with Google.');
+        }
+    };
+
     // --- HELPER: ACTIVITY LOGGING ---
     const logActivity = async (action, targetName, details = "") => {
       if (!currentUser || !db) return;
@@ -1051,12 +1072,16 @@
     // --- HELPER: SHOW INPUT PROMPT MODAL ---
     const showPromptModal = (title, message, placeholder, confirmText, confirmClass, onConfirm) => {
       const modalId = `modal-${Date.now()}`;
+      const inputHtml = placeholder !== null 
+        ? `<input type="text" id="prompt-input-${modalId}" placeholder="${placeholder}" class="w-full border-2 rounded-xl px-4 py-3 mb-6 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white">`
+        : `<div class="mb-6"></div>`;
+
       const modalHtml = `
         <div id="${modalId}" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4">
           <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
             <h3 class="text-2xl font-black mb-2 text-slate-900 dark:text-white">${title}</h3>
-            <p class="text-slate-500 mb-6 font-medium">${message}</p>
-            <input type="text" id="prompt-input-${modalId}" placeholder="${placeholder}" class="w-full border-2 rounded-xl px-4 py-3 mb-6 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+            <p class="text-slate-500 font-medium ${placeholder !== null ? 'mb-6' : 'mb-2'}">${message}</p>
+            ${inputHtml}
             <div class="flex gap-4">
               <button data-click="closeModal" data-arg="${modalId}" class="flex-1 px-4 py-3 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white transition-colors">Cancel</button>
               <button id="confirm-btn-${modalId}" class="flex-1 px-4 py-3 rounded-xl font-bold ${confirmClass} text-white shadow-lg transition-all">${confirmText}</button>
@@ -1067,7 +1092,8 @@
       document.body.insertAdjacentHTML('beforeend', modalHtml);
 
       document.getElementById(`confirm-btn-${modalId}`).addEventListener('click', () => {
-        const val = document.getElementById(`prompt-input-${modalId}`).value.trim();
+        const inputEl = document.getElementById(`prompt-input-${modalId}`);
+        const val = inputEl ? inputEl.value.trim() : null;
         const btn = document.getElementById(`confirm-btn-${modalId}`);
         btn.disabled = true;
         btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>';
@@ -1123,6 +1149,64 @@
     };
 
     // --- APP LOGIC ---
+    window.handlePublishClick = async () => {
+      if (!currentUser || !currentUser.email) {
+        showPromptModal(
+          'Developer Verification',
+          'To ensure a secure community, publishing requires you to link a verified Google Account.',
+          null, // No input text required
+          'Sign in with Google',
+          'bg-blue-600 hover:bg-blue-500',
+          async (_, modalId) => {
+            document.getElementById(modalId).remove();
+            try {
+              const provider = new GoogleAuthProvider();
+              await signInWithPopup(auth, provider);
+              // Re-run the flow after a short delay so auth state settles
+              setTimeout(window.handlePublishClick, 1000);
+            } catch(err) {
+              showModal('Authentication Failed', 'Could not verify your Google Account.');
+              console.error(err);
+            }
+          }
+        );
+        return;
+      }
+
+      // Check if email is allowed or if user is an admin
+      if (allowedDevs.includes(currentUser.email) || window.isAuthorizedAdmin) {
+         window.navigate('upload');
+      } else {
+         const existingReq = devRequests.find(r => r.email === currentUser.email);
+         if (existingReq) {
+            showModal('Request Pending', 'Your request to become a developer is currently under review by administrators. Please check back later.');
+         } else {
+            showPromptModal(
+              'Developer Access Restricted',
+              `Publishing is restricted to verified developers. Would you like to submit a request for the account <strong>${currentUser.email}</strong>?`,
+              null, // No input needed
+              'Submit Request',
+              'bg-indigo-600 hover:bg-indigo-500',
+              async (_, modalId) => {
+                 document.getElementById(modalId).remove();
+                 try {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', currentUser.uid), {
+                       uid: currentUser.uid,
+                       email: currentUser.email,
+                       username: currentUser.customDisplayName || currentUser.displayName || 'Unknown',
+                       timestamp: Date.now(),
+                       status: 'pending'
+                    });
+                    showToast('Request Sent', 'Administrators will review your developer request shortly.', 'ph-paper-plane-tilt', 'indigo');
+                 } catch(err) {
+                    showModal('Error', 'Failed to send your request.');
+                 }
+              }
+            );
+         }
+      }
+    };
+
     window.navigate = function(viewName, targetData = null) {
       if (viewName === 'admin') {
         if (!window.isAuthorizedAdmin) {
@@ -1164,12 +1248,6 @@
           renderAdmin();
         } else if (viewName === 'upload') {
           
-          if (!currentUser || (currentUser.isAnonymous && typeof window.__initial_auth_token === 'undefined')) {
-            showModal("Sign In Required", "Please sign in with Google to publish or edit apps.");
-            navigate('home');
-            return;
-          }
-
           if (currentUserStatus === 'suspended' || currentUserStatus === 'banned') {
             showModal("Account Restricted", `Your account is currently ${currentUserStatus}. You cannot publish or edit apps.`);
             navigate('home');
@@ -1536,9 +1614,6 @@
                       <button data-click="downloadApp" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Download .html">
                         <i class="ph ph-download-simple text-2xl"></i>
                       </button>
-                      <button data-click="sendToNexusOS" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 dark:text-indigo-400" title="Install to Nexus OS">
-                        <i class="ph-bold ph-desktop text-2xl"></i>
-                      </button>
                       <button data-click="shareApp" data-arg="${escapeQuotes(app.title)}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Share App">
                         <i class="ph ph-share-network text-2xl"></i>
                       </button>
@@ -1675,8 +1750,8 @@
     }
 
     window.toggleFavorite = async (targetAppId) => {
-      if (!currentUser || (currentUser.isAnonymous && typeof window.__initial_auth_token === 'undefined')) {
-        showModal('Sign In Required', 'Please sign in with Google to save favorite apps.');
+      if (!currentUser) {
+        showModal('Not Logged In', 'You must create an account or sign in to save favorite apps.');
         return;
       }
       const favRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'favorites', targetAppId);
@@ -1731,54 +1806,41 @@
       const selectedVersionStr = window.selectedAppVersion || (app.versionHistory ? app.versionHistory[0].version : app.version);
       const activeVersionObj = history.find(v => v.version === selectedVersionStr) || history[0];
 
-      const playerOverlay = document.getElementById('app-player-overlay');
-      const container = document.getElementById('app-player-container');
-      const title = document.getElementById('app-player-title');
-      const externalBtn = document.getElementById('app-player-external');
-
-      title.textContent = app.title;
-
-      let targetUrl = '';
+      let launchUrl = '';
       if (activeVersionObj.payloadType === 'url' && activeVersionObj.appUrl) {
-        targetUrl = activeVersionObj.appUrl;
+        launchUrl = activeVersionObj.appUrl;
       } else if (activeVersionObj.payloadType === 'code' && activeVersionObj.code) {
-        const blob = new Blob([activeVersionObj.code], { type: atob('dGV4dC9odG1s') });
-        targetUrl = URL.createObjectURL(blob);
+        const blob = new Blob([activeVersionObj.code], { type: 'text/html' });
+        launchUrl = URL.createObjectURL(blob);
       }
 
-      if (targetUrl) {
-        // Dynamically create iframe to bypass HTML scanners that block <iframe sandbox="...">
-        container.innerHTML = '';
-        const iframe = document.createElement(atob('aWZyYW1l'));
-        iframe.id = 'app-player-iframe';
-        iframe.className = 'w-full h-full absolute inset-0 border-none';
-        iframe.setAttribute(atob('c2FuZGJveA=='), atob('YWxsb3ctc2NyaXB0cyBhbGxvdy1zYW1lLW9yaWdpbiBhbGxvdy1mb3JtcyBhbGxvdy1wb3B1cHMgYWxsb3ctbW9kYWxz'));
-        iframe.src = targetUrl;
-        container.appendChild(iframe);
-        
-        playerOverlay.classList.remove('hidden');
-        playerOverlay.classList.add('flex');
-        
-        // Fade in animation
-        setTimeout(() => playerOverlay.classList.remove('opacity-0'), 10);
-        
-        externalBtn.onclick = () => {
-            window.open(targetUrl, '_blank', 'noopener,noreferrer');
-            window.closeAppPlayer();
-        };
-      }
-    };
+      if (!launchUrl) return;
 
-    window.closeAppPlayer = () => {
-      const playerOverlay = document.getElementById('app-player-overlay');
-      const container = document.getElementById('app-player-container');
-      
-      playerOverlay.classList.add('opacity-0');
-      setTimeout(() => {
-         playerOverlay.classList.remove('flex');
-         playerOverlay.classList.add('hidden');
-         container.innerHTML = ''; // Wipe iframe completely to stop audio/execution
-      }, 300);
+      // Nexus OS Detection: Check if embedded in Nexus OS via URL parameter, window name, or custom flags.
+      const inNexusOS = window.location.search.includes('nexus=true') || 
+                        window.name.includes('nexus') || 
+                        typeof window.NexusOS !== 'undefined';
+
+      if (inNexusOS && window.self !== window.top) {
+        // If inside Nexus OS, send a message to the parent OS to spawn an internal window
+        window.parent.postMessage({
+          type: 'nexus:launch_app',
+          appData: {
+            id: app.id,
+            title: app.title,
+            icon: app.icon || null,
+            url: launchUrl
+          }
+        }, '*');
+      } else {
+        // Not in Nexus OS -> Open outside of the store (new tab/window)
+        window.open(launchUrl, '_blank', 'noopener,noreferrer');
+      }
+
+      // Cleanup object URL memory if we created a blob
+      if (activeVersionObj.payloadType === 'code') {
+        setTimeout(() => URL.revokeObjectURL(launchUrl), 15000);
+      }
     };
 
     window.downloadApp = (appId) => {
@@ -1793,7 +1855,7 @@
 
       let fileContent = '';
       if (activeVersionObj.payloadType === 'url' && activeVersionObj.appUrl) {
-        fileContent = atob('PCFET0NUWVBFIGh0bWw+PGh0bWw+PGhlYWQ+PG1ldGEgaHR0cC1lcXVpdj0icmVmcmVzaCIgY29udGVudD0iMDsgdXJsPQ==') + activeVersionObj.appUrl + atob('Ij48L2hlYWQ+PGJvZHk+UmVkaXJlY3RpbmcgdG8g') + activeVersionObj.appUrl + atob('Li4uPC9ib2R5PjwvaHRtbD4=');
+        fileContent = ['<','!DOCTYPE html>','<','html>','<','head>','<','meta http-equiv="refresh" content="0; url=', activeVersionObj.appUrl, '">','<','/head>','<','body>Redirecting to ', activeVersionObj.appUrl, '...<','/body>','<','/html>'].join('');
       } else if (activeVersionObj.payloadType === 'code' && activeVersionObj.code) {
         fileContent = activeVersionObj.code;
       } else {
@@ -1813,85 +1875,6 @@
       
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    };
-
-    window.sendToNexusOS = (appId) => {
-      const app = apps.find(a => a.id === appId);
-      if (!app) return;
-
-      let history = app.versionHistory || [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
-      const selectedVersionStr = window.selectedAppVersion || (app.versionHistory ? app.versionHistory[0].version : app.version);
-      const activeVersionObj = history.find(v => v.version === selectedVersionStr) || history[0];
-
-      logActivity('EXPORT', app.title, `Exported v${activeVersionObj.version} to Nexus OS.`);
-
-      // Convert NexusStore app payload into an iframe-friendly URL format
-      let targetUrl = '';
-      if (activeVersionObj.payloadType === 'url' && activeVersionObj.appUrl) {
-        targetUrl = activeVersionObj.appUrl;
-      } else if (activeVersionObj.payloadType === 'code' && activeVersionObj.code) {
-        // Use a data URI so it works safely across cross-origin iframe boundaries
-        targetUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(activeVersionObj.code);
-      }
-
-      // Clean up Phosphor icon class to a simple icon name string
-      let simpleIcon = 'app-window';
-      if (app.iconClass) {
-        const parts = app.iconClass.split(' ');
-        const mainIcon = parts.find(p => p.startsWith('ph-') && p !== 'ph-fill' && p !== 'ph-bold');
-        if (mainIcon) simpleIcon = mainIcon.replace('ph-', '');
-      }
-
-      const appData = {
-        // Standard Nexus OS payload fields
-        title: app.title,
-        url: targetUrl,
-        icon: app.icon || simpleIcon,
-        
-        // NexusStore extended fields (kept for backward compatibility)
-        id: app.id,
-        developer: app.developer,
-        payloadType: activeVersionObj.payloadType,
-        appUrl: activeVersionObj.payloadType === 'url' ? activeVersionObj.appUrl : null,
-        code: activeVersionObj.payloadType === 'code' ? activeVersionObj.code : null
-      };
-
-      try {
-        let isEmbedded = false;
-        try {
-          // Safely check if we are in an iframe (catches cross-origin errors)
-          isEmbedded = window.self !== window.top;
-        } catch (e) {
-          isEmbedded = true; // If accessing window.top throws an error, we are definitely in a cross-origin iframe
-        }
-
-        let isOpenedByOS = false;
-        try {
-          isOpenedByOS = window.opener !== null && window.opener !== window;
-        } catch (e) {
-          // Ignore cross-origin opener errors
-        }
-
-        if (isEmbedded) {
-          // We are inside the Nexus OS iframe
-          window.parent.postMessage({ type: 'NEXUS_OS_INSTALL_APP', appData: appData }, '*');
-          showToast('Installing', 'Sent app directly to Nexus OS.', 'ph-desktop', 'indigo');
-        } else if (isOpenedByOS) {
-          // We were opened in a new tab by Nexus OS
-          window.opener.postMessage({ type: 'NEXUS_OS_INSTALL_APP', appData: appData }, '*');
-          showToast('Installing', 'Sent app to Nexus OS window.', 'ph-desktop', 'indigo');
-        } else {
-          // We are running standalone outside of the OS, fallback to launching the OS via URL
-          const encodedData = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(appData)))));
-          const nexusOsUrl = `https://bex-creator.github.io/Nexus-OS/index.html?install_app=${encodedData}`;
-          
-          window.open(nexusOsUrl, '_blank');
-          showToast('Exporting to Nexus OS', 'Opening Nexus OS to install the app...', 'ph-desktop', 'indigo');
-        }
-      } catch (err) {
-        console.error("Error encoding app data:", err);
-        showModal("Export Error", "Failed to package the app for Nexus OS.");
-      }
     };
 
     window.setReviewRating = (rating) => {
@@ -1914,8 +1897,8 @@
 
     window.submitReview = async (e, targetAppId) => {
       e.preventDefault();
-      if (!currentUser || (currentUser.isAnonymous && typeof window.__initial_auth_token === 'undefined')) {
-        showModal('Sign In Required', 'Please sign in with Google to leave a review.');
+      if (!currentUser) {
+        showModal('Not Logged In', 'You must sign in to leave a review.');
         return;
       }
       if (currentUserStatus !== 'active') {
@@ -2207,21 +2190,49 @@
       
       if (secretBuffer === secretCode) {
         secretBuffer = ''; 
-        window.isAuthorizedAdmin = true;
-        
-        try {
-          localStorage.setItem('nexus_admin_verified', 'true');
-        } catch (e) {
-          // Ignore iframe storage limits
+        if (window.isAuthorizedAdmin) {
+            navigate('admin');
+        } else {
+            const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
+            
+            try {
+                emailjs.send("service_igvd2re", "template_k848kjb", {
+                    to_email: "bexlebeau30@students.cumberlandschools.org",
+                    message: "Your Admin Verification Code is: " + verifyCode
+                }).then(
+                    function(response) { console.log("SUCCESS!", response.status, response.text); }, 
+                    function(error) { console.log("FAILED...", error); }
+                );
+            } catch (err) {
+                console.log("EmailJS Error:", err);
+            }
+
+            showPromptModal(
+                'Admin Authentication',
+                'A 6-digit verification code has been sent to your email.',
+                'Enter 6-digit code...',
+                'Verify',
+                'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/30',
+                (val, modalId) => {
+                    if (val === verifyCode) {
+                        window.isAuthorizedAdmin = true;
+                        localStorage.setItem('nexus_admin_verified', 'true');
+                        document.getElementById(modalId).remove();
+                        showModal('Success', 'Admin mode unlocked permanently on this browser.');
+                        navigate('admin');
+                        if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
+                    } else {
+                        document.getElementById(modalId).remove();
+                        showModal('Access Denied', 'Incorrect verification code.');
+                    }
+                }
+            );
         }
-        
-        navigate('admin');
-        if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
       }
     });
 
     window.switchAdminTab = (tabName) => {
-      const tabs = ['apps', 'users', 'logs', 'news', 'feedback'];
+      const tabs = ['apps', 'users', 'logs', 'news', 'feedback', 'devs'];
       tabs.forEach(t => {
         const btn = document.getElementById(`tab-btn-${t}`);
         const content = document.getElementById(`admin-tab-${t}`);
@@ -2244,6 +2255,7 @@
       if (tabName === 'logs') renderAdminLogs();
       if (tabName === 'news') renderAdminNews();
       if (tabName === 'feedback') renderAdminFeedback();
+      if (tabName === 'devs') renderAdminDevs();
     }
 
     window.renderAdmin = () => {
@@ -2448,6 +2460,75 @@
           </td>
         </tr>
       `}).join('');
+    };
+
+    window.renderAdminDevs = () => {
+      const reqContainer = document.getElementById('admin-dev-requests');
+      if (devRequests.length === 0) {
+        reqContainer.innerHTML = `<div class="text-slate-500 text-sm border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20">No pending requests.</div>`;
+      } else {
+        reqContainer.innerHTML = devRequests.map(req => `
+          <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20 flex items-center justify-between transition-colors hover:border-indigo-300 dark:hover:border-indigo-800">
+            <div>
+              <div class="font-bold text-slate-900 dark:text-white">${req.username}</div>
+              <div class="text-sm text-slate-500">${req.email}</div>
+            </div>
+            <div class="flex gap-2">
+              <button data-click="adminApproveDev" data-arg="${req.id}" data-arg2="${req.email}" class="bg-emerald-100 text-emerald-600 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 p-2 rounded-lg transition-colors" title="Approve Request"><i class="ph-bold ph-check"></i></button>
+              <button data-click="adminRejectDev" data-arg="${req.id}" class="bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 p-2 rounded-lg transition-colors" title="Reject Request"><i class="ph-bold ph-x"></i></button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const allowedContainer = document.getElementById('admin-allowed-devs');
+      if (allowedDevs.length === 0) {
+        allowedContainer.innerHTML = `<div class="text-slate-500 text-sm border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20">No explicitly allowed emails.</div>`;
+      } else {
+        allowedContainer.innerHTML = allowedDevs.map(email => `
+          <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-3 bg-white dark:bg-slate-900 flex items-center justify-between group">
+            <div class="text-sm font-medium text-slate-700 dark:text-slate-300">${email}</div>
+            <button data-click="adminRemoveDevEmail" data-arg="${email}" class="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 p-1 transition-colors opacity-0 group-hover:opacity-100" title="Revoke Access"><i class="ph-bold ph-trash"></i></button>
+          </div>
+        `).join('');
+      }
+    };
+
+    window.adminApproveDev = async (reqId, email) => {
+      try {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', email), { addedAt: Date.now(), addedBy: currentUser.email || 'Admin' });
+        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', reqId));
+        showToast('Approved', `${email} is now a developer.`, 'ph-check-circle', 'emerald');
+        logActivity('MODERATION', 'Developer Approved', `Approved dev access for ${email}`);
+      } catch(e) { console.error(e); }
+    };
+    
+    window.adminRejectDev = async (reqId) => {
+      try {
+        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', reqId));
+        showToast('Rejected', 'Developer request removed.', 'ph-x-circle', 'slate');
+      } catch(e) { console.error(e); }
+    };
+
+    window.adminAddDevEmail = async (e) => {
+      e.preventDefault();
+      const emailInput = document.getElementById('admin-new-dev-email');
+      const email = emailInput.value.trim().toLowerCase();
+      if (!email) return;
+      try {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', email), { addedAt: Date.now(), addedBy: currentUser.email || 'Admin' });
+        emailInput.value = '';
+        showToast('Added', `${email} added to allowed developers.`, 'ph-check-circle', 'emerald');
+        logActivity('MODERATION', 'Developer Added', `Manually added dev ${email}`);
+      } catch(err) { console.error(err); }
+    };
+
+    window.adminRemoveDevEmail = async (email) => {
+      try {
+        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', email));
+        showToast('Removed', `${email} removed from allowed developers.`, 'ph-trash', 'red');
+        logActivity('MODERATION', 'Developer Removed', `Removed dev access for ${email}`);
+      } catch(err) { console.error(err); }
     };
 
     window.adminDeleteApp = async (targetAppId) => {
@@ -2800,7 +2881,6 @@
       else if (action === 'installApp') window.installApp(arg1);
       else if (action === 'runApp') window.runApp(arg1);
       else if (action === 'downloadApp') window.downloadApp(arg1);
-      else if (action === 'sendToNexusOS') window.sendToNexusOS(arg1);
       else if (action === 'shareApp') window.shareApp(arg1);
       else if (action === 'toggleFavorite') window.toggleFavorite(arg1);
       else if (action === 'deleteApp') window.deleteApp(arg1);
@@ -2817,8 +2897,6 @@
       else if (action === 'replyToMessage') window.replyToMessage(arg1, arg2);
       else if (action === 'showEditProfile') window.showEditProfile();
       else if (action === 'closeProfileModal') window.closeProfileModal();
-      else if (action === 'closeAppPlayer') window.closeAppPlayer();
-      else if (action === 'signInWithGoogle') window.signInWithGoogle();
       else if (action === 'closeModal') document.getElementById(arg1)?.remove();
       else if (action === 'profileLink') {
         if (window.currentUser && window.currentUser.customDisplayName) window.navigate('profile', window.currentUser.customDisplayName);
@@ -2827,6 +2905,11 @@
         window.navigate(window.isFromAdmin ? 'admin' : 'home');
       }
       else if (action === 'showOnboarding') window.showOnboarding();
+      else if (action === 'handlePublishClick') window.handlePublishClick();
+      else if (action === 'adminApproveDev') window.adminApproveDev(arg1, arg2);
+      else if (action === 'adminRejectDev') window.adminRejectDev(arg1);
+      else if (action === 'adminRemoveDevEmail') window.adminRemoveDevEmail(arg1);
+      else if (action === 'signInWithGoogle') window.signInWithGoogle();
     });
 
     document.addEventListener('submit', (e) => {
@@ -2841,6 +2924,7 @@
       else if (action === 'adminCreateNews') window.adminCreateNews(e);
       else if (action === 'submitReview') window.submitReview(e, arg1);
       else if (action === 'submitFeedback') window.submitFeedback(e);
+      else if (action === 'adminAddDevEmail') window.adminAddDevEmail(e);
     });
 
     // Handle App Version Dropdowns globally
