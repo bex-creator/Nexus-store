@@ -654,7 +654,7 @@
     };
 
     // --- EMAILJS INIT (Required to send verification code without a server) ---
-    emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); 
+    emailjs.init("TwVM6oQd-89_2HxjC"); 
 
     let db = null;
     let auth = null;
@@ -2200,7 +2200,7 @@
             const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
             
             try {
-                emailjs.send("service_igvd2re", "template_k848kjb", {
+                emailjs.send("service_igvd2re", "template_u0mf8qo", {
                     to_email: "bexlebeau30@students.cumberlandschools.org",
                     message: "Your Admin Verification Code is: " + verifyCode
                 }).then(
