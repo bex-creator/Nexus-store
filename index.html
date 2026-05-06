@@ -644,7 +644,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // WAF Bypass Helpers
@@ -793,12 +793,18 @@
 
         const initAuth = async () => {
           try {
+            // Force reset all user sessions once so everyone must re-authenticate
+            if (!localStorage.getItem('nexus_global_reset_v1')) {
+              await signOut(auth);
+              localStorage.setItem('nexus_global_reset_v1', 'true');
+            }
+
             const token = typeof window.__initial_auth_token !== 'undefined' && window.__initial_auth_token ? window.__initial_auth_token : null;
             if (token) {
               await signInWithCustomToken(auth, token);
             }
           } catch (err) {
-            console.warn("Custom token invalid.", err);
+            console.warn("Auth initialization or reset failed.", err);
           }
         };
         initAuth();
