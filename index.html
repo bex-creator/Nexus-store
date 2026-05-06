@@ -46,22 +46,8 @@
 </head>
 <body class="bg-[#f4f4f6] dark:bg-slate-950 text-slate-900 dark:text-slate-200 transition-colors duration-300 min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
 
-  <!-- GLOBAL LOGIN OVERLAY -->
-  <div id="global-login-overlay" class="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-slate-900 px-4">
-    <div class="bg-slate-800 p-10 rounded-[3rem] shadow-2xl max-w-md w-full text-center border border-slate-700 animate-zoom-in">
-      <div class="w-24 h-24 mx-auto bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center mb-8 shadow-xl shadow-indigo-500/30">
-        <i class="ph-fill ph-lock-key text-5xl text-white"></i>
-      </div>
-      <h1 class="text-3xl font-black text-white mb-4 tracking-tight">NexusStore</h1>
-      <p class="text-slate-400 mb-8 font-medium">You must sign in with a verified Google account to access the platform.</p>
-      <button data-click="signInWithGoogle" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl shadow-blue-500/30 flex items-center justify-center gap-3">
-        <i class="ph-bold ph-google-logo text-2xl"></i> Sign In
-      </button>
-    </div>
-  </div>
-
   <!-- APP ROOT -->
-  <div id="app-root" class="hidden">
+  <div id="app-root">
 
   <!-- Banned Overlay -->
   <div id="banned-overlay" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950 px-4">
@@ -276,7 +262,7 @@
           <div class="space-y-6 mb-12">
              <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">How do I publish my own app?</h3>
-               <p class="text-slate-600 dark:text-slate-400">Click the "Publish" button in the top right corner. You must sign in with a Google account and be verified as a developer by our administrators before you can upload.</p>
+               <p class="text-slate-600 dark:text-slate-400">Click the "Publish" button in the top right corner. You must be verified as a developer by our administrators before you can upload.</p>
              </div>
              <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2">What does the green shield mean?</h3>
@@ -637,8 +623,8 @@
                </div>
                <div>
                  <h3 class="font-bold text-lg mb-4 text-slate-900 dark:text-white">Approved Developers</h3>
-                 <form data-submit="adminAddDevEmail" class="flex gap-2 mb-4">
-                   <input type="email" id="admin-new-dev-email" required placeholder="Enter developer email..." class="flex-1 border-2 rounded-xl px-4 py-2 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
+                 <form data-submit="adminAddDevUid" class="flex gap-2 mb-4">
+                   <input type="text" id="admin-new-dev-uid" required placeholder="Enter User ID..." class="flex-1 border-2 rounded-xl px-4 py-2 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-md">Add</button>
                  </form>
                  <div id="admin-allowed-devs" class="space-y-3">
@@ -661,7 +647,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // WAF Bypass Helpers
@@ -685,7 +671,7 @@
     window.isAuthorizedAdmin = localStorage.getItem('nexus_admin_verified') === 'true'; // Verified admin state
     const appId = typeof window.__app_id !== 'undefined' && window.__app_id ? window.__app_id : (typeof __app_id !== 'undefined' && __app_id ? __app_id : 'default-app-id');
 
-    let allowedDevs = []; // Array of objects: { email, canPublishPaid }
+    let allowedDevs = []; // Array of objects: { id, canPublishPaid }
     let devRequests = [];
     let publicListenersAttached = false;
     let publicUnsubs = [];
@@ -765,7 +751,7 @@
 
             // Allowed Devs
             publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'allowed_devs')), (snapshot) => {
-               allowedDevs = snapshot.docs.map(doc => ({ email: doc.id, ...doc.data() }));
+               allowedDevs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); // using doc.id which is UID
                if (currentView === 'admin') renderAdminDevs();
             }, (error) => console.warn("Firestore allowed devs error:", error)));
 
@@ -819,38 +805,28 @@
 
         const initAuth = async () => {
           try {
-            // Force reset all user sessions once so everyone must re-authenticate
-            if (!localStorage.getItem('nexus_global_reset_v1')) {
-              await signOut(auth);
-              localStorage.setItem('nexus_global_reset_v1', 'true');
-            }
-
             const token = typeof window.__initial_auth_token !== 'undefined' && window.__initial_auth_token ? window.__initial_auth_token : null;
             if (token) {
               await signInWithCustomToken(auth, token);
+            } else {
+              await signInAnonymously(auth);
             }
           } catch (err) {
-            console.warn("Auth initialization or reset failed.", err);
+            console.warn("Auth initialization failed.", err);
           }
         };
         initAuth();
 
         onAuthStateChanged(auth, async (user) => {
           currentUser = user;
-          const loginOverlay = document.getElementById('global-login-overlay');
-          const appRoot = document.getElementById('app-root');
           const balContainer = document.getElementById('coin-balance-container');
+          const profileEl = document.getElementById('user-profile');
 
           if (!user) {
-              // Show login gatekeeper
-              loginOverlay.classList.remove('hidden');
-              loginOverlay.classList.add('flex');
-              appRoot.classList.add('hidden');
               if (balContainer) { balContainer.classList.add('hidden'); balContainer.classList.remove('flex'); }
+              if (profileEl) { profileEl.classList.add('hidden'); profileEl.classList.remove('flex'); }
               
-              // Clean up state if signed out
               window.isAuthorizedAdmin = false;
-              localStorage.removeItem('nexus_admin_verified');
               
               publicUnsubs.forEach(unsub => unsub());
               publicUnsubs = [];
@@ -864,30 +840,13 @@
               return;
           }
 
-          // User is Authenticated -> Hide overlay, show app
-          loginOverlay.classList.add('hidden');
-          loginOverlay.classList.remove('flex');
-          appRoot.classList.remove('hidden');
+          // User is Authenticated
+          if (profileEl) { profileEl.classList.remove('hidden'); profileEl.classList.add('flex'); }
 
-          // Immediate Targeted Ban Check
-          if (user.email === 'jajmills30@students.cumberlandschools.org') {
-              handleUserStatus('banned');
-              try {
-                  const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
-                  await setDoc(userRef, { 
-                      uid: user.uid, 
-                      email: user.email,
-                      status: 'banned',
-                      usernameSet: true
-                  }, { merge: true });
-              } catch(e) {}
-              return; // Halt further initialization for this user
-          }
-
-          // Admin Validation
-          if (user.email !== 'bexlebeau30@students.cumberlandschools.org') {
+          if (localStorage.getItem('nexus_admin_verified') === 'true') {
+              window.isAuthorizedAdmin = true;
+          } else {
               window.isAuthorizedAdmin = false;
-              localStorage.removeItem('nexus_admin_verified');
           }
 
           // Start listeners for authenticated users
@@ -900,7 +859,6 @@
           if (!userSnap.exists()) {
             await setDoc(userRef, {
               uid: user.uid,
-              email: user.email || '',
               username: '',
               displayName: '',
               bio: '',
@@ -913,10 +871,24 @@
               joinedAt: Date.now()
             });
             handleUserStatus('active');
+            
+            // Show initial 0 coin balance
+            const balContainer = document.getElementById('coin-balance-container');
+            if (balContainer) { balContainer.classList.remove('hidden'); balContainer.classList.add('flex'); }
+
             showOnboarding();
           } else {
             const userData = userSnap.data();
             handleUserStatus(userData.status || 'active');
+
+            // Show loaded coin balance immediately
+            const balContainer = document.getElementById('coin-balance-container');
+            const balText = document.getElementById('coin-balance-text');
+            if (balContainer && balText) {
+                balContainer.classList.remove('hidden');
+                balContainer.classList.add('flex');
+                balText.textContent = userData.balance || 0;
+            }
 
             if (!userData.usernameSet) {
               showOnboarding();
@@ -1110,16 +1082,6 @@
       }
     };
 
-    window.signInWithGoogle = async () => {
-        try {
-            const provider = new GoogleAuthProvider();
-            await signInWithPopup(auth, provider);
-        } catch(err) {
-            console.error("Manual Google Sign-In Error:", err);
-            showModal('Auth Error', 'Could not sign in with Google. Make sure popups are allowed.');
-        }
-    };
-
     // --- HELPER: ACTIVITY LOGGING ---
     const logActivity = async (action, targetName, details = "") => {
       if (!currentUser || !db) return;
@@ -1218,20 +1180,20 @@
 
     // --- APP LOGIC ---
     window.handlePublishClick = async () => {
-      if (!currentUser || !currentUser.email) return;
+      if (!currentUser) return;
 
-      const myDevRecord = allowedDevs.find(d => d.email === currentUser.email);
-      // Check if email is allowed or if user is an admin
+      const myDevRecord = allowedDevs.find(d => d.id === currentUser.uid);
+      // Check if user is allowed
       if (myDevRecord || window.isAuthorizedAdmin) {
          window.navigate('upload');
       } else {
-         const existingReq = devRequests.find(r => r.email === currentUser.email);
+         const existingReq = devRequests.find(r => r.uid === currentUser.uid);
          if (existingReq) {
             showModal('Request Pending', 'Your request to become a developer is currently under review by administrators. Please check back later.');
          } else {
             showPromptModal(
               'Developer Access Restricted',
-              `Publishing is restricted to verified developers. Would you like to submit a request for the account <strong>${currentUser.email}</strong>?`,
+              `Publishing is restricted to verified developers. Would you like to submit a request for your account?`,
               null, // No input needed
               'Submit Request',
               'bg-indigo-600 hover:bg-indigo-500',
@@ -1240,7 +1202,6 @@
                  try {
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', currentUser.uid), {
                        uid: currentUser.uid,
-                       email: currentUser.email,
                        username: currentUser.customDisplayName || currentUser.displayName || 'Unknown',
                        timestamp: Date.now(),
                        status: 'pending',
@@ -1258,7 +1219,7 @@
 
     window.navigate = function(viewName, targetData = null) {
       if (viewName === 'admin') {
-        if (!window.isAuthorizedAdmin || !currentUser || currentUser.email !== 'bexlebeau30@students.cumberlandschools.org') {
+        if (!window.isAuthorizedAdmin) {
             return;
         }
       }
@@ -1759,7 +1720,7 @@
                           <i class="ph-fill ph-shield-check text-2xl"></i>
                         </button>
                       ` : ''}
-                      ${(currentUser && app.authorId === currentUser.uid) || (currentUser && currentUser.email === 'majcartier30@students.cumberlandschools.org' && (app.developer || '').toLowerCase() === 'orean') ? `
+                      ${(currentUser && app.authorId === currentUser.uid) || isAuthorizedAdmin ? `
                         <button data-click="navigate" data-arg="upload" data-arg2="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Edit App">
                           <i class="ph ph-pencil-simple text-2xl"></i>
                         </button>
@@ -2224,7 +2185,7 @@
 
       // Paid App Authorization check
       if (priceVal > 0 && !window.isAuthorizedAdmin) {
-          const myDevRecord = allowedDevs.find(d => d.email === currentUser.email);
+          const myDevRecord = allowedDevs.find(d => d.id === currentUser.uid);
           if (!myDevRecord || !myDevRecord.canPublishPaid) {
               showPromptModal(
                  "Monetization Access Required",
@@ -2237,7 +2198,6 @@
                     try {
                         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', currentUser.uid + '_paid'), {
                            uid: currentUser.uid,
-                           email: currentUser.email,
                            username: currentUser.customDisplayName || currentUser.displayName || 'Unknown',
                            timestamp: Date.now(),
                            status: 'pending',
@@ -2405,12 +2365,10 @@
       
       if (secretBuffer === secretCode) {
         secretBuffer = ''; 
-        if (currentUser && currentUser.email === 'bexlebeau30@students.cumberlandschools.org') {
-            window.isAuthorizedAdmin = true;
-            localStorage.setItem('nexus_admin_verified', 'true');
-            navigate('admin');
-            if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
-        }
+        window.isAuthorizedAdmin = true;
+        localStorage.setItem('nexus_admin_verified', 'true');
+        navigate('admin');
+        if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
       }
     });
 
@@ -2733,10 +2691,10 @@
                  ${req.username} 
                  ${isPaidReq ? `<span class="bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider font-bold"><i class="ph-fill ph-coin"></i> Paid App Access</span>` : ''}
               </div>
-              <div class="text-sm text-slate-500">${req.email}</div>
+              <div class="text-[10px] font-mono text-slate-500">${req.uid}</div>
             </div>
             <div class="flex gap-2">
-              <button data-click="${isPaidReq ? 'adminApprovePaidDev' : 'adminApproveDev'}" data-arg="${req.id}" data-arg2="${req.email}" class="bg-emerald-100 text-emerald-600 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 p-2 rounded-lg transition-colors" title="Approve Request"><i class="ph-bold ph-check"></i></button>
+              <button data-click="${isPaidReq ? 'adminApprovePaidDev' : 'adminApproveDev'}" data-arg="${req.id}" data-arg2="${req.uid}" class="bg-emerald-100 text-emerald-600 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 p-2 rounded-lg transition-colors" title="Approve Request"><i class="ph-bold ph-check"></i></button>
               <button data-click="adminRejectDev" data-arg="${req.id}" class="bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 p-2 rounded-lg transition-colors" title="Reject Request"><i class="ph-bold ph-x"></i></button>
             </div>
           </div>
@@ -2746,35 +2704,35 @@
 
       const allowedContainer = document.getElementById('admin-allowed-devs');
       if (allowedDevs.length === 0) {
-        allowedContainer.innerHTML = `<div class="text-slate-500 text-sm border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20">No explicitly allowed emails.</div>`;
+        allowedContainer.innerHTML = `<div class="text-slate-500 text-sm border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20">No explicitly allowed user IDs.</div>`;
       } else {
         allowedContainer.innerHTML = allowedDevs.map(dev => `
           <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-3 bg-white dark:bg-slate-900 flex items-center justify-between group">
             <div class="flex items-center gap-3">
-              <div class="text-sm font-medium text-slate-700 dark:text-slate-300">${dev.email}</div>
+              <div class="text-sm font-medium font-mono text-slate-700 dark:text-slate-300">${dev.id}</div>
               ${dev.canPublishPaid ? `<i class="ph-fill ph-coin text-yellow-500" title="Can Publish Paid Apps"></i>` : ''}
             </div>
-            <button data-click="adminRemoveDevEmail" data-arg="${dev.email}" class="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 p-1 transition-colors opacity-0 group-hover:opacity-100" title="Revoke Access"><i class="ph-bold ph-trash"></i></button>
+            <button data-click="adminRemoveDevUid" data-arg="${dev.id}" class="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 p-1 transition-colors opacity-0 group-hover:opacity-100" title="Revoke Access"><i class="ph-bold ph-trash"></i></button>
           </div>
         `).join('');
       }
     };
 
-    window.adminApproveDev = async (reqId, email) => {
+    window.adminApproveDev = async (reqId, targetUid) => {
       try {
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', email), { canPublishPaid: false, addedAt: Date.now(), addedBy: currentUser.email || 'Admin' });
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', targetUid), { canPublishPaid: false, addedAt: Date.now() });
         await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', reqId));
-        showToast('Approved', `${email} is now a developer.`, 'ph-check-circle', 'emerald');
-        logActivity('MODERATION', 'Developer Approved', `Approved standard dev access for ${email}`);
+        showToast('Approved', `User ${targetUid} is now a developer.`, 'ph-check-circle', 'emerald');
+        logActivity('MODERATION', 'Developer Approved', `Approved standard dev access for ${targetUid}`);
       } catch(e) { console.error(e); }
     };
 
-    window.adminApprovePaidDev = async (reqId, email) => {
+    window.adminApprovePaidDev = async (reqId, targetUid) => {
       try {
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', email), { canPublishPaid: true, addedAt: Date.now(), addedBy: currentUser.email || 'Admin' });
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', targetUid), { canPublishPaid: true, addedAt: Date.now() });
         await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', reqId));
-        showToast('Approved', `${email} can now publish paid apps.`, 'ph-coin', 'yellow');
-        logActivity('MODERATION', 'Paid Developer Approved', `Approved paid app publishing access for ${email}`);
+        showToast('Approved', `User ${targetUid} can now publish paid apps.`, 'ph-coin', 'yellow');
+        logActivity('MODERATION', 'Paid Developer Approved', `Approved paid app publishing access for ${targetUid}`);
       } catch(e) { console.error(e); }
     };
     
@@ -2785,24 +2743,24 @@
       } catch(e) { console.error(e); }
     };
 
-    window.adminAddDevEmail = async (e) => {
+    window.adminAddDevUid = async (e) => {
       e.preventDefault();
-      const emailInput = document.getElementById('admin-new-dev-email');
-      const email = emailInput.value.trim().toLowerCase();
-      if (!email) return;
+      const input = document.getElementById('admin-new-dev-uid');
+      const uidVal = input.value.trim();
+      if (!uidVal) return;
       try {
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', email), { canPublishPaid: true, addedAt: Date.now(), addedBy: currentUser.email || 'Admin' });
-        emailInput.value = '';
-        showToast('Added', `${email} added to allowed developers (with Paid access).`, 'ph-check-circle', 'emerald');
-        logActivity('MODERATION', 'Developer Added', `Manually added dev ${email}`);
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', uidVal), { canPublishPaid: true, addedAt: Date.now() });
+        input.value = '';
+        showToast('Added', `User ${uidVal} added to allowed developers (with Paid access).`, 'ph-check-circle', 'emerald');
+        logActivity('MODERATION', 'Developer Added', `Manually added dev ${uidVal}`);
       } catch(err) { console.error(err); }
     };
 
-    window.adminRemoveDevEmail = async (email) => {
+    window.adminRemoveDevUid = async (targetUid) => {
       try {
-        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', email));
-        showToast('Removed', `${email} removed from allowed developers.`, 'ph-trash', 'red');
-        logActivity('MODERATION', 'Developer Removed', `Removed dev access for ${email}`);
+        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', targetUid));
+        showToast('Removed', `User ${targetUid} removed from allowed developers.`, 'ph-trash', 'red');
+        logActivity('MODERATION', 'Developer Removed', `Removed dev access for ${targetUid}`);
       } catch(err) { console.error(err); }
     };
 
@@ -3185,9 +3143,8 @@
       else if (action === 'adminApproveDev') window.adminApproveDev(arg1, arg2);
       else if (action === 'adminApprovePaidDev') window.adminApprovePaidDev(arg1, arg2);
       else if (action === 'adminRejectDev') window.adminRejectDev(arg1);
-      else if (action === 'adminRemoveDevEmail') window.adminRemoveDevEmail(arg1);
+      else if (action === 'adminRemoveDevUid') window.adminRemoveDevUid(arg1);
       else if (action === 'adminGiveCoins') window.adminGiveCoins(arg1, arg2);
-      else if (action === 'signInWithGoogle') window.signInWithGoogle();
       else if (action === 'deleteReview') window.deleteReview(arg1);
       else if (action === 'buyApp') window.buyApp(arg1);
       else if (action === 'toggleFollow') window.toggleFollow(arg1);
@@ -3205,7 +3162,7 @@
       else if (action === 'adminCreateNews') window.adminCreateNews(e);
       else if (action === 'submitReview') window.submitReview(e, arg1);
       else if (action === 'submitFeedback') window.submitFeedback(e);
-      else if (action === 'adminAddDevEmail') window.adminAddDevEmail(e);
+      else if (action === 'adminAddDevUid') window.adminAddDevUid(e);
     });
 
     // Handle App Version Dropdowns globally
