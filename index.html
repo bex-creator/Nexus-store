@@ -2445,12 +2445,16 @@
 
     window.renderAdminUsers = () => {
       const usersList = document.getElementById('admin-users-list');
-      if (systemUsers.length === 0) {
-        usersList.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500">No users found. Wait for users to authenticate.</td></tr>`;
+      
+      // Filter out users who haven't set a username
+      const validUsers = systemUsers.filter(u => u.usernameSet && u.username && u.username.trim() !== '');
+
+      if (validUsers.length === 0) {
+        usersList.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500">No registered users found. Wait for users to complete onboarding.</td></tr>`;
         return;
       }
       
-      usersList.innerHTML = systemUsers.map(u => {
+      usersList.innerHTML = validUsers.map(u => {
         let statusBadge = `<span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs font-bold">Active</span>`;
         if (u.status === 'suspended') statusBadge = `<span class="px-3 py-1 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 text-xs font-bold">Suspended</span>`;
         if (u.status === 'banned') statusBadge = `<span class="px-3 py-1 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold">Banned</span>`;
