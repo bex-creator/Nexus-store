@@ -192,6 +192,13 @@
       </div>
 
       <div class="flex items-center gap-4">
+        
+        <!-- Virtual Currency Balance -->
+        <div id="coin-balance-container" class="hidden items-center gap-1.5 px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-xl font-bold text-sm border border-yellow-200 dark:border-yellow-700/50 shadow-sm cursor-help" title="Nexus Coins Balance">
+          <i class="ph-fill ph-coin text-lg"></i>
+          <span id="coin-balance-text">0</span>
+        </div>
+
         <div id="user-profile" class="flex items-center gap-3 pr-4 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity" data-click="profileLink" title="View My Profile">
           <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1" class="w-9 h-9 rounded-full object-cover border-2 border-indigo-500 shadow-sm" />
           <span id="user-name" class="font-bold text-sm text-slate-700 dark:text-slate-200 hidden sm:block">Loading...</span>
@@ -297,14 +304,19 @@
           <i class="ph ph-caret-left text-xl group-hover:-translate-x-1 transition-transform"></i> Back
         </button>
         
-        <div class="bg-white dark:bg-slate-900 rounded-[3rem] p-8 sm:p-12 shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 mb-12 flex flex-col sm:flex-row items-center sm:items-start gap-8 text-center sm:text-left">
-          <div id="profile-header-avatar"></div>
-          <div class="flex-1">
-            <div class="flex items-center justify-center sm:justify-start gap-3 mb-2">
-              <h1 id="profile-header-name" class="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight"></h1>
-              <button id="edit-profile-btn" data-click="showEditProfile" class="hidden p-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full text-slate-500 hover:text-indigo-500 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors shadow-sm" title="Edit Profile & Bio">
-                <i class="ph-bold ph-pencil-simple"></i>
-              </button>
+        <div class="bg-white dark:bg-slate-900 rounded-[3rem] p-8 sm:p-12 shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 mb-12 flex flex-col sm:flex-row items-center sm:items-start gap-8 text-center sm:text-left relative overflow-hidden">
+          <div id="profile-header-avatar" class="relative z-10"></div>
+          <div class="flex-1 relative z-10">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-2">
+              <div class="flex items-center justify-center sm:justify-start gap-3">
+                <h1 id="profile-header-name" class="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight"></h1>
+                <button id="edit-profile-btn" data-click="showEditProfile" class="hidden p-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full text-slate-500 hover:text-indigo-500 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors shadow-sm" title="Edit Profile & Bio">
+                  <i class="ph-bold ph-pencil-simple"></i>
+                </button>
+              </div>
+              
+              <!-- Developer Follow Button -->
+              <div id="developer-actions" class="flex-shrink-0"></div>
             </div>
             
             <p id="profile-header-stats" class="text-xl font-bold text-indigo-500 mb-2"></p>
@@ -365,7 +377,7 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
               <div>
                 <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Category</label>
                 <div class="relative">
@@ -400,6 +412,10 @@
                     <i class="ph ph-caret-down"></i>
                   </div>
                 </div>
+              </div>
+              <div>
+                <label class="block text-sm font-bold mb-2 flex items-center gap-1 uppercase tracking-wide text-slate-700 dark:text-slate-400">Price <i class="ph-fill ph-coin text-yellow-500"></i></label>
+                <input id="app-price" type="number" min="0" value="0" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" placeholder="0 = Free">
               </div>
             </div>
 
@@ -514,7 +530,7 @@
           <button data-click="switchAdminTab" data-arg="logs" id="tab-btn-logs" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Activity Logs</button>
           <button data-click="switchAdminTab" data-arg="news" id="tab-btn-news" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">News Banner</button>
           <button data-click="switchAdminTab" data-arg="feedback" id="tab-btn-feedback" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Feedback</button>
-          <button data-click="switchAdminTab" data-arg="devs" id="tab-btn-devs" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Dev Access</button>
+          <button data-click="switchAdminTab" data-arg="devs" id="tab-btn-devs" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Dev Access & Paid</button>
         </div>
 
         <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
@@ -609,11 +625,12 @@
             </table>
           </div>
 
-          <!-- Tab Content: Dev Access -->
+          <!-- Tab Content: Dev Access & Paid Requests -->
           <div id="admin-tab-devs" class="overflow-x-auto hidden p-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                <div>
-                 <h3 class="font-bold text-lg mb-4 text-slate-900 dark:text-white">Pending Requests</h3>
+                 <h3 class="font-bold text-lg mb-2 text-slate-900 dark:text-white">Pending Requests</h3>
+                 <p class="text-sm text-slate-500 mb-4">Requests for standard developer access, or upgrades to Paid App publishing access.</p>
                  <div id="admin-dev-requests" class="space-y-3">
                    <!-- Populated by JS -->
                  </div>
@@ -645,7 +662,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // WAF Bypass Helpers
     const escapeQuotes = (str) => (str || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -668,7 +685,7 @@
     window.isAuthorizedAdmin = localStorage.getItem('nexus_admin_verified') === 'true'; // Verified admin state
     const appId = typeof window.__app_id !== 'undefined' && window.__app_id ? window.__app_id : (typeof __app_id !== 'undefined' && __app_id ? __app_id : 'default-app-id');
 
-    let allowedDevs = [];
+    let allowedDevs = []; // Array of objects: { email, canPublishPaid }
     let devRequests = [];
     let publicListenersAttached = false;
     let publicUnsubs = [];
@@ -733,13 +750,22 @@
               
               if (currentUser) {
                 const me = systemUsers.find(u => u.uid === currentUser.uid);
-                if (me) handleUserStatus(me.status);
+                if (me) {
+                    handleUserStatus(me.status);
+                    const balContainer = document.getElementById('coin-balance-container');
+                    const balText = document.getElementById('coin-balance-text');
+                    if (balContainer && balText) {
+                        balContainer.classList.remove('hidden');
+                        balContainer.classList.add('flex');
+                        balText.textContent = me.balance || 0;
+                    }
+                }
               }
             }, (error) => console.warn("Firestore users error:", error)));
 
             // Allowed Devs
             publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'allowed_devs')), (snapshot) => {
-               allowedDevs = snapshot.docs.map(doc => doc.id); // Storing email as doc ID
+               allowedDevs = snapshot.docs.map(doc => ({ email: doc.id, ...doc.data() }));
                if (currentView === 'admin') renderAdminDevs();
             }, (error) => console.warn("Firestore allowed devs error:", error)));
 
@@ -813,12 +839,14 @@
           currentUser = user;
           const loginOverlay = document.getElementById('global-login-overlay');
           const appRoot = document.getElementById('app-root');
+          const balContainer = document.getElementById('coin-balance-container');
 
           if (!user) {
               // Show login gatekeeper
               loginOverlay.classList.remove('hidden');
               loginOverlay.classList.add('flex');
               appRoot.classList.add('hidden');
+              if (balContainer) { balContainer.classList.add('hidden'); balContainer.classList.remove('flex'); }
               
               // Clean up state if signed out
               window.isAuthorizedAdmin = false;
@@ -879,6 +907,9 @@
               usernameSet: false,
               status: 'active',
               role: 'user',
+              balance: 0,
+              purchasedApps: [],
+              following: [],
               joinedAt: Date.now()
             });
             handleUserStatus('active');
@@ -916,17 +947,17 @@
 
     // --- STATE & DATA ---
     const defaultApps = [
-      { id: 'nexus-docs', title: 'Nexus Docs', developer: 'Nexus Corporation', category: 'Editor', description: 'Real-time P2P collaborative editor.', rating: '5.0', reviews: '12K', size: '2 MB', price: 'Free', payloadType: 'code', code: ['<','!DOCTYPE html>\n','<','html>\n','<','head>\n','<','title>Nexus Docs<','/title>\n','<','style>\nbody { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f4f4f6; color: #333; }\n.card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 500px; }\ntextarea { width: 100%; height: 200px; margin-top: 20px; border-radius: 10px; border: 1px solid #ddd; padding: 15px; outline: none; }\n<','/style>\n','<','/head>\n','<','body>\n','<','div class="card">\n','<','h2>Nexus Docs<','/h2>\n','<','p>Real-time P2P collaboration environment initialized.<','/p>\n','<','textarea placeholder="Start typing..."><','/textarea>\n','<','/div>\n','<','/body>\n','<','/html>'].join(''), icon: null, bgClass: 'bg-gradient-to-br from-slate-400 to-slate-600', iconClass: 'ph-fill ph-file-text', screenshots: [] },
-      { id: 'youtube', title: 'YouTube', developer: 'Google LLC', category: 'Video', description: "The world's largest video sharing platform.", rating: '4.9', reviews: '135M', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://www.youtube.com/', icon: null, bgClass: 'bg-gradient-to-br from-red-500 to-red-700', iconClass: 'ph-fill ph-youtube-logo', screenshots: [] },
-      { id: 'google-gemini', title: 'Google Gemini', developer: 'Google LLC', category: 'AI Tool', description: 'Next-generation AI for brainstorming, writing, and analysis.', rating: '4.8', reviews: '8M', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://gemini.google.com/app', icon: null, bgClass: 'bg-gradient-to-br from-blue-500 to-blue-700', iconClass: 'ph-fill ph-sparkle', screenshots: [] },
-      { id: 'focus-flow', title: 'Focus Flow', developer: 'Orean', category: 'Productivity', description: 'A minimal Pomodoro timer and task manager designed to keep you in the zone.', rating: '4.7', reviews: '142K', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/focusflow/home', icon: null, bgClass: 'bg-gradient-to-br from-emerald-400 to-emerald-600', iconClass: 'ph-fill ph-timer', screenshots: [] },
-      { id: 'chat-space', title: 'Chat Space', developer: 'The dev', category: 'Social', description: 'Minimal social space to chat, hang out, and connect with your friends.', rating: '4.1', reviews: '890K', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://chatspace1.w3spaces.com', icon: null, bgClass: 'bg-gradient-to-br from-blue-400 to-blue-600', iconClass: 'ph-fill ph-chat-circle', screenshots: [] },
-      { id: 'shape-shooters', title: 'Shape Shooters', developer: 'Orean', category: 'Arcade', description: 'Fast-paced arcade action. Dodge, shoot, and survive the geometric onslaught.', rating: '4.6', reviews: '25K', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://shape-shooters.w3spaces.com/saved-from-Tryit-2025-12-02.html', icon: null, bgClass: 'bg-gradient-to-br from-purple-500 to-purple-700', iconClass: 'ph-fill ph-target', screenshots: [] },
-      { id: 'neon-defense', title: 'Neon Defense', developer: 'Orean', category: 'Strategy', description: 'Strategic tower defense with a beautiful neon cyberpunk aesthetic.', rating: '4.3', reviews: '12K', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/ugrughrogygrhreleoh/home', icon: null, bgClass: 'bg-gradient-to-br from-lime-400 to-lime-600', iconClass: 'ph-fill ph-shield-check', screenshots: [] },
-      { id: 'doodle-jump', title: 'Doodle Jump', developer: 'ya jet', category: 'Game', description: 'Endless platformer fun. Jump as high as you can on the notebook paper!', rating: '4.7', reviews: '2.4M', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/doodlejump/home', icon: null, bgClass: 'bg-gradient-to-br from-green-500 to-green-700', iconClass: 'ph-fill ph-arrow-fat-up', screenshots: [] },
-      { id: 'oasis', title: 'Oasis', developer: 'Arcade Classics', category: 'Arcade', description: 'A massive collection of retro arcade games wrapped in a synthwave wrapper.', rating: '4.8', reviews: '55K', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://sites.google.com/view/oasisarcade', icon: null, bgClass: 'bg-gradient-to-br from-orange-400 to-orange-600', iconClass: 'ph-fill ph-palm-tree', screenshots: [] },
-      { id: 'tiny-polis', title: 'Tiny Polis', developer: 'Orean', category: 'Sim', description: 'Micro world simulation. Build, manage, and watch your tiny city grow.', rating: '4.3', reviews: '18K', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/tiny-polis/home', icon: null, bgClass: 'bg-gradient-to-br from-yellow-400 to-yellow-600', iconClass: 'ph-fill ph-buildings', screenshots: [] },
-      { id: 'neon-racer', title: 'Neon Racer', developer: 'Orean', category: 'Racing', description: 'High velocity racing through cybernetic cityscapes.', rating: '4.5', reviews: '88K', size: 'Link', price: 'Free', payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/neon-racer/home', icon: null, bgClass: 'bg-gradient-to-br from-pink-500 to-pink-700', iconClass: 'ph-fill ph-car-profile', screenshots: [] }
+      { id: 'nexus-docs', title: 'Nexus Docs', developer: 'Nexus Corporation', category: 'Editor', description: 'Real-time P2P collaborative editor.', rating: '5.0', reviews: '12K', size: '2 MB', price: 0, payloadType: 'code', code: ['<','!DOCTYPE html>\n','<','html>\n','<','head>\n','<','title>Nexus Docs<','/title>\n','<','style>\nbody { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f4f4f6; color: #333; }\n.card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 500px; }\ntextarea { width: 100%; height: 200px; margin-top: 20px; border-radius: 10px; border: 1px solid #ddd; padding: 15px; outline: none; }\n<','/style>\n','<','/head>\n','<','body>\n','<','div class="card">\n','<','h2>Nexus Docs<','/h2>\n','<','p>Real-time P2P collaboration environment initialized.<','/p>\n','<','textarea placeholder="Start typing..."><','/textarea>\n','<','/div>\n','<','/body>\n','<','/html>'].join(''), icon: null, bgClass: 'bg-gradient-to-br from-slate-400 to-slate-600', iconClass: 'ph-fill ph-file-text', screenshots: [] },
+      { id: 'youtube', title: 'YouTube', developer: 'Google LLC', category: 'Video', description: "The world's largest video sharing platform.", rating: '4.9', reviews: '135M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://www.youtube.com/', icon: null, bgClass: 'bg-gradient-to-br from-red-500 to-red-700', iconClass: 'ph-fill ph-youtube-logo', screenshots: [] },
+      { id: 'google-gemini', title: 'Google Gemini', developer: 'Google LLC', category: 'AI Tool', description: 'Next-generation AI for brainstorming, writing, and analysis.', rating: '4.8', reviews: '8M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://gemini.google.com/app', icon: null, bgClass: 'bg-gradient-to-br from-blue-500 to-blue-700', iconClass: 'ph-fill ph-sparkle', screenshots: [] },
+      { id: 'focus-flow', title: 'Focus Flow', developer: 'Orean', category: 'Productivity', description: 'A minimal Pomodoro timer and task manager designed to keep you in the zone.', rating: '4.7', reviews: '142K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/focusflow/home', icon: null, bgClass: 'bg-gradient-to-br from-emerald-400 to-emerald-600', iconClass: 'ph-fill ph-timer', screenshots: [] },
+      { id: 'chat-space', title: 'Chat Space', developer: 'The dev', category: 'Social', description: 'Minimal social space to chat, hang out, and connect with your friends.', rating: '4.1', reviews: '890K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://chatspace1.w3spaces.com', icon: null, bgClass: 'bg-gradient-to-br from-blue-400 to-blue-600', iconClass: 'ph-fill ph-chat-circle', screenshots: [] },
+      { id: 'shape-shooters', title: 'Shape Shooters', developer: 'Orean', category: 'Arcade', description: 'Fast-paced arcade action. Dodge, shoot, and survive the geometric onslaught.', rating: '4.6', reviews: '25K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://shape-shooters.w3spaces.com/saved-from-Tryit-2025-12-02.html', icon: null, bgClass: 'bg-gradient-to-br from-purple-500 to-purple-700', iconClass: 'ph-fill ph-target', screenshots: [] },
+      { id: 'neon-defense', title: 'Neon Defense', developer: 'Orean', category: 'Strategy', description: 'Strategic tower defense with a beautiful neon cyberpunk aesthetic.', rating: '4.3', reviews: '12K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/ugrughrogygrhreleoh/home', icon: null, bgClass: 'bg-gradient-to-br from-lime-400 to-lime-600', iconClass: 'ph-fill ph-shield-check', screenshots: [] },
+      { id: 'doodle-jump', title: 'Doodle Jump', developer: 'ya jet', category: 'Game', description: 'Endless platformer fun. Jump as high as you can on the notebook paper!', rating: '4.7', reviews: '2.4M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/doodlejump/home', icon: null, bgClass: 'bg-gradient-to-br from-green-500 to-green-700', iconClass: 'ph-fill ph-arrow-fat-up', screenshots: [] },
+      { id: 'oasis', title: 'Oasis', developer: 'Arcade Classics', category: 'Arcade', description: 'A massive collection of retro arcade games wrapped in a synthwave wrapper.', rating: '4.8', reviews: '55K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/view/oasisarcade', icon: null, bgClass: 'bg-gradient-to-br from-orange-400 to-orange-600', iconClass: 'ph-fill ph-palm-tree', screenshots: [] },
+      { id: 'tiny-polis', title: 'Tiny Polis', developer: 'Orean', category: 'Sim', description: 'Micro world simulation. Build, manage, and watch your tiny city grow.', rating: '4.3', reviews: '18K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/tiny-polis/home', icon: null, bgClass: 'bg-gradient-to-br from-yellow-400 to-yellow-600', iconClass: 'ph-fill ph-buildings', screenshots: [] },
+      { id: 'neon-racer', title: 'Neon Racer', developer: 'Orean', category: 'Racing', description: 'High velocity racing through cybernetic cityscapes.', rating: '4.5', reviews: '88K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/neon-racer/home', icon: null, bgClass: 'bg-gradient-to-br from-pink-500 to-pink-700', iconClass: 'ph-fill ph-car-profile', screenshots: [] }
     ];
 
     // Seed default versions
@@ -1189,8 +1220,9 @@
     window.handlePublishClick = async () => {
       if (!currentUser || !currentUser.email) return;
 
+      const myDevRecord = allowedDevs.find(d => d.email === currentUser.email);
       // Check if email is allowed or if user is an admin
-      if (allowedDevs.includes(currentUser.email) || window.isAuthorizedAdmin) {
+      if (myDevRecord || window.isAuthorizedAdmin) {
          window.navigate('upload');
       } else {
          const existingReq = devRequests.find(r => r.email === currentUser.email);
@@ -1211,7 +1243,8 @@
                        email: currentUser.email,
                        username: currentUser.customDisplayName || currentUser.displayName || 'Unknown',
                        timestamp: Date.now(),
-                       status: 'pending'
+                       status: 'pending',
+                       type: 'standard'
                     });
                     showToast('Request Sent', 'Administrators will review your developer request shortly.', 'ph-paper-plane-tilt', 'indigo');
                  } catch(err) {
@@ -1279,6 +1312,7 @@
             document.getElementById('app-developer').value = app.developer;
             document.getElementById('app-category').value = app.category;
             document.getElementById('app-visibility').value = app.visibility || 'public';
+            document.getElementById('app-price').value = app.price || 0;
             document.getElementById('app-version').value = app.version || '1.0.0';
             document.getElementById('app-changelog').value = app.changelog || '';
             document.getElementById('app-description').value = app.description;
@@ -1322,6 +1356,7 @@
             if (currentUser && currentUser.customDisplayName) {
                document.getElementById('app-developer').value = currentUser.customDisplayName;
             }
+            document.getElementById('app-price').value = '0';
             document.getElementById('app-version').value = '1.0.0';
             document.getElementById('app-changelog').value = 'Initial Release';
 
@@ -1362,6 +1397,7 @@
           <div class="w-full aspect-square rounded-[2rem] overflow-hidden mb-4 shadow-[0_8px_20px_rgba(0,0,0,0.06)] group-hover:shadow-[0_15px_30px_rgba(99,102,241,0.2)] transition-all duration-300 group-hover:-translate-y-2 relative border bg-white border-slate-100 dark:bg-slate-800 dark:border-slate-700">
             ${app.isBroken ? '<div class="absolute top-3 left-3 bg-amber-500/90 backdrop-blur-md text-white p-2 rounded-full border border-white/10 z-30 shadow-lg" title="App Unavailable"><i class="ph-bold ph-warning text-sm"></i></div>' : ''}
             ${app.visibility === 'private' ? '<div class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md text-white p-2 rounded-full border border-white/10 z-30"><i class="ph-fill ph-lock-key text-sm"></i></div>' : ''}
+            ${app.price > 0 ? `<div class="absolute bottom-3 right-3 bg-yellow-400/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full border border-yellow-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1"><i class="ph-fill ph-coin"></i> ${app.price}</div>` : ''}
             ${app.icon ? 
               `<img src="${app.icon}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />`
               :
@@ -1471,6 +1507,28 @@
       `).join('');
     }
 
+    window.toggleFollow = async (developerName) => {
+        if (!currentUser) return;
+        const meRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
+        const me = systemUsers.find(u => u.uid === currentUser.uid);
+        const currentFollowing = me?.following || [];
+        
+        try {
+            if (currentFollowing.includes(developerName)) {
+                await updateDoc(meRef, { following: arrayRemove(developerName) });
+                showToast('Unfollowed', `You are no longer following ${developerName}.`, 'ph-user-minus', 'slate');
+            } else {
+                await updateDoc(meRef, { following: arrayUnion(developerName) });
+                showToast('Followed!', `You will now receive updates from ${developerName}.`, 'ph-check-circle', 'indigo');
+            }
+            // re-render profile to update button state
+            renderProfile(developerName);
+        } catch(err) {
+            console.error("Follow error:", err);
+            showModal('Error', 'Could not update follow status.');
+        }
+    };
+
     function renderProfile(developerName) {
       const devApps = apps.filter(a => a.developer === developerName && (a.visibility !== 'private' || (currentUser && a.authorId === currentUser.uid)));
       
@@ -1483,10 +1541,24 @@
 
       const myName = currentUser?.customDisplayName || currentUser?.displayName;
       const editBtn = document.getElementById('edit-profile-btn');
+      const devActions = document.getElementById('developer-actions');
+
       if (myName === developerName) {
         editBtn.classList.remove('hidden');
+        devActions.innerHTML = '';
       } else {
         editBtn.classList.add('hidden');
+        if (currentUser) {
+            const me = systemUsers.find(u => u.uid === currentUser.uid);
+            const isFollowing = (me?.following || []).includes(developerName);
+            devActions.innerHTML = `
+                <button data-click="toggleFollow" data-arg="${escapeQuotes(developerName)}" class="px-6 py-2.5 rounded-2xl font-bold transition-all duration-300 shadow-sm flex items-center gap-2 ${isFollowing ? 'bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700' : 'bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-indigo-500/30'}">
+                    ${isFollowing ? '<i class="ph-bold ph-check"></i> Following' : '<i class="ph-bold ph-plus"></i> Follow'}
+                </button>
+            `;
+        } else {
+            devActions.innerHTML = '';
+        }
       }
 
       const gridContainer = document.getElementById('profile-grid-container');
@@ -1518,6 +1590,39 @@
       }
     }
 
+    window.buyApp = async (appId) => {
+        const app = apps.find(a => a.id === appId);
+        if (!app || !currentUser) return;
+
+        const me = systemUsers.find(u => u.uid === currentUser.uid);
+        const bal = me?.balance || 0;
+
+        if (bal < app.price) {
+            showModal('Insufficient Funds', `You need <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> ${app.price}</span> Nexus Coins to purchase this app. You currently have ${bal}. Ask an admin to grant you more coins!`);
+            return;
+        }
+
+        const btn = document.getElementById('btn-buy-app');
+        if(btn) { btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>'; btn.disabled = true; }
+
+        try {
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
+            await updateDoc(userRef, {
+                balance: bal - app.price,
+                purchasedApps: arrayUnion(app.id)
+            });
+            logActivity('PURCHASE', app.title, `Bought app for ${app.price} coins.`);
+            showToast('Purchase Successful!', `You now own ${app.title}.`, 'ph-bag', 'emerald');
+            
+            // Re-render details to show the Download/Play buttons instead of Buy
+            renderDetails(app.id);
+        } catch(e) {
+            console.error(e);
+            showModal('Error', 'Transaction failed.');
+            if(btn) { btn.innerHTML = 'Error'; }
+        }
+    };
+
     function renderDetails(appId) {
       const app = apps.find(a => a.id === appId);
       if (!app) return;
@@ -1525,6 +1630,10 @@
       const isInstalled = installedApps.has(app.id);
       const stats = getAppStats(app);
       const isAuthorizedAdmin = window.isAuthorizedAdmin;
+      
+      const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
+      const purchasedApps = me?.purchasedApps || [];
+      const hasAccess = app.price === 0 || purchasedApps.includes(app.id) || (currentUser && app.authorId === currentUser.uid) || isAuthorizedAdmin;
 
       // Find related apps (same category or developer, excluding current app and private apps)
       const relatedApps = apps.filter(a => a.id !== appId && a.visibility !== 'private' && (a.category === app.category || a.developer === app.developer)).slice(0, 6);
@@ -1610,25 +1719,35 @@
                       <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Version</span>
                     </div>
                     <div class="flex flex-col items-center justify-center rounded-2xl px-5 py-3 border min-w-[100px] bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-700">
-                      <span class="text-lg font-black text-slate-900 dark:text-white">${app.category}</span>
-                      <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Category</span>
+                      <span class="text-lg font-black flex items-center gap-1 text-slate-900 dark:text-white">
+                        ${app.price > 0 ? `<i class="ph-fill ph-coin text-yellow-500"></i> ${app.price}` : 'Free'}
+                      </span>
+                      <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Price</span>
                     </div>
                   </div>
 
                   <div class="flex flex-col sm:flex-row flex-wrap gap-4">
-                    ${!isInstalled ? `
-                      <button data-click="installApp" data-arg="${app.id}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 h-14 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl hover:shadow-indigo-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
-                        <i class="ph ph-cloud-arrow-down text-2xl"></i> Get App
+                    ${!hasAccess ? `
+                      <button id="btn-buy-app" data-click="buyApp" data-arg="${app.id}" class="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-8 h-14 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl shadow-yellow-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
+                        Buy for <i class="ph-fill ph-coin"></i> ${app.price}
                       </button>
                     ` : `
-                      <button data-click="runApp" data-arg="${app.id}" class="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-8 h-14 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl shadow-indigo-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
-                        <i class="ph-fill ph-play text-xl"></i> Open App
-                      </button>
+                        ${!isInstalled ? `
+                          <button data-click="installApp" data-arg="${app.id}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 h-14 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl hover:shadow-indigo-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
+                            <i class="ph ph-cloud-arrow-down text-2xl"></i> Get App
+                          </button>
+                        ` : `
+                          <button data-click="runApp" data-arg="${app.id}" class="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-8 h-14 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl shadow-indigo-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
+                            <i class="ph-fill ph-play text-xl"></i> Open App
+                          </button>
+                        `}
+                        <div class="flex items-center gap-4 justify-center sm:justify-start w-full sm:w-auto flex-wrap">
+                          <button data-click="downloadApp" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Download .html">
+                            <i class="ph ph-download-simple text-2xl"></i>
+                          </button>
                     `}
+                    
                     <div class="flex items-center gap-4 justify-center sm:justify-start w-full sm:w-auto flex-wrap">
-                      <button data-click="downloadApp" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Download .html">
-                        <i class="ph ph-download-simple text-2xl"></i>
-                      </button>
                       <button data-click="shareApp" data-arg="${escapeQuotes(app.title)}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Share App">
                         <i class="ph ph-share-network text-2xl"></i>
                       </button>
@@ -2097,12 +2216,45 @@
       }
 
       const submitBtn = document.getElementById('btn-submit');
-      submitBtn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Publishing...';
-      submitBtn.disabled = true;
-
       const titleVal = document.getElementById('app-title').value;
       const versionVal = document.getElementById('app-version').value.trim() || '1.0.0';
       const changelogVal = document.getElementById('app-changelog').value.trim() || 'Initial Release';
+      const priceVal = parseInt(document.getElementById('app-price').value) || 0;
+      const devNameVal = document.getElementById('app-developer').value;
+
+      // Paid App Authorization check
+      if (priceVal > 0 && !window.isAuthorizedAdmin) {
+          const myDevRecord = allowedDevs.find(d => d.email === currentUser.email);
+          if (!myDevRecord || !myDevRecord.canPublishPaid) {
+              showPromptModal(
+                 "Monetization Access Required",
+                 "You are not currently approved to publish paid apps on NexusStore.",
+                 null, // no input needed
+                 "Submit Paid Access Request",
+                 "bg-yellow-500 text-slate-900 hover:bg-yellow-400 shadow-yellow-500/30",
+                 async (_, modalId) => {
+                    document.getElementById(modalId).remove();
+                    try {
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', currentUser.uid + '_paid'), {
+                           uid: currentUser.uid,
+                           email: currentUser.email,
+                           username: currentUser.customDisplayName || currentUser.displayName || 'Unknown',
+                           timestamp: Date.now(),
+                           status: 'pending',
+                           type: 'paid_upgrade'
+                        });
+                        showToast('Request Sent', 'Administrators will review your paid app access request.', 'ph-paper-plane-tilt', 'yellow');
+                    } catch(err) {
+                        showModal('Error', 'Failed to send your request.');
+                    }
+                 }
+              );
+              return; // Stop upload
+          }
+      }
+
+      submitBtn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Publishing...';
+      submitBtn.disabled = true;
 
       try {
         let newHistory = [];
@@ -2149,10 +2301,11 @@
           const appRef = doc(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps', editingAppId);
           await updateDoc(appRef, {
             title: titleVal,
-            developer: document.getElementById('app-developer').value,
+            developer: devNameVal,
             category: document.getElementById('app-category').value,
             visibility: document.getElementById('app-visibility').value,
             description: document.getElementById('app-description').value,
+            price: priceVal,
             version: versionVal,
             changelog: changelogVal,
             versionHistory: newHistory,
@@ -2167,17 +2320,17 @@
           const appsRef = collection(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps');
           await addDoc(appsRef, {
             title: titleVal,
-            developer: document.getElementById('app-developer').value,
+            developer: devNameVal,
             category: document.getElementById('app-category').value,
             visibility: document.getElementById('app-visibility').value,
             description: document.getElementById('app-description').value,
+            price: priceVal,
             version: versionVal,
             changelog: changelogVal,
             versionHistory: newHistory,
             rating: '0.0',
             reviews: '0',
             size: payloadType === 'url' ? 'Link' : '1 MB',
-            price: 'Free',
             payloadType,
             appUrl: payloadType === 'url' ? inputUrl.value : null,
             code: payloadType === 'code' ? inputCode.value : null,
@@ -2190,6 +2343,19 @@
           });
           logActivity('UPLOAD', titleVal, `Published a new app: v${versionVal}`);
         }
+
+        // Notify Followers
+        const followers = systemUsers.filter(u => u.following && u.following.includes(devNameVal));
+        followers.forEach(f => {
+           addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'user_messages'), {
+              recipientId: f.uid,
+              text: `🔔 ${devNameVal} just ${editingAppId ? 'updated' : 'published'} ${titleVal} (v${versionVal})!`,
+              timestamp: Date.now(),
+              read: false,
+              sender: 'Nexus Notifications',
+              senderId: null
+           });
+        });
 
         e.target.reset();
         editingAppId = null;
@@ -2340,6 +2506,7 @@
           <td class="p-6">${statusBadge}</td>
           <td class="p-6 text-right">
              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button data-click="adminGiveCoins" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Add Nexus Coins"><i class="ph-fill ph-coin"></i> Coins</button>
               <button data-click="viewUserHistory" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-clock-counter-clockwise"></i> History</button>
               <button data-click="adminMessageUser" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-paper-plane-tilt"></i> Msg</button>
               ${u.status !== 'active' ? `<button data-click="adminSetUserStatus" data-arg="${u.uid}" data-arg2="active" class="text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all">Activate</button>` : ''}
@@ -2351,6 +2518,39 @@
           </td>
         </tr>
       `}).join('');
+    };
+
+    window.adminGiveCoins = (uid, username) => {
+        showPromptModal(
+            `Add Coins for ${username}`,
+            `How many Nexus Coins would you like to grant to this user?`,
+            `e.g., 500`,
+            `Grant Coins`,
+            `bg-yellow-500 text-slate-900 hover:bg-yellow-400 shadow-yellow-500/30`,
+            async (val, modalId) => {
+                const amt = parseInt(val);
+                if (isNaN(amt) || amt <= 0) {
+                    showModal('Invalid Amount', 'Please enter a valid positive number.');
+                    document.getElementById(`confirm-btn-${modalId}`).innerHTML = 'Grant Coins';
+                    document.getElementById(`confirm-btn-${modalId}`).disabled = false;
+                    return;
+                }
+                
+                try {
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', uid);
+                    const userSnap = await getDoc(userRef);
+                    const currentBal = userSnap.data()?.balance || 0;
+                    
+                    await updateDoc(userRef, { balance: currentBal + amt });
+                    logActivity('MODERATION', 'Currency Issued', `Granted ${amt} coins to ${uid}`);
+                    showToast('Coins Granted', `Successfully added ${amt} coins to ${username}'s balance.`, 'ph-coin', 'yellow');
+                    document.getElementById(modalId).remove();
+                } catch(e) {
+                    console.error(e);
+                    document.getElementById(`confirm-btn-${modalId}`).innerHTML = 'Error';
+                }
+            }
+        );
     };
 
     window.viewUserHistory = (uid, username) => {
@@ -2369,6 +2569,7 @@
           if (log.action === 'INSTALL') actionColor = 'text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30';
           if (log.action === 'MODERATION') actionColor = 'text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/30';
           if (log.action === 'ACCOUNT') actionColor = 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/30';
+          if (log.action === 'PURCHASE') actionColor = 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/30';
 
           return `
             <div class="p-5 border-b border-slate-100 dark:border-slate-800 last:border-0 text-left hover:bg-white dark:hover:bg-slate-900 transition-colors">
@@ -2498,6 +2699,7 @@
         if (log.action === 'MODERATION') actionColor = 'text-purple-500';
         if (log.action === 'ACCOUNT') actionColor = 'text-blue-500';
         if (log.action === 'COMMUNICATION') actionColor = 'text-pink-500';
+        if (log.action === 'PURCHASE') actionColor = 'text-yellow-500';
 
         return `
         <tr class="hover:bg-slate-50 dark:bg-slate-800/20 transition-colors">
@@ -2522,28 +2724,37 @@
       if (devRequests.length === 0) {
         reqContainer.innerHTML = `<div class="text-slate-500 text-sm border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20">No pending requests.</div>`;
       } else {
-        reqContainer.innerHTML = devRequests.map(req => `
+        reqContainer.innerHTML = devRequests.map(req => {
+          const isPaidReq = req.type === 'paid_upgrade';
+          return `
           <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20 flex items-center justify-between transition-colors hover:border-indigo-300 dark:hover:border-indigo-800">
             <div>
-              <div class="font-bold text-slate-900 dark:text-white">${req.username}</div>
+              <div class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                 ${req.username} 
+                 ${isPaidReq ? `<span class="bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider font-bold"><i class="ph-fill ph-coin"></i> Paid App Access</span>` : ''}
+              </div>
               <div class="text-sm text-slate-500">${req.email}</div>
             </div>
             <div class="flex gap-2">
-              <button data-click="adminApproveDev" data-arg="${req.id}" data-arg2="${req.email}" class="bg-emerald-100 text-emerald-600 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 p-2 rounded-lg transition-colors" title="Approve Request"><i class="ph-bold ph-check"></i></button>
+              <button data-click="${isPaidReq ? 'adminApprovePaidDev' : 'adminApproveDev'}" data-arg="${req.id}" data-arg2="${req.email}" class="bg-emerald-100 text-emerald-600 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 p-2 rounded-lg transition-colors" title="Approve Request"><i class="ph-bold ph-check"></i></button>
               <button data-click="adminRejectDev" data-arg="${req.id}" class="bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 p-2 rounded-lg transition-colors" title="Reject Request"><i class="ph-bold ph-x"></i></button>
             </div>
           </div>
-        `).join('');
+          `;
+        }).join('');
       }
 
       const allowedContainer = document.getElementById('admin-allowed-devs');
       if (allowedDevs.length === 0) {
         allowedContainer.innerHTML = `<div class="text-slate-500 text-sm border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20">No explicitly allowed emails.</div>`;
       } else {
-        allowedContainer.innerHTML = allowedDevs.map(email => `
+        allowedContainer.innerHTML = allowedDevs.map(dev => `
           <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-3 bg-white dark:bg-slate-900 flex items-center justify-between group">
-            <div class="text-sm font-medium text-slate-700 dark:text-slate-300">${email}</div>
-            <button data-click="adminRemoveDevEmail" data-arg="${email}" class="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 p-1 transition-colors opacity-0 group-hover:opacity-100" title="Revoke Access"><i class="ph-bold ph-trash"></i></button>
+            <div class="flex items-center gap-3">
+              <div class="text-sm font-medium text-slate-700 dark:text-slate-300">${dev.email}</div>
+              ${dev.canPublishPaid ? `<i class="ph-fill ph-coin text-yellow-500" title="Can Publish Paid Apps"></i>` : ''}
+            </div>
+            <button data-click="adminRemoveDevEmail" data-arg="${dev.email}" class="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 p-1 transition-colors opacity-0 group-hover:opacity-100" title="Revoke Access"><i class="ph-bold ph-trash"></i></button>
           </div>
         `).join('');
       }
@@ -2551,10 +2762,19 @@
 
     window.adminApproveDev = async (reqId, email) => {
       try {
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', email), { addedAt: Date.now(), addedBy: currentUser.email || 'Admin' });
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', email), { canPublishPaid: false, addedAt: Date.now(), addedBy: currentUser.email || 'Admin' });
         await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', reqId));
         showToast('Approved', `${email} is now a developer.`, 'ph-check-circle', 'emerald');
-        logActivity('MODERATION', 'Developer Approved', `Approved dev access for ${email}`);
+        logActivity('MODERATION', 'Developer Approved', `Approved standard dev access for ${email}`);
+      } catch(e) { console.error(e); }
+    };
+
+    window.adminApprovePaidDev = async (reqId, email) => {
+      try {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', email), { canPublishPaid: true, addedAt: Date.now(), addedBy: currentUser.email || 'Admin' });
+        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', reqId));
+        showToast('Approved', `${email} can now publish paid apps.`, 'ph-coin', 'yellow');
+        logActivity('MODERATION', 'Paid Developer Approved', `Approved paid app publishing access for ${email}`);
       } catch(e) { console.error(e); }
     };
     
@@ -2571,9 +2791,9 @@
       const email = emailInput.value.trim().toLowerCase();
       if (!email) return;
       try {
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', email), { addedAt: Date.now(), addedBy: currentUser.email || 'Admin' });
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', email), { canPublishPaid: true, addedAt: Date.now(), addedBy: currentUser.email || 'Admin' });
         emailInput.value = '';
-        showToast('Added', `${email} added to allowed developers.`, 'ph-check-circle', 'emerald');
+        showToast('Added', `${email} added to allowed developers (with Paid access).`, 'ph-check-circle', 'emerald');
         logActivity('MODERATION', 'Developer Added', `Manually added dev ${email}`);
       } catch(err) { console.error(err); }
     };
@@ -2963,10 +3183,14 @@
       else if (action === 'showOnboarding') window.showOnboarding();
       else if (action === 'handlePublishClick') window.handlePublishClick();
       else if (action === 'adminApproveDev') window.adminApproveDev(arg1, arg2);
+      else if (action === 'adminApprovePaidDev') window.adminApprovePaidDev(arg1, arg2);
       else if (action === 'adminRejectDev') window.adminRejectDev(arg1);
       else if (action === 'adminRemoveDevEmail') window.adminRemoveDevEmail(arg1);
+      else if (action === 'adminGiveCoins') window.adminGiveCoins(arg1, arg2);
       else if (action === 'signInWithGoogle') window.signInWithGoogle();
       else if (action === 'deleteReview') window.deleteReview(arg1);
+      else if (action === 'buyApp') window.buyApp(arg1);
+      else if (action === 'toggleFollow') window.toggleFollow(arg1);
     });
 
     document.addEventListener('submit', (e) => {
