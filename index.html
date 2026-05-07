@@ -871,24 +871,10 @@
               joinedAt: Date.now()
             });
             handleUserStatus('active');
-            
-            // Show initial 0 coin balance
-            const balContainer = document.getElementById('coin-balance-container');
-            if (balContainer) { balContainer.classList.remove('hidden'); balContainer.classList.add('flex'); }
-
             showOnboarding();
           } else {
             const userData = userSnap.data();
             handleUserStatus(userData.status || 'active');
-
-            // Show loaded coin balance immediately
-            const balContainer = document.getElementById('coin-balance-container');
-            const balText = document.getElementById('coin-balance-text');
-            if (balContainer && balText) {
-                balContainer.classList.remove('hidden');
-                balContainer.classList.add('flex');
-                balText.textContent = userData.balance || 0;
-            }
 
             if (!userData.usernameSet) {
               showOnboarding();
@@ -1702,14 +1688,13 @@
                             <i class="ph-fill ph-play text-xl"></i> Open App
                           </button>
                         `}
+                        <div class="flex items-center gap-4 justify-center sm:justify-start w-full sm:w-auto flex-wrap">
+                          <button data-click="downloadApp" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Download .html">
+                            <i class="ph ph-download-simple text-2xl"></i>
+                          </button>
                     `}
                     
                     <div class="flex items-center gap-4 justify-center sm:justify-start w-full sm:w-auto flex-wrap">
-                      ${hasAccess ? `
-                        <button data-click="downloadApp" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Download .html">
-                          <i class="ph ph-download-simple text-2xl"></i>
-                        </button>
-                      ` : ''}
                       <button data-click="shareApp" data-arg="${escapeQuotes(app.title)}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Share App">
                         <i class="ph ph-share-network text-2xl"></i>
                       </button>
@@ -2446,16 +2431,12 @@
 
     window.renderAdminUsers = () => {
       const usersList = document.getElementById('admin-users-list');
-      
-      // Filter out users who haven't set a username
-      const validUsers = systemUsers.filter(u => u.usernameSet && u.username && u.username.trim() !== '');
-
-      if (validUsers.length === 0) {
-        usersList.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500">No registered users found. Wait for users to complete onboarding.</td></tr>`;
+      if (systemUsers.length === 0) {
+        usersList.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500">No users found. Wait for users to authenticate.</td></tr>`;
         return;
       }
       
-      usersList.innerHTML = validUsers.map(u => {
+      usersList.innerHTML = systemUsers.map(u => {
         let statusBadge = `<span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs font-bold">Active</span>`;
         if (u.status === 'suspended') statusBadge = `<span class="px-3 py-1 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 text-xs font-bold">Suspended</span>`;
         if (u.status === 'banned') statusBadge = `<span class="px-3 py-1 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold">Banned</span>`;
