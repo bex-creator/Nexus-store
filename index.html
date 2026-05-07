@@ -180,10 +180,10 @@
       <div class="flex items-center gap-4">
         
         <!-- Virtual Currency Balance -->
-        <button id="coin-balance-container" data-click="showCoinRequestModal" class="hidden items-center gap-1.5 px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 rounded-xl font-bold text-sm border border-yellow-200 dark:border-yellow-700/50 shadow-sm cursor-pointer transition-colors" title="Request Nexus Coins">
+        <div id="coin-balance-container" class="hidden items-center gap-1.5 px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-xl font-bold text-sm border border-yellow-200 dark:border-yellow-700/50 shadow-sm cursor-help" title="Nexus Coins Balance">
           <i class="ph-fill ph-coin text-lg"></i>
           <span id="coin-balance-text">0</span>
-        </button>
+        </div>
 
         <div id="user-profile" class="flex items-center gap-3 pr-4 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity" data-click="profileLink" title="View My Profile">
           <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1" class="w-9 h-9 rounded-full object-cover border-2 border-indigo-500 shadow-sm" />
@@ -517,7 +517,6 @@
           <button data-click="switchAdminTab" data-arg="news" id="tab-btn-news" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">News Banner</button>
           <button data-click="switchAdminTab" data-arg="feedback" id="tab-btn-feedback" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Feedback</button>
           <button data-click="switchAdminTab" data-arg="devs" id="tab-btn-devs" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Dev Access & Paid</button>
-          <button data-click="switchAdminTab" data-arg="coins" id="tab-btn-coins" class="px-6 py-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Coin Requests</button>
         </div>
 
         <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
@@ -635,14 +634,6 @@
             </div>
           </div>
 
-          <!-- Tab Content: Coin Requests -->
-          <div id="admin-tab-coins" class="overflow-x-auto hidden p-6">
-            <h3 class="font-bold text-lg mb-4 text-slate-900 dark:text-white">Pending Coin Requests</h3>
-            <div id="admin-coin-requests" class="space-y-3">
-              <!-- Populated by JS -->
-            </div>
-          </div>
-
         </div>
       </div>
     </div>
@@ -682,7 +673,6 @@
 
     let allowedDevs = []; // Array of objects: { id, canPublishPaid }
     let devRequests = [];
-    let coinRequests = [];
     let publicListenersAttached = false;
     let publicUnsubs = [];
     let privateUnsubs = [];
@@ -811,13 +801,6 @@
               feedbackItems.sort((a, b) => b.timestamp - a.timestamp);
               if (currentView === 'admin') renderAdminFeedback();
             }, (error) => console.warn("Firestore feedback error:", error)));
-
-            // Coin Requests
-            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'coin_requests')), (snapshot) => {
-              coinRequests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-              coinRequests.sort((a, b) => b.timestamp - a.timestamp);
-              if (currentView === 'admin') renderAdminCoins();
-            }, (error) => console.warn("Firestore coin requests error:", error)));
         };
 
         const initAuth = async () => {
@@ -2391,7 +2374,7 @@
     });
 
     window.switchAdminTab = (tabName) => {
-      const tabs = ['apps', 'users', 'logs', 'news', 'feedback', 'devs', 'coins'];
+      const tabs = ['apps', 'users', 'logs', 'news', 'feedback', 'devs'];
       tabs.forEach(t => {
         const btn = document.getElementById(`tab-btn-${t}`);
         const content = document.getElementById(`admin-tab-${t}`);
@@ -2415,117 +2398,7 @@
       if (tabName === 'news') renderAdminNews();
       if (tabName === 'feedback') renderAdminFeedback();
       if (tabName === 'devs') renderAdminDevs();
-      if (tabName === 'coins') renderAdminCoins();
     }
-
-    window.showCoinRequestModal = () => {
-      if (!currentUser) {
-          showModal('Not Logged In', 'You must be signed in to request coins.');
-          return;
-      }
-      const modalId = `coin-request-modal`;
-      if (document.getElementById(modalId)) return;
-      
-      const modalHtml = `
-        <div id="${modalId}" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4">
-          <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in text-center">
-            <div class="w-16 h-16 mx-auto bg-yellow-100 text-yellow-500 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
-              <i class="ph-fill ph-gift text-3xl"></i>
-            </div>
-            <h3 class="text-2xl font-black mb-2 text-slate-900 dark:text-white">Request Coins</h3>
-            <p class="text-slate-500 mb-6 font-medium text-sm">Select a present below to request a preset amount of Nexus Coins from the admins.</p>
-            
-            <div class="grid grid-cols-2 gap-3 mb-6">
-               <button data-click="submitCoinRequest" data-arg="100" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-4 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-1 group">
-                 <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 100
-               </button>
-               <button data-click="submitCoinRequest" data-arg="500" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-4 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-1 group">
-                 <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 500
-               </button>
-               <button data-click="submitCoinRequest" data-arg="1000" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-4 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-1 group">
-                 <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 1,000
-               </button>
-               <button data-click="submitCoinRequest" data-arg="5000" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-4 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-1 group">
-                 <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 5,000
-               </button>
-            </div>
-            
-            <button data-click="closeModal" data-arg="${modalId}" class="w-full px-4 py-3 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white transition-colors">Cancel</button>
-          </div>
-        </div>
-      `;
-      document.body.insertAdjacentHTML('beforeend', modalHtml);
-    };
-
-    window.submitCoinRequest = async (amountStr, modalId, e) => {
-       const amount = parseInt(amountStr);
-       if (!amount || !currentUser) return;
-       const btn = e.currentTarget;
-       const originalContent = btn.innerHTML;
-       btn.innerHTML = '<i class="ph ph-spinner animate-spin text-3xl text-yellow-500"></i>';
-       
-       try {
-          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coin_requests', currentUser.uid), {
-             uid: currentUser.uid,
-             username: currentUser.customDisplayName || currentUser.displayName || 'Unknown',
-             amount: amount,
-             timestamp: Date.now()
-          });
-          document.getElementById(modalId).remove();
-          showToast('Request Sent!', `Requested ${amount} coins from admins.`, 'ph-gift', 'yellow');
-       } catch(err) {
-          console.error(err);
-          showModal('Error', 'Failed to send coin request.');
-          btn.innerHTML = originalContent;
-       }
-    };
-
-    window.renderAdminCoins = () => {
-      const reqContainer = document.getElementById('admin-coin-requests');
-      if (!reqContainer) return;
-      
-      if (coinRequests.length === 0) {
-        reqContainer.innerHTML = `<div class="text-slate-500 text-sm border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20">No pending coin requests.</div>`;
-      } else {
-        reqContainer.innerHTML = coinRequests.map(req => `
-          <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20 flex items-center justify-between transition-colors hover:border-yellow-300 dark:hover:border-yellow-800">
-            <div>
-              <div class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                 ${req.username} 
-                 <span class="bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs px-2 py-0.5 rounded font-black"><i class="ph-fill ph-coin"></i> ${req.amount}</span>
-              </div>
-              <div class="text-[10px] font-mono text-slate-500">${req.uid}</div>
-            </div>
-            <div class="flex gap-2">
-              <button data-click="adminApproveCoinRequest" data-arg="${req.id}" data-arg2="${req.amount}" class="bg-emerald-100 text-emerald-600 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 p-2 rounded-lg transition-colors" title="Approve ${req.amount} Coins"><i class="ph-bold ph-check"></i></button>
-              <button data-click="adminRejectCoinRequest" data-arg="${req.id}" class="bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 p-2 rounded-lg transition-colors" title="Reject Request"><i class="ph-bold ph-x"></i></button>
-            </div>
-          </div>
-        `).join('');
-      }
-    };
-
-    window.adminApproveCoinRequest = async (uid, amountStr) => {
-      const amt = parseInt(amountStr);
-      try {
-        const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', uid);
-        const userSnap = await getDoc(userRef);
-        const currentBal = userSnap.data()?.balance || 0;
-        
-        await updateDoc(userRef, { balance: currentBal + amt });
-        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coin_requests', uid));
-        
-        logActivity('MODERATION', 'Currency Issued', `Approved ${amt} coins for ${uid}`);
-        showToast('Approved', `Granted ${amt} coins.`, 'ph-check-circle', 'emerald');
-      } catch(e) { console.error(e); }
-    };
-    
-    window.adminRejectCoinRequest = async (uid) => {
-      try {
-        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coin_requests', uid));
-        showToast('Rejected', 'Coin request deleted.', 'ph-x-circle', 'slate');
-      } catch(e) { console.error(e); }
-    };
 
     window.renderAdmin = () => {
       renderAdminApps();
@@ -3280,10 +3153,6 @@
       else if (action === 'deleteReview') window.deleteReview(arg1);
       else if (action === 'buyApp') window.buyApp(arg1);
       else if (action === 'toggleFollow') window.toggleFollow(arg1);
-      else if (action === 'showCoinRequestModal') window.showCoinRequestModal();
-      else if (action === 'submitCoinRequest') window.submitCoinRequest(arg1, arg2, e);
-      else if (action === 'adminApproveCoinRequest') window.adminApproveCoinRequest(arg1, arg2);
-      else if (action === 'adminRejectCoinRequest') window.adminRejectCoinRequest(arg1);
     });
 
     document.addEventListener('submit', (e) => {
