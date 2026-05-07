@@ -1568,8 +1568,8 @@
       }
     }
 
-    window.buyApp = async (appId) => {
-        const app = apps.find(a => a.id === appId);
+    window.buyApp = async (targetAppId) => {
+        const app = apps.find(a => a.id === targetAppId);
         if (!app || !currentUser) return;
 
         const me = systemUsers.find(u => u.uid === currentUser.uid);
@@ -1601,8 +1601,8 @@
         }
     };
 
-    function renderDetails(appId) {
-      const app = apps.find(a => a.id === appId);
+    function renderDetails(targetAppId) {
+      const app = apps.find(a => a.id === targetAppId);
       if (!app) return;
 
       const isInstalled = installedApps.has(app.id);
@@ -1614,7 +1614,7 @@
       const hasAccess = app.price === 0 || purchasedApps.includes(app.id) || (currentUser && app.authorId === currentUser.uid) || isAuthorizedAdmin;
 
       // Find related apps (same category or developer, excluding current app and private apps)
-      const relatedApps = apps.filter(a => a.id !== appId && a.visibility !== 'private' && (a.category === app.category || a.developer === app.developer)).slice(0, 6);
+      const relatedApps = apps.filter(a => a.id !== targetAppId && a.visibility !== 'private' && (a.category === app.category || a.developer === app.developer)).slice(0, 6);
 
       let history = app.versionHistory || [];
       if (history.length === 0) {
@@ -1809,7 +1809,7 @@
 
                 <div class="space-y-4">
                   ${(() => {
-                    const appRevs = appReviews.filter(r => r.targetAppId === appId);
+                    const appRevs = appReviews.filter(r => r.targetAppId === targetAppId);
                     if (appRevs.length === 0) return `<div class="text-slate-500 font-medium italic">No reviews yet. Be the first!</div>`;
                     return appRevs.map(r => {
                       const canDelete = isAuthorizedAdmin || (currentUser && currentUser.uid === r.uid);
@@ -1912,15 +1912,15 @@
       document.body.removeChild(textArea);
     };
 
-    window.installApp = (appId) => {
-      installedApps.add(appId);
-      const app = apps.find(a => a.id === appId);
+    window.installApp = (targetAppId) => {
+      installedApps.add(targetAppId);
+      const app = apps.find(a => a.id === targetAppId);
       if(app) logActivity('INSTALL', app.title, 'App installed to local browser session.');
-      renderDetails(appId);
+      renderDetails(targetAppId);
     };
 
-    window.runApp = (appId) => {
-      const app = apps.find(a => a.id === appId);
+    window.runApp = (targetAppId) => {
+      const app = apps.find(a => a.id === targetAppId);
       let history = app.versionHistory || [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
       const selectedVersionStr = window.selectedAppVersion || (app.versionHistory ? app.versionHistory[0].version : app.version);
       const activeVersionObj = history.find(v => v.version === selectedVersionStr) || history[0];
@@ -1962,8 +1962,8 @@
       }
     };
 
-    window.downloadApp = (appId) => {
-      const app = apps.find(a => a.id === appId);
+    window.downloadApp = (targetAppId) => {
+      const app = apps.find(a => a.id === targetAppId);
       if (!app) return;
 
       let history = app.versionHistory || [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
