@@ -49,6 +49,23 @@
   <!-- APP ROOT -->
   <div id="app-root">
 
+  <!-- App Viewer Overlay -->
+  <div id="app-viewer-overlay" class="fixed inset-0 z-[9999] hidden flex-col bg-black animate-zoom-in">
+    <div class="flex items-center justify-between p-3 bg-slate-900 border-b border-slate-800 text-white shadow-md z-10">
+      <div class="flex items-center gap-3">
+        <div id="app-viewer-icon" class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center overflow-hidden"></div>
+        <h3 id="app-viewer-title" class="font-bold text-sm truncate max-w-[200px] sm:max-w-md"></h3>
+      </div>
+      <div class="flex items-center gap-2">
+        <button data-click="openViewerInNewTab" class="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-300 hover:text-white" title="Open in New Tab"><i class="ph ph-arrow-square-out text-lg"></i></button>
+        <button data-click="closeAppViewer" class="p-2 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors text-slate-300"><i class="ph-bold ph-x text-lg"></i></button>
+      </div>
+    </div>
+    <div class="flex-1 w-full relative bg-white dark:bg-slate-950">
+       <iframe id="app-viewer-iframe" class="absolute inset-0 w-full h-full border-0 bg-white" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-downloads"></iframe>
+    </div>
+  </div>
+
   <!-- Banned Overlay -->
   <div id="banned-overlay" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950 px-4">
     <div class="max-w-md w-full text-center animate-zoom-in">
@@ -1919,6 +1936,9 @@
       renderDetails(targetAppId);
     };
 
+    let currentLaunchUrl = null;
+    let isCurrentLaunchBlob = false;
+
     window.runApp = (targetAppId) => {
       const app = apps.find(a => a.id === targetAppId);
       let history = app.versionHistory || [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
@@ -1935,30 +1955,55 @@
 
       if (!launchUrl) return;
 
-      // Nexus OS Detection: Check if embedded in Nexus OS via URL parameter, window name, or custom flags.
-      const inNexusOS = window.location.search.includes('nexus=true') || 
-                        window.name.includes('nexus') || 
-                        typeof window.NexusOS !== 'undefined';
+      const inIframe = window.self !== window.top;
 
-      if (inNexusOS && window.self !== window.top) {
-        // If inside Nexus OS, send a message to the parent OS to spawn an internal window
-        window.parent.postMessage({
-          type: 'nexus:launch_app',
-          appData: {
-            id: app.id,
-            title: app.title,
-            icon: app.icon || null,
-            url: launchUrl
-          }
-        }, '*');
+      if (inIframe) {
+        // If the store is running in an iframe, open the app natively within the store as an overlay
+        const overlay = document.getElementById('app-viewer-overlay');
+        const iframe = document.getElementById('app-viewer-iframe');
+        const titleEl = document.getElementById('app-viewer-title');
+        const iconEl = document.getElementById('app-viewer-icon');
+
+        currentLaunchUrl = launchUrl;
+        isCurrentLaunchBlob = activeVersionObj.payloadType === 'code';
+
+        titleEl.textContent = app.title;
+        if (app.icon) {
+          iconEl.innerHTML = `<img src="${app.icon}" class="w-full h-full object-cover" />`;
+        } else {
+          iconEl.innerHTML = `<i class="${app.iconClass || 'ph-app-window'} text-xl text-indigo-400"></i>`;
+        }
+
+        iframe.src = launchUrl;
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
       } else {
-        // Not in Nexus OS -> Open outside of the store (new tab/window)
+        // Not in an iframe -> Open outside of the store (new tab/window)
         window.open(launchUrl, '_blank', 'noopener,noreferrer');
+        if (activeVersionObj.payloadType === 'code') {
+          setTimeout(() => URL.revokeObjectURL(launchUrl), 15000);
+        }
       }
+    };
 
-      // Cleanup object URL memory if we created a blob
-      if (activeVersionObj.payloadType === 'code') {
-        setTimeout(() => URL.revokeObjectURL(launchUrl), 15000);
+    window.closeAppViewer = () => {
+      const overlay = document.getElementById('app-viewer-overlay');
+      const iframe = document.getElementById('app-viewer-iframe');
+      
+      overlay.classList.add('hidden');
+      overlay.classList.remove('flex');
+      iframe.src = 'about:blank'; // Stop execution
+      
+      if (isCurrentLaunchBlob && currentLaunchUrl) {
+        URL.revokeObjectURL(currentLaunchUrl);
+      }
+      currentLaunchUrl = null;
+      isCurrentLaunchBlob = false;
+    };
+
+    window.openViewerInNewTab = () => {
+      if (currentLaunchUrl) {
+        window.open(currentLaunchUrl, '_blank', 'noopener,noreferrer');
       }
     };
 
@@ -3284,6 +3329,8 @@
       else if (action === 'submitCoinRequest') window.submitCoinRequest(arg1, arg2, e);
       else if (action === 'adminApproveCoinRequest') window.adminApproveCoinRequest(arg1, arg2);
       else if (action === 'adminRejectCoinRequest') window.adminRejectCoinRequest(arg1);
+      else if (action === 'closeAppViewer') window.closeAppViewer();
+      else if (action === 'openViewerInNewTab') window.openViewerInNewTab();
     });
 
     document.addEventListener('submit', (e) => {
