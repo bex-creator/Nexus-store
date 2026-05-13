@@ -1938,6 +1938,23 @@
 
     let currentLaunchUrl = null;
     let isCurrentLaunchBlob = false;
+    let playTimer = null;
+
+    window.awardPlaytimeCoins = async (amount) => {
+        if (!currentUser) return;
+        try {
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const currentBal = userSnap.data().balance || 0;
+                await updateDoc(userRef, { balance: currentBal + amount });
+                showToast('Playtime Reward!', `You earned ${amount} Nexus Coins for playing!`, 'ph-coin', 'yellow');
+                logActivity('REWARD', 'Playtime', `Earned ${amount} coins for playing an app for 2 minutes.`);
+            }
+        } catch (e) {
+            console.error("Error awarding playtime coins:", e);
+        }
+    };
 
     window.runApp = (targetAppId) => {
       const app = apps.find(a => a.id === targetAppId);
@@ -1954,6 +1971,11 @@
       }
 
       if (!launchUrl) return;
+
+      if (playTimer) {
+        clearTimeout(playTimer);
+        playTimer = null;
+      }
 
       const inIframe = window.self !== window.top;
 
@@ -1977,9 +1999,27 @@
         iframe.src = launchUrl;
         overlay.classList.remove('hidden');
         overlay.classList.add('flex');
+
+        // Start 2 minute timer (120,000 ms)
+        playTimer = setTimeout(() => {
+            if (document.getElementById('app-viewer-overlay').classList.contains('flex')) {
+                window.awardPlaytimeCoins(500);
+            }
+        }, 120000);
+
       } else {
         // Not in an iframe -> Open outside of the store (new tab/window)
-        window.open(launchUrl, '_blank', 'noopener,noreferrer');
+        const newWin = window.open(launchUrl, '_blank', 'noopener,noreferrer');
+        
+        if (newWin) {
+            // Check if the external window is still open after 2 minutes
+            playTimer = setTimeout(() => {
+                if (!newWin.closed) {
+                    window.awardPlaytimeCoins(500);
+                }
+            }, 120000);
+        }
+
         if (activeVersionObj.payloadType === 'code') {
           setTimeout(() => URL.revokeObjectURL(launchUrl), 15000);
         }
@@ -1987,6 +2027,11 @@
     };
 
     window.closeAppViewer = () => {
+      if (playTimer) {
+        clearTimeout(playTimer);
+        playTimer = null;
+      }
+
       const overlay = document.getElementById('app-viewer-overlay');
       const iframe = document.getElementById('app-viewer-iframe');
       
