@@ -2686,7 +2686,7 @@
           <td class="p-6">${statusBadge}</td>
           <td class="p-6 text-right">
              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button data-click="adminGiveCoins" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Add Nexus Coins"><i class="ph-fill ph-coin"></i> Coins</button>
+              <button data-click="adminManageCoins" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Manage Nexus Coins"><i class="ph-fill ph-coin"></i> Coins</button>
               <button data-click="viewUserHistory" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-clock-counter-clockwise"></i> History</button>
               <button data-click="adminMessageUser" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-paper-plane-tilt"></i> Msg</button>
               ${u.status !== 'active' ? `<button data-click="adminSetUserStatus" data-arg="${u.uid}" data-arg2="active" class="text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all">Activate</button>` : ''}
@@ -2700,18 +2700,18 @@
       `}).join('');
     };
 
-    window.adminGiveCoins = (uid, username) => {
+    window.adminManageCoins = (uid, username) => {
         showPromptModal(
-            `Add Coins for ${username}`,
-            `How many Nexus Coins would you like to grant to this user?`,
-            `e.g., 500`,
-            `Grant Coins`,
+            `Manage Coins for ${username}`,
+            `Enter the amount of Nexus Coins to grant. Use a negative number (e.g. -500) to deduct coins.`,
+            `e.g., 500 or -500`,
+            `Confirm`,
             `bg-yellow-500 text-slate-900 hover:bg-yellow-400 shadow-yellow-500/30`,
             async (val, modalId) => {
                 const amt = parseInt(val);
-                if (isNaN(amt) || amt <= 0) {
-                    showModal('Invalid Amount', 'Please enter a valid positive number.');
-                    document.getElementById(`confirm-btn-${modalId}`).innerHTML = 'Grant Coins';
+                if (isNaN(amt) || amt === 0) {
+                    showModal('Invalid Amount', 'Please enter a valid non-zero number.');
+                    document.getElementById(`confirm-btn-${modalId}`).innerHTML = 'Confirm';
                     document.getElementById(`confirm-btn-${modalId}`).disabled = false;
                     return;
                 }
@@ -2720,10 +2720,12 @@
                     const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', uid);
                     const userSnap = await getDoc(userRef);
                     const currentBal = userSnap.data()?.balance || 0;
+                    const newBal = Math.max(0, currentBal + amt);
                     
-                    await updateDoc(userRef, { balance: currentBal + amt });
-                    logActivity('MODERATION', 'Currency Issued', `Granted ${amt} coins to ${uid}`);
-                    showToast('Coins Granted', `Successfully added ${amt} coins to ${username}'s balance.`, 'ph-coin', 'yellow');
+                    await updateDoc(userRef, { balance: newBal });
+                    const actionStr = amt > 0 ? 'Granted' : 'Deducted';
+                    logActivity('MODERATION', 'Currency Managed', `${actionStr} ${Math.abs(amt)} coins to/from ${uid}`);
+                    showToast(`Coins ${actionStr}`, `Successfully ${amt > 0 ? 'added' : 'deducted'} ${Math.abs(amt)} coins. New balance: ${newBal}`, 'ph-coin', 'yellow');
                     document.getElementById(modalId).remove();
                 } catch(e) {
                     console.error(e);
@@ -3366,7 +3368,7 @@
       else if (action === 'adminApprovePaidDev') window.adminApprovePaidDev(arg1, arg2);
       else if (action === 'adminRejectDev') window.adminRejectDev(arg1);
       else if (action === 'adminRemoveDevUid') window.adminRemoveDevUid(arg1);
-      else if (action === 'adminGiveCoins') window.adminGiveCoins(arg1, arg2);
+      else if (action === 'adminManageCoins') window.adminManageCoins(arg1, arg2);
       else if (action === 'deleteReview') window.deleteReview(arg1);
       else if (action === 'buyApp') window.buyApp(arg1);
       else if (action === 'toggleFollow') window.toggleFollow(arg1);
