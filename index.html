@@ -57,6 +57,9 @@
         <h3 id="app-viewer-title" class="font-bold text-sm truncate max-w-[200px] sm:max-w-md"></h3>
       </div>
       <div class="flex items-center gap-2">
+        <div id="reward-timer-container" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-xs font-bold mr-2 transition-all">
+          <i class="ph-fill ph-timer animate-pulse"></i> <span id="reward-timer-text">02:00</span>
+        </div>
         <button data-click="openViewerInNewTab" class="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-300 hover:text-white" title="Open in New Tab"><i class="ph ph-arrow-square-out text-lg"></i></button>
         <button data-click="closeAppViewer" class="p-2 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors text-slate-300"><i class="ph-bold ph-x text-lg"></i></button>
       </div>
@@ -1939,9 +1942,13 @@
     let currentLaunchUrl = null;
     let isCurrentLaunchBlob = false;
     let playTimer = null;
+    let rewardInterval = null;
 
     window.awardPlaytimeCoins = async (amount) => {
-        if (!currentUser) return;
+        if (!currentUser) {
+            showToast('Login Required', 'You must be signed in to earn playtime coins!', 'ph-warning-circle', 'red');
+            return;
+        }
         try {
             const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
             const userSnap = await getDoc(userRef);
@@ -1972,10 +1979,8 @@
 
       if (!launchUrl) return;
 
-      if (playTimer) {
-        clearTimeout(playTimer);
-        playTimer = null;
-      }
+      if (playTimer) clearTimeout(playTimer);
+      if (rewardInterval) clearInterval(rewardInterval);
 
       const inIframe = window.self !== window.top;
 
@@ -2000,24 +2005,53 @@
         overlay.classList.remove('hidden');
         overlay.classList.add('flex');
 
-        // Start 2 minute timer (120,000 ms)
-        playTimer = setTimeout(() => {
-            if (document.getElementById('app-viewer-overlay').classList.contains('flex')) {
+        // Setup Visual UI Timer (2 minutes = 120 seconds)
+        const timerContainer = document.getElementById('reward-timer-container');
+        timerContainer.classList.remove('hidden');
+        timerContainer.classList.add('flex');
+        timerContainer.innerHTML = `<i class="ph-fill ph-timer animate-pulse"></i> <span id="reward-timer-text">02:00</span>`;
+        
+        let rewardSecondsLeft = 120;
+        rewardInterval = setInterval(() => {
+            rewardSecondsLeft--;
+            if (rewardSecondsLeft <= 0) {
+                clearInterval(rewardInterval);
+                timerContainer.innerHTML = `<i class="ph-fill ph-check-circle"></i> <span>+500 Coins!</span>`;
+                setTimeout(() => {
+                    timerContainer.classList.add('hidden');
+                    timerContainer.classList.remove('flex');
+                }, 5000);
                 window.awardPlaytimeCoins(500);
+            } else {
+                const m = Math.floor(rewardSecondsLeft / 60).toString().padStart(2, '0');
+                const s = (rewardSecondsLeft % 60).toString().padStart(2, '0');
+                const timerText = document.getElementById('reward-timer-text');
+                if (timerText) timerText.textContent = `${m}:${s}`;
             }
-        }, 120000);
+        }, 1000);
 
       } else {
         // Not in an iframe -> Open outside of the store (new tab/window)
-        const newWin = window.open(launchUrl, '_blank', 'noopener,noreferrer');
+        const newWin = window.open(launchUrl, '_blank');
         
         if (newWin) {
-            // Check if the external window is still open after 2 minutes
-            playTimer = setTimeout(() => {
-                if (!newWin.closed) {
-                    window.awardPlaytimeCoins(500);
+            showToast('Timer Started', 'Keep the game tab open for 2 minutes to earn 500 coins!', 'ph-timer', 'yellow');
+            
+            let rewardSecondsLeft = 120;
+            rewardInterval = setInterval(() => {
+                if (newWin.closed) {
+                    clearInterval(rewardInterval);
+                    showToast('Playtime Cancelled', 'You closed the game before 2 minutes.', 'ph-warning-circle', 'amber');
+                } else {
+                    rewardSecondsLeft--;
+                    if (rewardSecondsLeft <= 0) {
+                        clearInterval(rewardInterval);
+                        window.awardPlaytimeCoins(500);
+                    }
                 }
-            }, 120000);
+            }, 1000);
+        } else {
+            showToast('Popup Blocked', 'Please allow popups to open the game and earn coins.', 'ph-warning-circle', 'red');
         }
 
         if (activeVersionObj.payloadType === 'code') {
@@ -2030,6 +2064,16 @@
       if (playTimer) {
         clearTimeout(playTimer);
         playTimer = null;
+      }
+      if (rewardInterval) {
+        clearInterval(rewardInterval);
+        rewardInterval = null;
+      }
+
+      const timerContainer = document.getElementById('reward-timer-container');
+      if (timerContainer) {
+          timerContainer.classList.add('hidden');
+          timerContainer.classList.remove('flex');
       }
 
       const overlay = document.getElementById('app-viewer-overlay');
