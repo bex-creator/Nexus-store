@@ -14,6 +14,19 @@
         extend: {
           fontFamily: {
             sans: ['system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            indigo: {
+              400: 'rgb(var(--theme-accent-400, 129 140 248) / <alpha-value>)',
+              500: 'rgb(var(--theme-accent-500, 99 102 241) / <alpha-value>)',
+              600: 'rgb(var(--theme-accent-600, 79 70 229) / <alpha-value>)',
+            },
+            slate: {
+              50: 'rgb(var(--theme-bg-50, 244 244 246) / <alpha-value>)',
+              800: 'rgb(var(--theme-bg-800, 30 41 59) / <alpha-value>)',
+              900: 'rgb(var(--theme-bg-900, 15 23 42) / <alpha-value>)',
+              950: 'rgb(var(--theme-bg-950, 2 6 23) / <alpha-value>)',
+            }
           }
         }
       }
@@ -44,7 +57,7 @@
     .animate-zoom-in { animation: zoomIn 0.3s ease-out forwards; }
   </style>
 </head>
-<body class="bg-[#f4f4f6] dark:bg-slate-950 text-slate-900 dark:text-slate-200 transition-colors duration-300 min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 transition-colors duration-300 min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
 
   <!-- APP ROOT -->
   <div id="app-root">
@@ -175,6 +188,38 @@
     </div>
   </div>
 
+  <!-- Theme Selection Modal -->
+  <div id="theme-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Appearance</h2>
+        <button data-click="closeModal" data-arg="theme-modal" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-full transition-colors">
+          <i class="ph-bold ph-x text-xl"></i>
+        </button>
+      </div>
+      
+      <div class="mb-8">
+        <label class="block text-sm font-bold mb-4 uppercase tracking-wide text-slate-700 dark:text-slate-400">Accent Color</label>
+        <div class="flex gap-4">
+          <button data-click="setThemeAccent" data-arg="indigo" class="accent-btn w-10 h-10 rounded-full bg-[#6366f1] ring-[#6366f1] hover:scale-110 transition-all"></button>
+          <button data-click="setThemeAccent" data-arg="rose" class="accent-btn w-10 h-10 rounded-full bg-[#f43f5e] ring-[#f43f5e] hover:scale-110 transition-all"></button>
+          <button data-click="setThemeAccent" data-arg="emerald" class="accent-btn w-10 h-10 rounded-full bg-[#10b981] ring-[#10b981] hover:scale-110 transition-all"></button>
+          <button data-click="setThemeAccent" data-arg="amber" class="accent-btn w-10 h-10 rounded-full bg-[#f59e0b] ring-[#f59e0b] hover:scale-110 transition-all"></button>
+          <button data-click="setThemeAccent" data-arg="cyan" class="accent-btn w-10 h-10 rounded-full bg-[#06b6d4] ring-[#06b6d4] hover:scale-110 transition-all"></button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold mb-4 uppercase tracking-wide text-slate-700 dark:text-slate-400">Mode</label>
+        <div class="grid grid-cols-3 gap-3">
+          <button data-click="setThemeMode" data-arg="light" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Light</button>
+          <button data-click="setThemeMode" data-arg="dark" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Dark</button>
+          <button data-click="setThemeMode" data-arg="oled" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">OLED</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Header -->
   <header class="fixed top-0 inset-x-0 z-40 backdrop-blur-xl border-b shadow-[0_4px_30px_rgba(0,0,0,0.03)] bg-white/70 border-black/5 dark:bg-slate-950/70 dark:border-white/5 transition-colors duration-300">
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-6">
@@ -209,9 +254,8 @@
           <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1" class="w-9 h-9 rounded-full object-cover border-2 border-indigo-500 shadow-sm" />
           <span id="user-name" class="font-bold text-sm text-slate-700 dark:text-slate-200 hidden sm:block">Loading...</span>
         </div>
-        <button id="theme-toggle" class="p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-yellow-400 dark:hover:bg-slate-700 dark:border-transparent" title="Toggle Dark Mode">
-          <i class="ph ph-sun text-xl dark:hidden"></i>
-          <i class="ph ph-moon text-xl hidden dark:block"></i>
+        <button data-click="showThemeModal" class="p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-indigo-400 dark:hover:bg-slate-700 dark:border-transparent" title="Appearance Settings">
+          <i class="ph-fill ph-palette text-xl"></i>
         </button>
         <button data-click="navigate" data-arg="faq" class="p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:border-transparent" title="FAQ & Support">
           <i class="ph-bold ph-question text-xl"></i>
@@ -993,7 +1037,7 @@
     let currentReviewRating = 5;
     let isNewsPanelOpen = false;
     let isInboxOpen = false;
-    let installedApps = new Set();
+    let installedApps = new Set(JSON.parse(localStorage.getItem('nexus_installed') || '[]'));
     let myFavorites = new Set();
     let currentView = 'home';
     let searchQuery = '';
@@ -1609,6 +1653,11 @@
                 balance: bal - app.price,
                 purchasedApps: arrayUnion(app.id)
             });
+            
+            // Automatically keep it installed forever locally
+            installedApps.add(targetAppId);
+            localStorage.setItem('nexus_installed', JSON.stringify([...installedApps]));
+            
             logActivity('PURCHASE', app.title, `Bought app for ${app.price} coins.`);
             showToast('Purchase Successful!', `You now own ${app.title}.`, 'ph-bag', 'emerald');
             
@@ -1934,6 +1983,7 @@
 
     window.installApp = (targetAppId) => {
       installedApps.add(targetAppId);
+      localStorage.setItem('nexus_installed', JSON.stringify([...installedApps]));
       const app = apps.find(a => a.id === targetAppId);
       if(app) logActivity('INSTALL', app.title, 'App installed to local browser session.');
       renderDetails(targetAppId);
@@ -2487,10 +2537,6 @@
         submitBtn.innerHTML = '<i class="ph-fill ph-lightning text-xl"></i> Publish App';
         submitBtn.disabled = false;
       }
-    });
-
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      document.documentElement.classList.toggle('dark');
     });
 
     // --- ADMIN LOGIC & KEYBOARD SHORTCUTS ---
@@ -3422,6 +3468,9 @@
       else if (action === 'adminRejectCoinRequest') window.adminRejectCoinRequest(arg1);
       else if (action === 'closeAppViewer') window.closeAppViewer();
       else if (action === 'openViewerInNewTab') window.openViewerInNewTab();
+      else if (action === 'showThemeModal') window.showThemeModal();
+      else if (action === 'setThemeAccent') window.setThemeAccent(arg1);
+      else if (action === 'setThemeMode') window.setThemeMode(arg1);
     });
 
     document.addEventListener('submit', (e) => {
@@ -3450,6 +3499,76 @@
          renderDetails(arg1);
       }
     });
+
+    // Theme Management Logic
+    const accents = {
+      indigo: { 400: '129 140 248', 500: '99 102 241', 600: '79 70 229' },
+      rose: { 400: '251 113 133', 500: '244 63 94', 600: '225 29 72' },
+      emerald: { 400: '52 211 153', 500: '16 185 129', 600: '5 150 105' },
+      amber: { 400: '251 191 36', 500: '245 158 11', 600: '217 119 6' },
+      cyan: { 400: '34 211 238', 500: '6 182 212', 600: '8 145 178' }
+    };
+    
+    let currentAccent = localStorage.getItem('nexus_accent') || 'indigo';
+    let currentMode = localStorage.getItem('nexus_mode') || 'dark';
+
+    window.applyTheme = () => {
+      const root = document.documentElement;
+      
+      const colors = accents[currentAccent] || accents.indigo;
+      root.style.setProperty('--theme-accent-400', colors[400]);
+      root.style.setProperty('--theme-accent-500', colors[500]);
+      root.style.setProperty('--theme-accent-600', colors[600]);
+      root.style.setProperty('--theme-bg-50', '244 244 246');
+
+      if (currentMode === 'light') {
+        root.classList.remove('dark');
+      } else {
+        root.classList.add('dark');
+        if (currentMode === 'oled') {
+          root.style.setProperty('--theme-bg-800', '17 17 17');
+          root.style.setProperty('--theme-bg-900', '5 5 5');
+          root.style.setProperty('--theme-bg-950', '0 0 0');
+        } else {
+          // Standard Dark
+          root.style.setProperty('--theme-bg-800', '30 41 59');
+          root.style.setProperty('--theme-bg-900', '15 23 42');
+          root.style.setProperty('--theme-bg-950', '2 6 23');
+        }
+      }
+    };
+
+    window.showThemeModal = () => {
+       document.getElementById('theme-modal').classList.remove('hidden');
+       document.getElementById('theme-modal').classList.add('flex');
+       
+       document.querySelectorAll('.accent-btn').forEach(btn => {
+           if(btn.dataset.arg === currentAccent) btn.classList.add('ring-4', 'ring-offset-2', 'ring-offset-slate-100', 'dark:ring-offset-slate-900');
+           else btn.classList.remove('ring-4', 'ring-offset-2', 'ring-offset-slate-100', 'dark:ring-offset-slate-900');
+       });
+       
+       document.querySelectorAll('.mode-btn').forEach(btn => {
+           if(btn.dataset.arg === currentMode) btn.classList.add('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
+           else btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
+       });
+    };
+
+    window.setThemeAccent = (color) => {
+      currentAccent = color;
+      localStorage.setItem('nexus_accent', color);
+      window.applyTheme();
+      window.showThemeModal(); 
+    };
+
+    window.setThemeMode = (mode) => {
+      currentMode = mode;
+      localStorage.setItem('nexus_mode', mode);
+      window.applyTheme();
+      window.showThemeModal();
+    };
+
+    // Apply themes on boot
+    window.applyTheme();
 
     // Initial Render
     renderHome();
