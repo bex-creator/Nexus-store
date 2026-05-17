@@ -652,6 +652,15 @@
 
           <!-- Tab Content: Users -->
           <div id="admin-tab-users" class="overflow-x-auto hidden">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                 <h3 class="font-bold text-lg text-slate-900 dark:text-white">User Management</h3>
+                 <p class="text-sm text-slate-500">Manage all registered accounts on the platform.</p>
+              </div>
+              <button data-click="adminResetAllUsers" class="bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2">
+                <i class="ph-bold ph-warning"></i> Reset All Users
+              </button>
+            </div>
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-sm uppercase tracking-wider">
@@ -3037,6 +3046,38 @@
       );
     };
 
+    window.adminResetAllUsers = () => {
+      showPromptModal(
+        `Reset All Users?`,
+        `This will permanently erase ALL user data (coins, purchases, profiles, usernames) for everyone on the platform. Type "RESET" to confirm.`,
+        `Type RESET here...`,
+        `Wipe All Users`,
+        `bg-red-600 hover:bg-red-500 shadow-red-500/30`,
+        async (val, modalId) => {
+          if (val !== 'RESET') {
+            showModal('Cancelled', 'Database wipe cancelled. You must type RESET exactly.');
+            document.getElementById(modalId).remove();
+            return;
+          }
+          const btn = document.getElementById(`confirm-btn-${modalId}`);
+          btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>';
+          btn.disabled = true;
+          try {
+            // Delete all user documents from the public data collection
+            const deletePromises = systemUsers.map(u => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', u.uid)));
+            await Promise.all(deletePromises);
+            
+            logActivity('MODERATION', 'Database Wipe', `Admin reset all user accounts.`);
+            document.getElementById(modalId).remove();
+            showToast('Database Wiped', `All user accounts have been reset.`, 'ph-trash', 'red');
+          } catch(e) {
+            console.error(e);
+            btn.innerHTML = 'Error';
+          }
+        }
+      );
+    };
+
     window.adminDeleteUserReviews = (uid, username) => {
       const userRevs = appReviews.filter(r => r.uid === uid);
       if (userRevs.length === 0) {
@@ -3595,6 +3636,7 @@
       else if (action === 'toggleAuthMode') window.toggleAuthMode();
       else if (action === 'continueAsGuest') window.continueAsGuest();
       else if (action === 'handleSignOut') window.handleSignOut();
+      else if (action === 'adminResetAllUsers') window.adminResetAllUsers();
     });
 
     document.addEventListener('submit', (e) => {
