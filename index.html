@@ -942,6 +942,15 @@
         let hasInitializedAuth = false;
 
         onAuthStateChanged(auth, async (user) => {
+          // FORCE LOGOUT ALL USERS ONCE TO ENFORCE NEW EMAIL AUTH SYSTEM
+          if (!localStorage.getItem('nexus_auth_migrated_v2')) {
+              localStorage.setItem('nexus_auth_migrated_v2', 'true');
+              if (user) {
+                  await signOut(auth);
+                  return;
+              }
+          }
+
           // Block unverified email users from entering the app
           if (user && !user.isAnonymous && !user.emailVerified) {
               await signOut(auth);
