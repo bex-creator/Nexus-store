@@ -942,6 +942,12 @@
         let hasInitializedAuth = false;
 
         onAuthStateChanged(auth, async (user) => {
+          // Block unverified email users from entering the app
+          if (user && !user.isAnonymous && !user.emailVerified) {
+              await signOut(auth);
+              return;
+          }
+
           // One-time initialization check to display the Auth Modal if no user is saved
           if (!hasInitializedAuth) {
               hasInitializedAuth = true;
@@ -1144,14 +1150,28 @@
             if (authMode === 'signup') {
                 const userCred = await createUserWithEmailAndPassword(auth, email, password);
                 await sendEmailVerification(userCred.user);
-                showToast('Welcome!', 'Account created. A verification email has been sent to your inbox.', 'ph-envelope', 'indigo');
+                await signOut(auth); // Prevent auto-login until verified
+                
+                showModal('Verification Required', 'Account created successfully! We have sent a verification link to your email address.\n\nYou MUST click the link before you can log in. (Note: Please check your spam/junk folder if you do not see it!)');
+                window.toggleAuthMode(); // Switch back to login mode UI
             } else {
-                await signInWithEmailAndPassword(auth, email, password);
+                const userCred = await signInWithEmailAndPassword(auth, email, password);
+                
+                if (!userCred.user.emailVerified) {
+                    await sendEmailVerification(userCred.user); // Resend the email just in case
+                    await signOut(auth); // Boot them back out
+                    showModal('Email Not Verified', 'You must verify your email before logging in. A new verification link has been sent to your email address.\n\n(Note: Please check your spam/junk folder!)');
+                    
+                    btn.disabled = false;
+                    btn.innerHTML = 'Log In';
+                    return; // Stop execution here
+                }
+                
                 showToast('Welcome Back!', 'Successfully signed in.', 'ph-check-circle', 'emerald');
+                document.getElementById('auth-modal').classList.add('hidden');
+                document.getElementById('auth-modal').classList.remove('flex');
+                document.getElementById('auth-form').reset();
             }
-            document.getElementById('auth-modal').classList.add('hidden');
-            document.getElementById('auth-modal').classList.remove('flex');
-            document.getElementById('auth-form').reset();
         } catch (err) {
             console.error(err);
             let msg = 'Authentication failed. Please try again.';
@@ -1160,8 +1180,10 @@
             if (err.code === 'auth/weak-password') msg = 'Your password must be at least 6 characters.';
             showModal('Error', msg);
         } finally {
-            btn.disabled = false;
-            btn.innerHTML = authMode === 'login' ? 'Log In' : 'Sign Up';
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = authMode === 'login' ? 'Log In' : 'Sign Up';
+            }
         }
     };
 
