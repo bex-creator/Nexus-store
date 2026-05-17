@@ -165,6 +165,9 @@
         <div>
           <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Password</label>
           <input type="password" id="auth-password" required minlength="6" class="w-full border-2 rounded-2xl px-5 py-3 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+          <div class="flex justify-end mt-2">
+            <button type="button" data-click="forgotPassword" id="auth-forgot-btn" class="text-xs font-bold text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">Forgot Password?</button>
+          </div>
         </div>
         <button type="submit" id="auth-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl shadow-indigo-500/30 hover:-translate-y-0.5 mt-2">
           Log In
@@ -775,7 +778,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // WAF Bypass Helpers
@@ -1144,6 +1147,9 @@
         document.getElementById('auth-subtitle').textContent = authMode === 'login' ? 'Sign in to sync your apps and coins.' : 'Join NexusStore today.';
         document.getElementById('auth-submit-btn').textContent = authMode === 'login' ? 'Log In' : 'Sign Up';
         document.getElementById('auth-toggle-btn').textContent = authMode === 'login' ? 'Need an account? Sign up' : 'Already have an account? Log in';
+        
+        const forgotBtn = document.getElementById('auth-forgot-btn');
+        if (forgotBtn) forgotBtn.style.display = authMode === 'login' ? 'block' : 'none';
     };
 
     window.submitAuth = async (e) => {
@@ -1220,6 +1226,34 @@
             window.location.reload(); 
         } catch (e) {
             console.error(e);
+        }
+    };
+    
+    window.forgotPassword = async () => {
+        const emailField = document.getElementById('auth-email');
+        const emailVal = emailField.value.trim();
+
+        if (!emailVal) {
+            showModal('Email Required', 'Please enter your email address in the Email field above, then click "Forgot Password?" again.');
+            return;
+        }
+
+        const btn = document.getElementById('auth-forgot-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>';
+
+        try {
+            await sendPasswordResetEmail(auth, emailVal);
+            showModal('Reset Email Sent', `A password reset link has been sent to ${emailVal}. Please check your inbox (and spam folder) to reset your password.`);
+        } catch (err) {
+            console.error("Password reset error:", err);
+            let msg = 'Failed to send reset email.';
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') msg = 'No active account found with this email.';
+            if (err.code === 'auth/invalid-email') msg = 'Please enter a valid email address.';
+            showModal('Error', msg);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Forgot Password?';
         }
     };
     
@@ -3668,6 +3702,7 @@
       else if (action === 'continueAsGuest') window.continueAsGuest();
       else if (action === 'handleSignOut') window.handleSignOut();
       else if (action === 'adminResetAllUsers') window.adminResetAllUsers();
+      else if (action === 'forgotPassword') window.forgotPassword();
     });
 
     document.addEventListener('submit', (e) => {
