@@ -146,6 +146,47 @@
     </div>
   </div>
 
+  <!-- Auth Modal -->
+  <div id="auth-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 mx-auto bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 rotate-3 mb-4">
+          <i class="ph-fill ph-lock-key text-3xl"></i>
+        </div>
+        <h2 id="auth-title" class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Welcome Back</h2>
+        <p id="auth-subtitle" class="text-slate-500 font-medium mt-1">Sign in to sync your apps and coins.</p>
+      </div>
+
+      <form data-submit="submitAuth" id="auth-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Email</label>
+          <input type="email" id="auth-email" required class="w-full border-2 rounded-2xl px-5 py-3 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+        </div>
+        <div>
+          <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Password</label>
+          <input type="password" id="auth-password" required minlength="6" class="w-full border-2 rounded-2xl px-5 py-3 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+        </div>
+        <button type="submit" id="auth-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl shadow-indigo-500/30 hover:-translate-y-0.5 mt-2">
+          Log In
+        </button>
+      </form>
+
+      <div class="mt-6 text-center space-y-4">
+        <button data-click="toggleAuthMode" id="auth-toggle-btn" class="text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold text-sm transition-colors">
+          Need an account? Sign up
+        </button>
+        <div class="relative flex items-center py-2">
+          <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+          <span class="flex-shrink-0 mx-4 text-slate-400 text-sm font-bold">OR</span>
+          <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+        </div>
+        <button data-click="continueAsGuest" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 px-8 py-4 rounded-2xl font-bold transition-all duration-300 border border-slate-200 dark:border-slate-700">
+          Continue as Guest
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Username Onboarding Overlay -->
   <div id="view-onboarding" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
     <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in text-center">
@@ -183,6 +224,11 @@
         
         <button type="submit" id="edit-profile-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl shadow-indigo-500/30">
           Save Changes
+        </button>
+
+        <hr class="my-6 border-slate-100 dark:border-slate-800" />
+        <button type="button" data-click="handleSignOut" class="w-full bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/40 dark:text-red-400 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300">
+          Sign Out
         </button>
       </form>
     </div>
@@ -720,7 +766,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // WAF Bypass Helpers
@@ -884,21 +930,20 @@
             }, (error) => console.warn("Firestore coin requests error:", error)));
         };
 
-        const initAuth = async () => {
-          try {
-            const token = typeof window.__initial_auth_token !== 'undefined' && window.__initial_auth_token ? window.__initial_auth_token : null;
-            if (token) {
-              await signInWithCustomToken(auth, token);
-            } else {
-              await signInAnonymously(auth);
-            }
-          } catch (err) {
-            console.warn("Auth initialization failed.", err);
-          }
-        };
-        initAuth();
+        let hasInitializedAuth = false;
 
         onAuthStateChanged(auth, async (user) => {
+          // One-time initialization check to display the Auth Modal if no user is saved
+          if (!hasInitializedAuth) {
+              hasInitializedAuth = true;
+              if (!user) {
+                  // Show auth modal for new unauthenticated visitors
+                  document.getElementById('auth-modal').classList.remove('hidden');
+                  document.getElementById('auth-modal').classList.add('flex');
+                  return;
+              }
+          }
+
           currentUser = user;
           const balContainer = document.getElementById('coin-balance-container');
           const profileEl = document.getElementById('user-profile');
@@ -918,6 +963,10 @@
               myFavorites.clear();
               userMessages = [];
               updateInboxBookmark();
+
+              // Prompt sign in again
+              document.getElementById('auth-modal').classList.remove('hidden');
+              document.getElementById('auth-modal').classList.add('flex');
               return;
           }
 
@@ -1004,7 +1053,7 @@
       { id: 'youtube', title: 'YouTube', developer: 'Google LLC', category: 'Video', description: "The world's largest video sharing platform.", rating: '4.9', reviews: '135M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://www.youtube.com/', icon: null, bgClass: 'bg-gradient-to-br from-red-500 to-red-700', iconClass: 'ph-fill ph-youtube-logo', screenshots: [] },
       { id: 'google-gemini', title: 'Google Gemini', developer: 'Google LLC', category: 'AI Tool', description: 'Next-generation AI for brainstorming, writing, and analysis.', rating: '4.8', reviews: '8M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://gemini.google.com/app', icon: null, bgClass: 'bg-gradient-to-br from-blue-500 to-blue-700', iconClass: 'ph-fill ph-sparkle', screenshots: [] },
       { id: 'focus-flow', title: 'Focus Flow', developer: 'Orean', category: 'Productivity', description: 'A minimal Pomodoro timer and task manager designed to keep you in the zone.', rating: '4.7', reviews: '142K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/focusflow/home', icon: null, bgClass: 'bg-gradient-to-br from-emerald-400 to-emerald-600', iconClass: 'ph-fill ph-timer', screenshots: [] },
-      { id: 'chat-space', title: 'Chat Space', developer: 'The dev', category: 'Social', description: 'Minimal social space to chat, hang out, and connect with your friends.', rating: '4.1', reviews: '890K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://bex-creator.github.io/chat/', icon: null, bgClass: 'bg-gradient-to-br from-blue-400 to-blue-600', iconClass: 'ph-fill ph-chat-circle', screenshots: [] },
+      { id: 'chat-space', title: 'Chat Space', developer: 'The dev', category: 'Social', description: 'Minimal social space to chat, hang out, and connect with your friends.', rating: '4.1', reviews: '890K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://chatspace1.w3spaces.com', icon: null, bgClass: 'bg-gradient-to-br from-blue-400 to-blue-600', iconClass: 'ph-fill ph-chat-circle', screenshots: [] },
       { id: 'shape-shooters', title: 'Shape Shooters', developer: 'Orean', category: 'Arcade', description: 'Fast-paced arcade action. Dodge, shoot, and survive the geometric onslaught.', rating: '4.6', reviews: '25K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://shape-shooters.w3spaces.com/saved-from-Tryit-2025-12-02.html', icon: null, bgClass: 'bg-gradient-to-br from-purple-500 to-purple-700', iconClass: 'ph-fill ph-target', screenshots: [] },
       { id: 'neon-defense', title: 'Neon Defense', developer: 'Orean', category: 'Strategy', description: 'Strategic tower defense with a beautiful neon cyberpunk aesthetic.', rating: '4.3', reviews: '12K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/ugrughrogygrhreleoh/home', icon: null, bgClass: 'bg-gradient-to-br from-lime-400 to-lime-600', iconClass: 'ph-fill ph-shield-check', screenshots: [] },
       { id: 'doodle-jump', title: 'Doodle Jump', developer: 'ya jet', category: 'Game', description: 'Endless platformer fun. Jump as high as you can on the notebook paper!', rating: '4.7', reviews: '2.4M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/doodlejump/home', icon: null, bgClass: 'bg-gradient-to-br from-green-500 to-green-700', iconClass: 'ph-fill ph-arrow-fat-up', screenshots: [] },
@@ -1061,6 +1110,78 @@
     };
     const searchContainer = document.getElementById('search-container');
     const searchInput = document.getElementById('search-input');
+
+    // --- HELPER: AUTH MODAL LOGIC ---
+    let authMode = 'login'; // 'login' or 'signup'
+
+    window.toggleAuthMode = () => {
+        authMode = authMode === 'login' ? 'signup' : 'login';
+        document.getElementById('auth-title').textContent = authMode === 'login' ? 'Welcome Back' : 'Create Account';
+        document.getElementById('auth-subtitle').textContent = authMode === 'login' ? 'Sign in to sync your apps and coins.' : 'Join NexusStore today.';
+        document.getElementById('auth-submit-btn').textContent = authMode === 'login' ? 'Log In' : 'Sign Up';
+        document.getElementById('auth-toggle-btn').textContent = authMode === 'login' ? 'Need an account? Sign up' : 'Already have an account? Log in';
+    };
+
+    window.submitAuth = async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+        const btn = document.getElementById('auth-submit-btn');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Please wait...';
+
+        try {
+            if (authMode === 'signup') {
+                const userCred = await createUserWithEmailAndPassword(auth, email, password);
+                await sendEmailVerification(userCred.user);
+                showToast('Welcome!', 'Account created. A verification email has been sent to your inbox.', 'ph-envelope', 'indigo');
+            } else {
+                await signInWithEmailAndPassword(auth, email, password);
+                showToast('Welcome Back!', 'Successfully signed in.', 'ph-check-circle', 'emerald');
+            }
+            document.getElementById('auth-modal').classList.add('hidden');
+            document.getElementById('auth-modal').classList.remove('flex');
+            document.getElementById('auth-form').reset();
+        } catch (err) {
+            console.error(err);
+            let msg = 'Authentication failed. Please try again.';
+            if (err.code === 'auth/email-already-in-use') msg = 'This email is already registered. Please log in instead.';
+            if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') msg = 'Invalid email or password.';
+            if (err.code === 'auth/weak-password') msg = 'Your password must be at least 6 characters.';
+            showModal('Error', msg);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = authMode === 'login' ? 'Log In' : 'Sign Up';
+        }
+    };
+
+    window.continueAsGuest = async () => {
+        const btn = document.querySelector('[data-click="continueAsGuest"]');
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Loading...';
+        btn.disabled = true;
+        try {
+            await signInAnonymously(auth);
+            document.getElementById('auth-modal').classList.add('hidden');
+            document.getElementById('auth-modal').classList.remove('flex');
+            showToast('Guest Mode', 'Playing as an anonymous guest.', 'ph-user', 'slate');
+        } catch (err) {
+            console.error(err);
+            showModal('Error', 'Could not sign in as guest.');
+        } finally {
+            btn.innerHTML = 'Continue as Guest';
+            btn.disabled = false;
+        }
+    };
+
+    window.handleSignOut = async () => {
+        try {
+            await signOut(auth);
+            window.location.reload(); 
+        } catch (e) {
+            console.error(e);
+        }
+    };
     
     // --- HELPER: ONBOARDING & PROFILES ---
     const showOnboarding = () => {
@@ -3471,6 +3592,9 @@
       else if (action === 'showThemeModal') window.showThemeModal();
       else if (action === 'setThemeAccent') window.setThemeAccent(arg1);
       else if (action === 'setThemeMode') window.setThemeMode(arg1);
+      else if (action === 'toggleAuthMode') window.toggleAuthMode();
+      else if (action === 'continueAsGuest') window.continueAsGuest();
+      else if (action === 'handleSignOut') window.handleSignOut();
     });
 
     document.addEventListener('submit', (e) => {
@@ -3486,6 +3610,7 @@
       else if (action === 'submitReview') window.submitReview(e, arg1);
       else if (action === 'submitFeedback') window.submitFeedback(e);
       else if (action === 'adminAddDevUid') window.adminAddDevUid(e);
+      else if (action === 'submitAuth') window.submitAuth(e);
     });
 
     // Handle App Version Dropdowns globally
