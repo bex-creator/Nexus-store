@@ -1022,16 +1022,20 @@
               usernameSet: false,
               status: 'active',
               role: 'user',
-              balance: 0,
+              balance: 500,
+              isVIP: false,
+              lastDailyClaim: 0,
               purchasedApps: [],
               following: [],
               joinedAt: Date.now()
             });
             handleUserStatus('active');
             
-            // Show initial 0 coin balance
+            // Show initial coin balance
             const balContainer = document.getElementById('coin-balance-container');
+            const balText = document.getElementById('coin-balance-text');
             if (balContainer) { balContainer.classList.remove('hidden'); balContainer.classList.add('flex'); }
+            if (balText) { balText.textContent = '500'; }
 
             showOnboarding();
           } else {
@@ -1080,7 +1084,7 @@
       { id: 'youtube', title: 'YouTube', developer: 'Google LLC', category: 'Video', description: "The world's largest video sharing platform.", rating: '4.9', reviews: '135M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://www.youtube.com/', icon: null, bgClass: 'bg-gradient-to-br from-red-500 to-red-700', iconClass: 'ph-fill ph-youtube-logo', screenshots: [] },
       { id: 'google-gemini', title: 'Google Gemini', developer: 'Google LLC', category: 'AI Tool', description: 'Next-generation AI for brainstorming, writing, and analysis.', rating: '4.8', reviews: '8M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://gemini.google.com/app', icon: null, bgClass: 'bg-gradient-to-br from-blue-500 to-blue-700', iconClass: 'ph-fill ph-sparkle', screenshots: [] },
       { id: 'focus-flow', title: 'Focus Flow', developer: 'Orean', category: 'Productivity', description: 'A minimal Pomodoro timer and task manager designed to keep you in the zone.', rating: '4.7', reviews: '142K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/focusflow/home', icon: null, bgClass: 'bg-gradient-to-br from-emerald-400 to-emerald-600', iconClass: 'ph-fill ph-timer', screenshots: [] },
-      { id: 'chat-space', title: 'Chat Space', developer: 'The dev', category: 'Social', description: 'Minimal social space to chat, hang out, and connect with your friends.', rating: '4.1', reviews: '890K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://bex-creator.github.io/chat/', icon: null, bgClass: 'bg-gradient-to-br from-blue-400 to-blue-600', iconClass: 'ph-fill ph-chat-circle', screenshots: [] },
+      { id: 'chat-space', title: 'Chat Space', developer: 'The dev', category: 'Social', description: 'Minimal social space to chat, hang out, and connect with your friends.', rating: '4.1', reviews: '890K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://chatspace1.w3spaces.com', icon: null, bgClass: 'bg-gradient-to-br from-blue-400 to-blue-600', iconClass: 'ph-fill ph-chat-circle', screenshots: [] },
       { id: 'shape-shooters', title: 'Shape Shooters', developer: 'Orean', category: 'Arcade', description: 'Fast-paced arcade action. Dodge, shoot, and survive the geometric onslaught.', rating: '4.6', reviews: '25K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://shape-shooters.w3spaces.com/saved-from-Tryit-2025-12-02.html', icon: null, bgClass: 'bg-gradient-to-br from-purple-500 to-purple-700', iconClass: 'ph-fill ph-target', screenshots: [] },
       { id: 'neon-defense', title: 'Neon Defense', developer: 'Orean', category: 'Strategy', description: 'Strategic tower defense with a beautiful neon cyberpunk aesthetic.', rating: '4.3', reviews: '12K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/ugrughrogygrhreleoh/home', icon: null, bgClass: 'bg-gradient-to-br from-lime-400 to-lime-600', iconClass: 'ph-fill ph-shield-check', screenshots: [] },
       { id: 'doodle-jump', title: 'Doodle Jump', developer: 'ya jet', category: 'Game', description: 'Endless platformer fun. Jump as high as you can on the notebook paper!', rating: '4.7', reviews: '2.4M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/doodlejump/home', icon: null, bgClass: 'bg-gradient-to-br from-green-500 to-green-700', iconClass: 'ph-fill ph-arrow-fat-up', screenshots: [] },
@@ -1627,14 +1631,17 @@
 
     // Helper to render grid items
     const generateGridHtml = (appList) => {
+      const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
       return appList.map((app, i) => {
         const stats = getAppStats(app);
+        const isVIP = me && me.isVIP;
+        const finalPrice = isVIP ? Math.floor(app.price * 0.5) : app.price;
         return `
         <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="flex flex-col items-start group cursor-pointer animate-fade-in" style="animation-delay: ${Math.min(i * 30, 300)}ms; animation-fill-mode: both;">
           <div class="w-full aspect-square rounded-[2rem] overflow-hidden mb-4 shadow-[0_8px_20px_rgba(0,0,0,0.06)] group-hover:shadow-[0_15px_30px_rgba(99,102,241,0.2)] transition-all duration-300 group-hover:-translate-y-2 relative border bg-white border-slate-100 dark:bg-slate-800 dark:border-slate-700">
             ${app.isBroken ? '<div class="absolute top-3 left-3 bg-amber-500/90 backdrop-blur-md text-white p-2 rounded-full border border-white/10 z-30 shadow-lg" title="App Unavailable"><i class="ph-bold ph-warning text-sm"></i></div>' : ''}
             ${app.visibility === 'private' ? '<div class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md text-white p-2 rounded-full border border-white/10 z-30"><i class="ph-fill ph-lock-key text-sm"></i></div>' : ''}
-            ${app.price > 0 ? `<div class="absolute bottom-3 right-3 bg-yellow-400/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full border border-yellow-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1"><i class="ph-fill ph-coin"></i> ${app.price}</div>` : ''}
+            ${app.price > 0 ? (isVIP ? `<div class="absolute bottom-3 right-3 bg-purple-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-purple-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1" title="VIP 50% Off"><i class="ph-fill ph-star"></i><i class="ph-fill ph-coin"></i> ${finalPrice}</div>` : `<div class="absolute bottom-3 right-3 bg-yellow-400/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full border border-yellow-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1"><i class="ph-fill ph-coin"></i> ${app.price}</div>`) : ''}
             ${app.icon ? 
               `<img src="${app.icon}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />`
               :
@@ -1833,9 +1840,10 @@
 
         const me = systemUsers.find(u => u.uid === currentUser.uid);
         const bal = me?.balance || 0;
+        const finalPrice = (me && me.isVIP) ? Math.floor(app.price * 0.5) : app.price;
 
-        if (bal < app.price) {
-            showModal('Insufficient Funds', `You need <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> ${app.price}</span> Nexus Coins to purchase this app. You currently have ${bal}. Ask an admin to grant you more coins!`);
+        if (bal < finalPrice) {
+            showModal('Insufficient Funds', `You need <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> ${finalPrice}</span> Nexus Coins to purchase this app. You currently have ${bal}. Ask an admin to grant you more coins!`);
             return;
         }
 
@@ -1845,7 +1853,7 @@
         try {
             const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
             await updateDoc(userRef, {
-                balance: bal - app.price,
+                balance: bal - finalPrice,
                 purchasedApps: arrayUnion(app.id)
             });
             
@@ -1853,7 +1861,7 @@
             installedApps.add(targetAppId);
             localStorage.setItem('nexus_installed', JSON.stringify([...installedApps]));
             
-            logActivity('PURCHASE', app.title, `Bought app for ${app.price} coins.`);
+            logActivity('PURCHASE', app.title, `Bought app for ${finalPrice} coins.`);
             showToast('Purchase Successful!', `You now own ${app.title}.`, 'ph-bag', 'emerald');
             
             // Re-render details to show the Download/Play buttons instead of Buy
@@ -1875,6 +1883,8 @@
       
       const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
       const purchasedApps = me?.purchasedApps || [];
+      const isVIP = me && me.isVIP;
+      const finalPrice = isVIP ? Math.floor(app.price * 0.5) : app.price;
       const hasAccess = app.price === 0 || purchasedApps.includes(app.id) || (currentUser && app.authorId === currentUser.uid) || isAuthorizedAdmin;
 
       // Find related apps (same category or developer, excluding current app and private apps)
@@ -1962,7 +1972,7 @@
                     </div>
                     <div class="flex flex-col items-center justify-center rounded-2xl px-5 py-3 border min-w-[100px] bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-700">
                       <span class="text-lg font-black flex items-center gap-1 text-slate-900 dark:text-white">
-                        ${app.price > 0 ? `<i class="ph-fill ph-coin text-yellow-500"></i> ${app.price}` : 'Free'}
+                        ${app.price > 0 ? (isVIP ? `<i class="ph-fill ph-star text-purple-500" title="VIP 50% Off"></i> <i class="ph-fill ph-coin text-yellow-500"></i> <span class="line-through text-slate-400 text-sm mr-1">${app.price}</span>${finalPrice}` : `<i class="ph-fill ph-coin text-yellow-500"></i> ${app.price}`) : 'Free'}
                       </span>
                       <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Price</span>
                     </div>
@@ -1971,7 +1981,7 @@
                   <div class="flex flex-col sm:flex-row flex-wrap gap-4">
                     ${!hasAccess ? `
                       <button id="btn-buy-app" data-click="buyApp" data-arg="${app.id}" class="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-8 h-14 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl shadow-yellow-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
-                        Buy for <i class="ph-fill ph-coin"></i> ${app.price}
+                        Buy for <i class="ph-fill ph-coin"></i> ${finalPrice}
                       </button>
                     ` : `
                         ${!isInstalled ? `
@@ -2801,9 +2811,42 @@
       const modalId = `coin-request-modal`;
       if (document.getElementById(modalId)) return;
       
+      const me = systemUsers.find(u => u.uid === currentUser.uid);
+      const isVIP = me.isVIP || false;
+      const dailyAmount = isVIP ? 1000 : 500;
+      const canClaim = !me.lastDailyClaim || (Date.now() - me.lastDailyClaim > 86400000);
+      const timeRemaining = me.lastDailyClaim ? Math.ceil((86400000 - (Date.now() - me.lastDailyClaim)) / 3600000) : 0;
+      
+      const dailyRewardHtml = canClaim ? `
+        <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-4 rounded-2xl mb-6 flex items-center justify-between">
+          <div class="flex items-center gap-3 text-left">
+            <div class="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg"><i class="ph-fill ph-gift"></i></div>
+            <div>
+              <h4 class="font-bold text-slate-900 dark:text-white text-sm">Daily Allowance</h4>
+              <p class="text-xs font-medium text-slate-500">${dailyAmount} Coins available!</p>
+            </div>
+          </div>
+          <button data-click="claimDailyCoins" data-arg="${modalId}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-all">Claim</button>
+        </div>
+      ` : `
+        <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl mb-6 flex items-center justify-between opacity-70">
+          <div class="flex items-center gap-3 text-left">
+            <div class="w-10 h-10 bg-slate-300 dark:bg-slate-700 text-slate-500 rounded-full flex items-center justify-center"><i class="ph-fill ph-clock"></i></div>
+            <div>
+              <h4 class="font-bold text-slate-900 dark:text-white text-sm">Daily Allowance</h4>
+              <p class="text-xs font-medium text-slate-500">Available in ~${timeRemaining} hours</p>
+            </div>
+          </div>
+          <button disabled class="bg-slate-200 dark:bg-slate-800 text-slate-400 px-4 py-2 rounded-xl text-sm font-bold cursor-not-allowed">Claimed</button>
+        </div>
+      `;
+
       const modalHtml = `
         <div id="${modalId}" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4">
           <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in text-center">
+            
+            ${dailyRewardHtml}
+
             <div class="w-16 h-16 mx-auto bg-yellow-100 text-yellow-500 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
               <i class="ph-fill ph-gift text-3xl"></i>
             </div>
@@ -2830,6 +2873,34 @@
         </div>
       `;
       document.body.insertAdjacentHTML('beforeend', modalHtml);
+    };
+
+    window.claimDailyCoins = async (modalId) => {
+        if (!currentUser) return;
+        try {
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const me = userSnap.data();
+                const isVIP = me.isVIP || false;
+                const rewardAmount = isVIP ? 1000 : 500;
+                
+                if (!me.lastDailyClaim || (Date.now() - me.lastDailyClaim > 86400000)) {
+                    await updateDoc(userRef, { 
+                        balance: (me.balance || 0) + rewardAmount,
+                        lastDailyClaim: Date.now()
+                    });
+                    showToast('Daily Claimed!', `+${rewardAmount} Nexus Coins added to your balance.`, 'ph-gift', 'indigo');
+                    logActivity('REWARD', 'Daily Allowance', `Claimed ${rewardAmount} daily coins.`);
+                    document.getElementById(modalId).remove();
+                } else {
+                    showModal('Already Claimed', 'You have already claimed your daily coins. Come back later!');
+                }
+            }
+        } catch (e) {
+            console.error(e);
+            showModal('Error', 'Could not claim daily coins.');
+        }
     };
 
     window.submitCoinRequest = async (amountStr, modalId, e) => {
@@ -2965,13 +3036,14 @@
         return `
         <tr class="hover:bg-slate-50 dark:bg-slate-800/20 transition-colors group">
           <td class="p-6">
-            <div class="font-bold text-slate-900 dark:text-white">${u.username || u.displayName || 'Anonymous'}</div>
+            <div class="font-bold text-slate-900 dark:text-white">${u.username || u.displayName || 'Anonymous'} ${u.isVIP ? '<i class="ph-fill ph-star text-purple-500" title="VIP"></i>' : ''}</div>
             <div class="text-xs font-mono text-slate-400">${u.uid}</div>
           </td>
           <td class="p-6">${statusBadge}</td>
           <td class="p-6 text-right">
              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button data-click="adminManageCoins" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Manage Nexus Coins"><i class="ph-fill ph-coin"></i> Coins</button>
+              <button data-click="adminToggleVIP" data-arg="${u.uid}" class="${u.isVIP ? 'text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/40' : 'text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20'} px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Toggle VIP Status"><i class="ph-fill ph-star"></i> VIP</button>
               <button data-click="viewUserHistory" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-clock-counter-clockwise"></i> History</button>
               <button data-click="adminMessageUser" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-paper-plane-tilt"></i> Msg</button>
               ${u.status !== 'active' ? `<button data-click="adminSetUserStatus" data-arg="${u.uid}" data-arg2="active" class="text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all">Activate</button>` : ''}
@@ -3018,6 +3090,26 @@
                 }
             }
         );
+    };
+
+    window.adminToggleVIP = async (uid) => {
+        try {
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const isCurrentlyVIP = userSnap.data().isVIP || false;
+                await updateDoc(userRef, { isVIP: !isCurrentlyVIP });
+                showToast(
+                    isCurrentlyVIP ? 'VIP Revoked' : 'VIP Granted', 
+                    `User is ${isCurrentlyVIP ? 'no longer' : 'now'} a VIP.`, 
+                    'ph-star', 
+                    'purple'
+                );
+                logActivity('MODERATION', 'VIP Status', `${isCurrentlyVIP ? 'Revoked' : 'Granted'} VIP for ${uid}`);
+            }
+        } catch (e) {
+            console.error("Error toggling VIP", e);
+        }
     };
 
     window.viewUserHistory = (uid, username) => {
@@ -3703,6 +3795,8 @@
       else if (action === 'handleSignOut') window.handleSignOut();
       else if (action === 'adminResetAllUsers') window.adminResetAllUsers();
       else if (action === 'forgotPassword') window.forgotPassword();
+      else if (action === 'claimDailyCoins') window.claimDailyCoins(arg1);
+      else if (action === 'adminToggleVIP') window.adminToggleVIP(arg1);
     });
 
     document.addEventListener('submit', (e) => {
