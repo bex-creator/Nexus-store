@@ -832,6 +832,25 @@
       }
     });
 
+    // Code Scanner function
+    const scanCodeForThreats = (code) => {
+      if (!code) return { isSus: false };
+      const susPatterns = [
+        { regex: /eval\s*\(/i, name: 'eval() execution' },
+        { regex: /document\.cookie/i, name: 'Cookie manipulation' },
+        { regex: /window\.opener/i, name: 'window.opener access' },
+        { regex: /window\.parent/i, name: 'window.parent access' },
+        { regex: /document\.write\s*\(/i, name: 'document.write() usage' },
+        { regex: /<script[^>]*src=["']?(?!https:\/\/(cdn\.tailwindcss\.com|unpkg\.com|cdnjs\.cloudflare\.com))[^"'>]+["']?>/i, name: 'Untrusted external script URL' }
+      ];
+      for (let pattern of susPatterns) {
+        if (pattern.regex.test(code)) {
+          return { isSus: true, reason: pattern.name };
+        }
+      }
+      return { isSus: false };
+    };
+
     // Wrap in try/catch so a failing config won't stop default apps from rendering
     try {
       const firebaseConfig = myFirebaseConfig;
@@ -1936,7 +1955,7 @@
 
       const detailsHtml = `
         <div class="max-w-5xl mx-auto">
-          <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-sm w-fit hover:shadow-md bg-white text-slate-500 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-100 dark:border-slate-800">
+          <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-sm w-fit hover:shadow-md bg-white text-slate-50 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-100 dark:border-slate-800">
             <i class="ph ph-caret-left text-xl group-hover:-translate-x-1 transition-transform"></i> Back
           </button>
 
@@ -2648,6 +2667,19 @@
       submitBtn.disabled = true;
 
       try {
+        let autoFlagged = false;
+        let flagReason = null;
+
+        // Run Security Scanner
+        if (payloadType === 'code' && inputCode.value) {
+           const scanResult = scanCodeForThreats(inputCode.value);
+           if (scanResult.isSus) {
+              autoFlagged = true;
+              flagReason = `Auto-Flagged by Security Scanner: ${scanResult.reason}`;
+              showToast('Security Notice', 'Your code triggered our automated security scanner. The app will be uploaded but disabled pending admin review.', 'ph-shield-warning', 'amber');
+           }
+        }
+
         let newHistory = [];
         if (editingAppId) {
           const existingApp = apps.find(a => a.id === editingAppId);
@@ -2689,6 +2721,7 @@
         }
 
         if (editingAppId) {
+          const existingApp = apps.find(a => a.id === editingAppId);
           const appRef = doc(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps', editingAppId);
           await updateDoc(appRef, {
             title: titleVal,
@@ -2704,7 +2737,9 @@
             appUrl: payloadType === 'url' ? inputUrl.value : null,
             code: payloadType === 'code' ? inputCode.value : null,
             icon: iconPreviewBase64 || null,
-            screenshots: screenshotsBase64
+            screenshots: screenshotsBase64,
+            isBroken: autoFlagged ? true : (existingApp.isBroken || false),
+            brokenReason: autoFlagged ? flagReason : (existingApp.brokenReason || null)
           });
           logActivity('EDIT', titleVal, `Updated app to v${versionVal}.`);
         } else {
@@ -2730,9 +2765,23 @@
             iconClass: 'ph-fill ph-app-window',
             screenshots: screenshotsBase64,
             createdAt: Date.now(),
-            authorId: currentUser.uid
+            authorId: currentUser.uid,
+            isBroken: autoFlagged,
+            brokenReason: autoFlagged ? flagReason : null
           });
           logActivity('UPLOAD', titleVal, `Published a new app: v${versionVal}`);
+        }
+
+        // Notify Admins if Auto-flagged
+        if (autoFlagged) {
+           await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'activity_logs'), {
+              uid: currentUser.uid,
+              displayName: currentUser.customDisplayName || currentUser.displayName || 'System Security',
+              action: 'SECURITY_ALERT',
+              targetName: titleVal,
+              details: flagReason,
+              timestamp: Date.now()
+           });
         }
 
         // Notify Followers
@@ -3155,6 +3204,7 @@
           if (log.action === 'MODERATION') actionColor = 'text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/30';
           if (log.action === 'ACCOUNT') actionColor = 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/30';
           if (log.action === 'PURCHASE') actionColor = 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/30';
+          if (log.action === 'SECURITY_ALERT') actionColor = 'text-red-600 bg-red-100 border border-red-500 font-black animate-pulse dark:text-red-400 dark:bg-red-900/50';
 
           return `
             <div class="p-5 border-b border-slate-100 dark:border-slate-800 last:border-0 text-left hover:bg-white dark:hover:bg-slate-900 transition-colors">
@@ -3317,6 +3367,7 @@
         if (log.action === 'ACCOUNT') actionColor = 'text-blue-500';
         if (log.action === 'COMMUNICATION') actionColor = 'text-pink-500';
         if (log.action === 'PURCHASE') actionColor = 'text-yellow-500';
+        if (log.action === 'SECURITY_ALERT') actionColor = 'text-red-600 bg-red-100 border border-red-500 font-black px-2 py-0.5 rounded animate-pulse dark:text-red-400 dark:bg-red-900/50';
 
         return `
         <tr class="hover:bg-slate-50 dark:bg-slate-800/20 transition-colors">
