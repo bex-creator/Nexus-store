@@ -2022,24 +2022,30 @@
                   </div>
 
                   <div class="flex flex-col sm:flex-row flex-wrap gap-4">
-                    ${!hasAccess ? `
-                      <button id="btn-buy-app" data-click="buyApp" data-arg="${app.id}" class="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-8 h-14 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl shadow-yellow-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
-                        Buy for <i class="ph-fill ph-coin"></i> ${finalPrice}
+                    ${app.isBroken ? `
+                      <button disabled class="bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 px-8 h-14 rounded-2xl font-black text-lg cursor-not-allowed flex-1 sm:flex-none flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-prohibit text-xl"></i> Disabled
                       </button>
-                    ` : `
-                        ${!isInstalled ? `
-                          <button data-click="installApp" data-arg="${app.id}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 h-14 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl hover:shadow-indigo-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
-                            <i class="ph ph-cloud-arrow-down text-2xl"></i> Get App
-                          </button>
-                        ` : `
-                          <button data-click="runApp" data-arg="${app.id}" class="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-8 h-14 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl shadow-indigo-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
-                            <i class="ph-fill ph-play text-xl"></i> Open App
-                          </button>
-                        `}
-                    `}
+                    ` : (
+                      !hasAccess ? `
+                        <button id="btn-buy-app" data-click="buyApp" data-arg="${app.id}" class="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-8 h-14 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl shadow-yellow-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
+                          Buy for <i class="ph-fill ph-coin"></i> ${finalPrice}
+                        </button>
+                      ` : `
+                          ${!isInstalled ? `
+                            <button data-click="installApp" data-arg="${app.id}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 h-14 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl hover:shadow-indigo-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
+                              <i class="ph ph-cloud-arrow-down text-2xl"></i> Get App
+                            </button>
+                          ` : `
+                            <button data-click="runApp" data-arg="${app.id}" class="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-8 h-14 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl shadow-indigo-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
+                              <i class="ph-fill ph-play text-xl"></i> Open App
+                            </button>
+                          `}
+                      `
+                    )}
                     
                     <div class="flex items-center gap-4 justify-center sm:justify-start w-full sm:w-auto flex-wrap">
-                      ${hasAccess ? `
+                      ${hasAccess && !app.isBroken ? `
                         <button data-click="downloadApp" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Download .html">
                           <i class="ph ph-download-simple text-2xl"></i>
                         </button>
@@ -2230,9 +2236,13 @@
     };
 
     window.installApp = (targetAppId) => {
+      const app = apps.find(a => a.id === targetAppId);
+      if (app && app.isBroken) {
+         showModal('Install Disabled', 'This app has been flagged and cannot be installed.');
+         return;
+      }
       installedApps.add(targetAppId);
       localStorage.setItem('nexus_installed', JSON.stringify([...installedApps]));
-      const app = apps.find(a => a.id === targetAppId);
       if(app) logActivity('INSTALL', app.title, 'App installed to local browser session.');
       renderDetails(targetAppId);
     };
@@ -2263,6 +2273,11 @@
 
     window.runApp = (targetAppId) => {
       const app = apps.find(a => a.id === targetAppId);
+      if (!app) return;
+      if (app.isBroken) {
+          showModal('App Disabled', 'This app has been flagged by security systems or administrators and cannot be launched.');
+          return;
+      }
       let history = app.versionHistory || [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
       const selectedVersionStr = window.selectedAppVersion || (app.versionHistory ? app.versionHistory[0].version : app.version);
       const activeVersionObj = history.find(v => v.version === selectedVersionStr) || history[0];
@@ -2397,6 +2412,10 @@
     window.downloadApp = (targetAppId) => {
       const app = apps.find(a => a.id === targetAppId);
       if (!app) return;
+      if (app.isBroken) {
+          showModal('Download Disabled', 'This app has been flagged for safety concerns and its source code cannot be downloaded.');
+          return;
+      }
 
       let history = app.versionHistory || [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
       const selectedVersionStr = window.selectedAppVersion || (app.versionHistory ? app.versionHistory[0].version : app.version);
