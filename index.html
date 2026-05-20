@@ -178,14 +178,6 @@
         <button data-click="toggleAuthMode" id="auth-toggle-btn" class="text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold text-sm transition-colors">
           Need an account? Sign up
         </button>
-        <div class="relative flex items-center py-2">
-          <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
-          <span class="flex-shrink-0 mx-4 text-slate-400 text-sm font-bold">OR</span>
-          <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
-        </div>
-        <button data-click="continueAsGuest" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 px-8 py-4 rounded-2xl font-bold transition-all duration-300 border border-slate-200 dark:border-slate-700">
-          Continue as Guest
-        </button>
       </div>
     </div>
   </div>
@@ -1043,6 +1035,7 @@
               displayName: '',
               bio: '',
               email: user.email || '',
+              isAnonymous: user.isAnonymous || false,
               usernameSet: false,
               status: 'active',
               role: 'user',
@@ -1082,9 +1075,13 @@
               updateUserProfileUI(currentUser);
             }
 
-            // Backfill email for existing users if missing
-            if (!userData.email && user.email) {
-                await updateDoc(userRef, { email: user.email });
+            // Backfill email and guest status for existing users
+            const updates = {};
+            if (!userData.email && user.email) updates.email = user.email;
+            if (userData.isAnonymous === undefined) updates.isAnonymous = user.isAnonymous || false;
+            
+            if (Object.keys(updates).length > 0) {
+                await updateDoc(userRef, updates);
             }
           }
 
@@ -1232,24 +1229,6 @@
                 btn.disabled = false;
                 btn.innerHTML = authMode === 'login' ? 'Log In' : 'Sign Up';
             }
-        }
-    };
-
-    window.continueAsGuest = async () => {
-        const btn = document.querySelector('[data-click="continueAsGuest"]');
-        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Loading...';
-        btn.disabled = true;
-        try {
-            await signInAnonymously(auth);
-            document.getElementById('auth-modal').classList.add('hidden');
-            document.getElementById('auth-modal').classList.remove('flex');
-            showToast('Guest Mode', 'Playing as an anonymous guest.', 'ph-user', 'slate');
-        } catch (err) {
-            console.error(err);
-            showModal('Error', 'Could not sign in as guest.');
-        } finally {
-            btn.innerHTML = 'Continue as Guest';
-            btn.disabled = false;
         }
     };
 
@@ -3120,11 +3099,11 @@
     window.renderAdminUsers = () => {
       const usersList = document.getElementById('admin-users-list');
       
-      // Filter out users who haven't set a username
-      const validUsers = systemUsers.filter(u => u.usernameSet && u.username && u.username.trim() !== '');
+      // Show all users
+      const validUsers = systemUsers;
 
       if (validUsers.length === 0) {
-        usersList.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500">No registered users found. Wait for users to complete onboarding.</td></tr>`;
+        usersList.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500">No registered users found.</td></tr>`;
         return;
       }
       
@@ -3136,9 +3115,13 @@
         return `
         <tr class="hover:bg-slate-50 dark:bg-slate-800/20 transition-colors group">
           <td class="p-6">
-            <div class="font-bold text-slate-900 dark:text-white">${u.username || u.displayName || 'Anonymous'} ${u.isVIP ? '<i class="ph-fill ph-star text-purple-500" title="VIP"></i>' : ''}</div>
-            <div class="text-xs font-mono text-slate-400">${u.uid}</div>
-            ${u.email ? `<div class="text-xs font-medium text-indigo-500 mt-1">${u.email}</div>` : ''}
+            <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1">
+              ${u.username || u.displayName || '<span class="italic text-slate-400 font-normal">Pending Setup</span>'} 
+              ${u.isVIP ? '<i class="ph-fill ph-star text-purple-500" title="VIP"></i>' : ''}
+              ${u.isAnonymous ? '<span class="bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300 text-[10px] px-2 py-0.5 rounded font-black ml-2 uppercase tracking-wider">Guest</span>' : ''}
+            </div>
+            <div class="text-xs font-mono text-slate-400 mt-1">${u.uid}</div>
+            ${u.email ? `<div class="text-xs font-medium text-indigo-500 mt-1">${u.email}</div>` : (u.isAnonymous ? '<div class="text-xs font-medium text-slate-400 mt-1 italic">Guest Account</div>' : '<div class="text-xs font-medium text-slate-400 mt-1 italic">No Email</div>')}
           </td>
           <td class="p-6">${statusBadge}</td>
           <td class="p-6 text-right">
@@ -3894,7 +3877,6 @@
       else if (action === 'setThemeAccent') window.setThemeAccent(arg1);
       else if (action === 'setThemeMode') window.setThemeMode(arg1);
       else if (action === 'toggleAuthMode') window.toggleAuthMode();
-      else if (action === 'continueAsGuest') window.continueAsGuest();
       else if (action === 'handleSignOut') window.handleSignOut();
       else if (action === 'adminResetAllUsers') window.adminResetAllUsers();
       else if (action === 'forgotPassword') window.forgotPassword();
