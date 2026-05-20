@@ -670,7 +670,7 @@
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-sm uppercase tracking-wider">
-                  <th class="p-6 font-bold">User / ID</th>
+                  <th class="p-6 font-bold">User / ID / Email</th>
                   <th class="p-6 font-bold">Status</th>
                   <th class="p-6 font-bold text-right">Actions</th>
                 </tr>
@@ -1042,6 +1042,7 @@
               username: '',
               displayName: '',
               bio: '',
+              email: user.email || '',
               usernameSet: false,
               status: 'active',
               role: 'user',
@@ -1079,6 +1080,11 @@
             } else {
               currentUser.customDisplayName = userData.username || userData.displayName;
               updateUserProfileUI(currentUser);
+            }
+
+            // Backfill email for existing users if missing
+            if (!userData.email && user.email) {
+                await updateDoc(userRef, { email: user.email });
             }
           }
 
@@ -3132,6 +3138,7 @@
           <td class="p-6">
             <div class="font-bold text-slate-900 dark:text-white">${u.username || u.displayName || 'Anonymous'} ${u.isVIP ? '<i class="ph-fill ph-star text-purple-500" title="VIP"></i>' : ''}</div>
             <div class="text-xs font-mono text-slate-400">${u.uid}</div>
+            ${u.email ? `<div class="text-xs font-medium text-indigo-500 mt-1">${u.email}</div>` : ''}
           </td>
           <td class="p-6">${statusBadge}</td>
           <td class="p-6 text-right">
