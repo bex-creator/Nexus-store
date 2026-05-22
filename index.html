@@ -774,7 +774,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // WAF Bypass Helpers
     const escapeQuotes = (str) => (str || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -889,7 +889,9 @@
                     if (balContainer && balText) {
                         balContainer.classList.remove('hidden');
                         balContainer.classList.add('flex');
-                        balText.textContent = me.balance || 0;
+                        let displayBal = me.balance;
+                        if (isNaN(displayBal) || displayBal === undefined) displayBal = 0;
+                        balText.textContent = displayBal;
                     }
                 }
               }
@@ -1065,7 +1067,9 @@
             if (balContainer && balText) {
                 balContainer.classList.remove('hidden');
                 balContainer.classList.add('flex');
-                balText.textContent = userData.balance || 0;
+                let displayBal = userData.balance;
+                if (isNaN(displayBal) || displayBal === undefined) displayBal = 0;
+                balText.textContent = displayBal;
             }
 
             if (!userData.usernameSet) {
@@ -1847,8 +1851,12 @@
         if (!app || !currentUser) return;
 
         const me = systemUsers.find(u => u.uid === currentUser.uid);
-        const bal = me?.balance || 0;
-        const finalPrice = (me && me.isVIP) ? Math.floor(app.price * 0.5) : app.price;
+        let bal = me?.balance;
+        if (isNaN(bal) || bal === undefined) bal = 0;
+        
+        let appPrice = Number(app.price);
+        if (isNaN(appPrice)) appPrice = 0;
+        const finalPrice = (me && me.isVIP) ? Math.floor(appPrice * 0.5) : appPrice;
 
         if (bal < finalPrice) {
             showModal('Insufficient Funds', `You need <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> ${finalPrice}</span> Nexus Coins to purchase this app. You currently have ${bal}. Ask an admin to grant you more coins!`);
@@ -1861,20 +1869,17 @@
         try {
             const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
             await updateDoc(userRef, {
-                balance: bal - finalPrice,
+                balance: increment(-finalPrice),
                 purchasedApps: arrayUnion(app.id)
             });
 
             // Payout to Developer
             if (app.authorId && finalPrice > 0) {
                 const devRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', app.authorId);
-                const devSnap = await getDoc(devRef);
-                if (devSnap.exists()) {
-                    const devData = devSnap.data();
-                    await updateDoc(devRef, { balance: (devData.balance || 0) + finalPrice });
-                    
-                    // Notify Dev of sale
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'user_messages'), {
+                await updateDoc(devRef, { balance: increment(finalPrice) });
+                
+                // Notify Dev of sale
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'user_messages'), {
                         recipientId: app.authorId,
                         text: `🎉 Someone just bought your app "${app.title}"! You earned ${finalPrice} coins.`,
                         timestamp: Date.now(),
@@ -1882,7 +1887,6 @@
                         sender: 'Nexus System',
                         senderId: null
                     });
-                }
             }
             
             // Automatically keep it installed forever locally
@@ -2244,13 +2248,9 @@
         }
         try {
             const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
-            const userSnap = await getDoc(userRef);
-            if (userSnap.exists()) {
-                const currentBal = userSnap.data().balance || 0;
-                await updateDoc(userRef, { balance: currentBal + amount });
-                showToast('Playtime Reward!', `You earned ${amount} Nexus Coins for playing!`, 'ph-coin', 'yellow');
-                logActivity('REWARD', 'Playtime', `Earned ${amount} coins for playing an app for 2 minutes.`);
-            }
+            await updateDoc(userRef, { balance: increment(amount) });
+            showToast('Playtime Reward!', `You earned ${amount} Nexus Coins for playing!`, 'ph-coin', 'yellow');
+            logActivity('REWARD', 'Playtime', `Earned ${amount} coins for playing an app for 2 minutes.`);
         } catch (e) {
             console.error("Error awarding playtime coins:", e);
         }
@@ -2966,7 +2966,7 @@
                 
                 if (!me.lastDailyClaim || (Date.now() - me.lastDailyClaim > 86400000)) {
                     await updateDoc(userRef, { 
-                        balance: (me.balance || 0) + rewardAmount,
+                        balance: increment(rewardAmount),
                         lastDailyClaim: Date.now()
                     });
                     showToast('Daily Claimed!', `+${rewardAmount} Nexus Coins added to your balance.`, 'ph-gift', 'indigo');
@@ -3032,12 +3032,10 @@
 
     window.adminApproveCoinRequest = async (uid, amountStr) => {
       const amt = parseInt(amountStr);
+      if (isNaN(amt)) return;
       try {
         const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', uid);
-        const userSnap = await getDoc(userRef);
-        const currentBal = userSnap.data()?.balance || 0;
-        
-        await updateDoc(userRef, { balance: currentBal + amt });
+        await updateDoc(userRef, { balance: increment(amt) });
         await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coin_requests', uid));
         
         logActivity('MODERATION', 'Currency Issued', `Approved ${amt} coins for ${uid}`);
@@ -3160,7 +3158,9 @@
                 try {
                     const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', uid);
                     const userSnap = await getDoc(userRef);
-                    const currentBal = userSnap.data()?.balance || 0;
+                    let currentBal = userSnap.data()?.balance;
+                    if (isNaN(currentBal) || currentBal === undefined) currentBal = 0;
+                    
                     const newBal = Math.max(0, currentBal + amt);
                     
                     await updateDoc(userRef, { balance: newBal });
