@@ -1107,17 +1107,17 @@
 
     // --- STATE & DATA ---
     const defaultApps = [
-      { id: 'nexus-docs', title: 'Nexus Docs', developer: 'Nexus Corporation', category: 'Editor', description: 'Real-time P2P collaborative editor.', aiOverview: 'Nexus Docs is a streamlined, peer-to-peer text editor focusing on real-time collaboration. Best for teams needing a quick, no-frills environment to co-author documents without complex setups.', rating: '5.0', reviews: '12K', size: '2 MB', price: 0, payloadType: 'code', code: ['<','!DOCTYPE html>\n','<','html>\n','<','head>\n','<','title>Nexus Docs<','/title>\n','<','style>\nbody { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f4f4f6; color: #333; }\n.card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 500px; }\ntextarea { width: 100%; height: 200px; margin-top: 20px; border-radius: 10px; border: 1px solid #ddd; padding: 15px; outline: none; }\n<','/style>\n','<','/head>\n','<','body>\n','<','div class="card">\n','<','h2>Nexus Docs<','/h2>\n','<','p>Real-time P2P collaboration environment initialized.<','/p>\n','<','textarea placeholder="Start typing..."><','/textarea>\n','<','/div>\n','<','/body>\n','<','/html>'].join(''), icon: null, bgClass: 'bg-gradient-to-br from-slate-400 to-slate-600', iconClass: 'ph-fill ph-file-text', screenshots: [] },
-      { id: 'youtube', title: 'YouTube', developer: 'Google LLC', category: 'Video', description: "The world's largest video sharing platform.", aiOverview: 'YouTube remains the undisputed king of video sharing. With millions of creators, it offers content ranging from entertainment to education. Recommended for endless browsing and tutorials.', rating: '4.9', reviews: '135M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://www.youtube.com/', icon: null, bgClass: 'bg-gradient-to-br from-red-500 to-red-700', iconClass: 'ph-fill ph-youtube-logo', screenshots: [] },
-      { id: 'google-gemini', title: 'Google Gemini', developer: 'Google LLC', category: 'AI Tool', description: 'Next-generation AI for brainstorming, writing, and analysis.', aiOverview: 'Gemini is a versatile AI assistant capable of handling creative writing, analytical problem-solving, and coding queries. It acts as a powerful conversational partner for daily tasks.', rating: '4.8', reviews: '8M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://gemini.google.com/app', icon: null, bgClass: 'bg-gradient-to-br from-blue-500 to-blue-700', iconClass: 'ph-fill ph-sparkle', screenshots: [] },
-      { id: 'focus-flow', title: 'Focus Flow', developer: 'Orean', category: 'Productivity', description: 'A minimal Pomodoro timer and task manager designed to keep you in the zone.', aiOverview: 'A distraction-free Pomodoro timer paired with a task manager. It is highly rated for its minimalist design and effective focus-tracking features, ideal for students and professionals.', rating: '4.7', reviews: '142K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/focusflow/home', icon: null, bgClass: 'bg-gradient-to-br from-emerald-400 to-emerald-600', iconClass: 'ph-fill ph-timer', screenshots: [] },
-      { id: 'chat-space', title: 'Chat Space', developer: 'The dev', category: 'Social', description: 'Minimal social space to chat, hang out, and connect with your friends.', aiOverview: 'A lightweight social platform designed for casual hangouts. It strips away the clutter of traditional social media, focusing purely on real-time messaging with friends.', rating: '4.1', reviews: '890K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://chatspace1.w3spaces.com', icon: null, bgClass: 'bg-gradient-to-br from-blue-400 to-blue-600', iconClass: 'ph-fill ph-chat-circle', screenshots: [] },
-      { id: 'shape-shooters', title: 'Shape Shooters', developer: 'Orean', category: 'Arcade', description: 'Fast-paced arcade action. Dodge, shoot, and survive the geometric onslaught.', aiOverview: 'An intense, geometric arcade shooter that tests your reflexes. Players praise its fast-paced mechanics and colorful aesthetic. Great for quick gaming sessions.', rating: '4.6', reviews: '25K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://shape-shooters.w3spaces.com/saved-from-Tryit-2025-12-02.html', icon: null, bgClass: 'bg-gradient-to-br from-purple-500 to-purple-700', iconClass: 'ph-fill ph-target', screenshots: [] },
-      { id: 'neon-defense', title: 'Neon Defense', developer: 'Orean', category: 'Strategy', description: 'Strategic tower defense with a beautiful neon cyberpunk aesthetic.', aiOverview: 'A strategic tower defense game set in a vibrant cyberpunk world. It balances challenging level design with a striking neon visual style.', rating: '4.3', reviews: '12K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/ugrughrogygrhreleoh/home', icon: null, bgClass: 'bg-gradient-to-br from-lime-400 to-lime-600', iconClass: 'ph-fill ph-shield-check', screenshots: [] },
-      { id: 'doodle-jump', title: 'Doodle Jump', developer: 'ya jet', category: 'Game', description: 'Endless platformer fun. Jump as high as you can on the notebook paper!', aiOverview: 'A classic, highly addictive endless platformer. Guide the character up a sheet of graph paper while avoiding obstacles. Renowned for its simple yet engaging gameplay.', rating: '4.7', reviews: '2.4M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/doodlejump/home', icon: null, bgClass: 'bg-gradient-to-br from-green-500 to-green-700', iconClass: 'ph-fill ph-arrow-fat-up', screenshots: [] },
-      { id: 'oasis', title: 'Oasis', developer: 'Arcade Classics', category: 'Arcade', description: 'A massive collection of retro arcade games wrapped in a synthwave wrapper.', aiOverview: 'A nostalgic arcade emulator styled with a retro-futuristic synthwave UI. It bundles multiple classic games into one seamless experience.', rating: '4.8', reviews: '55K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/view/oasisarcade', icon: null, bgClass: 'bg-gradient-to-br from-orange-400 to-orange-600', iconClass: 'ph-fill ph-palm-tree', screenshots: [] },
-      { id: 'tiny-polis', title: 'Tiny Polis', developer: 'Orean', category: 'Sim', description: 'Micro world simulation. Build, manage, and watch your tiny city grow.', aiOverview: 'A casual city-building simulation where you manage a micro-metropolis. It is praised for its relaxing, low-stakes gameplay and charming low-poly visuals.', rating: '4.3', reviews: '18K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/tiny-polis/home', icon: null, bgClass: 'bg-gradient-to-br from-yellow-400 to-yellow-600', iconClass: 'ph-fill ph-buildings', screenshots: [] },
-      { id: 'neon-racer', title: 'Neon Racer', developer: 'Orean', category: 'Racing', description: 'High velocity racing through cybernetic cityscapes.', aiOverview: 'A high-speed racing game featuring cybernetic tracks and tight drifting mechanics. It offers a thrilling, visually spectacular experience for arcade racing fans.', rating: '4.5', reviews: '88K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/neon-racer/home', icon: null, bgClass: 'bg-gradient-to-br from-pink-500 to-pink-700', iconClass: 'ph-fill ph-car-profile', screenshots: [] }
+      { id: 'nexus-docs', title: 'Nexus Docs', developer: 'Nexus Corporation', category: 'Editor', description: 'Real-time P2P collaborative editor.', rating: '5.0', reviews: '12K', size: '2 MB', price: 0, payloadType: 'code', code: ['<','!DOCTYPE html>\n','<','html>\n','<','head>\n','<','title>Nexus Docs<','/title>\n','<','style>\nbody { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f4f4f6; color: #333; }\n.card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 500px; }\ntextarea { width: 100%; height: 200px; margin-top: 20px; border-radius: 10px; border: 1px solid #ddd; padding: 15px; outline: none; }\n<','/style>\n','<','/head>\n','<','body>\n','<','div class="card">\n','<','h2>Nexus Docs<','/h2>\n','<','p>Real-time P2P collaboration environment initialized.<','/p>\n','<','textarea placeholder="Start typing..."><','/textarea>\n','<','/div>\n','<','/body>\n','<','/html>'].join(''), icon: null, bgClass: 'bg-gradient-to-br from-slate-400 to-slate-600', iconClass: 'ph-fill ph-file-text', screenshots: [] },
+      { id: 'youtube', title: 'YouTube', developer: 'Google LLC', category: 'Video', description: "The world's largest video sharing platform.", rating: '4.9', reviews: '135M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://www.youtube.com/', icon: null, bgClass: 'bg-gradient-to-br from-red-500 to-red-700', iconClass: 'ph-fill ph-youtube-logo', screenshots: [] },
+      { id: 'google-gemini', title: 'Google Gemini', developer: 'Google LLC', category: 'AI Tool', description: 'Next-generation AI for brainstorming, writing, and analysis.', rating: '4.8', reviews: '8M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://gemini.google.com/app', icon: null, bgClass: 'bg-gradient-to-br from-blue-500 to-blue-700', iconClass: 'ph-fill ph-sparkle', screenshots: [] },
+      { id: 'focus-flow', title: 'Focus Flow', developer: 'Orean', category: 'Productivity', description: 'A minimal Pomodoro timer and task manager designed to keep you in the zone.', rating: '4.7', reviews: '142K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/focusflow/home', icon: null, bgClass: 'bg-gradient-to-br from-emerald-400 to-emerald-600', iconClass: 'ph-fill ph-timer', screenshots: [] },
+      { id: 'chat-space', title: 'Chat Space', developer: 'The dev', category: 'Social', description: 'Minimal social space to chat, hang out, and connect with your friends.', rating: '4.1', reviews: '890K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://chatspace1.w3spaces.com', icon: null, bgClass: 'bg-gradient-to-br from-blue-400 to-blue-600', iconClass: 'ph-fill ph-chat-circle', screenshots: [] },
+      { id: 'shape-shooters', title: 'Shape Shooters', developer: 'Orean', category: 'Arcade', description: 'Fast-paced arcade action. Dodge, shoot, and survive the geometric onslaught.', rating: '4.6', reviews: '25K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://shape-shooters.w3spaces.com/saved-from-Tryit-2025-12-02.html', icon: null, bgClass: 'bg-gradient-to-br from-purple-500 to-purple-700', iconClass: 'ph-fill ph-target', screenshots: [] },
+      { id: 'neon-defense', title: 'Neon Defense', developer: 'Orean', category: 'Strategy', description: 'Strategic tower defense with a beautiful neon cyberpunk aesthetic.', rating: '4.3', reviews: '12K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/ugrughrogygrhreleoh/home', icon: null, bgClass: 'bg-gradient-to-br from-lime-400 to-lime-600', iconClass: 'ph-fill ph-shield-check', screenshots: [] },
+      { id: 'doodle-jump', title: 'Doodle Jump', developer: 'ya jet', category: 'Game', description: 'Endless platformer fun. Jump as high as you can on the notebook paper!', rating: '4.7', reviews: '2.4M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/doodlejump/home', icon: null, bgClass: 'bg-gradient-to-br from-green-500 to-green-700', iconClass: 'ph-fill ph-arrow-fat-up', screenshots: [] },
+      { id: 'oasis', title: 'Oasis', developer: 'Arcade Classics', category: 'Arcade', description: 'A massive collection of retro arcade games wrapped in a synthwave wrapper.', rating: '4.8', reviews: '55K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/view/oasisarcade', icon: null, bgClass: 'bg-gradient-to-br from-orange-400 to-orange-600', iconClass: 'ph-fill ph-palm-tree', screenshots: [] },
+      { id: 'tiny-polis', title: 'Tiny Polis', developer: 'Orean', category: 'Sim', description: 'Micro world simulation. Build, manage, and watch your tiny city grow.', rating: '4.3', reviews: '18K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/tiny-polis/home', icon: null, bgClass: 'bg-gradient-to-br from-yellow-400 to-yellow-600', iconClass: 'ph-fill ph-buildings', screenshots: [] },
+      { id: 'neon-racer', title: 'Neon Racer', developer: 'Orean', category: 'Racing', description: 'High velocity racing through cybernetic cityscapes.', rating: '4.5', reviews: '88K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/neon-racer/home', icon: null, bgClass: 'bg-gradient-to-br from-pink-500 to-pink-700', iconClass: 'ph-fill ph-car-profile', screenshots: [] }
     ];
 
     // Seed default versions
@@ -1902,6 +1902,38 @@
         }
     };
 
+    // Client-side Procedural "AI" Overview Generator
+    const generateDynamicOverview = (app) => {
+      const intros = {
+        'Editor': ['A streamlined editing environment', 'A specialized workspace for creators'],
+        'Video': ['A media-rich streaming platform', 'A visual content hub'],
+        'AI Tool': ['A smart algorithmic assistant', 'A computational utility'],
+        'Productivity': ['A workflow optimization tool', 'An efficiency-boosting application'],
+        'Social': ['A digital communication space', 'A community-driven platform'],
+        'Arcade': ['A reflex-testing digital game', 'A fast-paced interactive challenge'],
+        'Strategy': ['A tactical planning experience', 'A methodical interactive environment'],
+        'Game': ['An engaging interactive journey', 'A digital entertainment experience'],
+        'Games': ['An engaging interactive journey', 'A digital entertainment experience'],
+        'Sim': ['A complex virtual simulation', 'A digital sandbox environment'],
+        'Racing': ['A high-speed interactive application', 'A fast-paced vehicular experience']
+      };
+
+      const catIntros = intros[app.category] || ['A versatile digital application', 'A uniquely crafted piece of software'];
+      
+      // Hash function to ensure the overview stays identical for the same app every time
+      const hashString = (app.id || '') + (app.title || '') + (app.developer || '');
+      const hash = hashString.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+      
+      const intro = catIntros[hash % catIntros.length];
+      const isFree = app.price === 0;
+      const priceStr = isFree ? 'completely free of charge' : `as a premium experience for ${app.price} coins`;
+      
+      const devAdjectives = ['innovative', 'creative', 'dedicated', 'forward-thinking', 'technical', 'visionary'];
+      const adj = devAdjectives[hash % devAdjectives.length];
+
+      return `${intro} developed by the ${adj} creator <b>${app.developer}</b>. Positioned within the <b>${app.category}</b> category, <b>${app.title}</b> is offered ${priceStr}. It focuses on delivering a specialized user experience designed to excel in its specific domain.`;
+    };
+
     function renderDetails(targetAppId) {
       const app = apps.find(a => a.id === targetAppId);
       if (!app) return;
@@ -1938,6 +1970,8 @@
       const payloadInfo = activeVersionObj.payloadType === 'url' 
         ? { icon: 'ph-globe', title: 'Web Link Attached', desc: "This version connects to an external website. Opening it will launch a new secure tab directly to the publisher's destination." }
         : { icon: 'ph-code', title: 'Executable Code Payload', desc: "This version includes an executable HTML/JS payload. Clicking 'Open App' will run it dynamically in a secure, isolated Blob tab." };
+
+      const overviewText = app.aiOverview || generateDynamicOverview(app);
 
       const detailsHtml = `
         <div class="max-w-5xl mx-auto">
@@ -2073,15 +2107,13 @@
                 </div>
               ` : ''}
 
-              ${app.aiOverview ? `
-              <div class="mb-10 max-w-3xl bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-3xl p-6 relative overflow-hidden shadow-inner">
+              <div class="mb-10 max-w-3xl bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-3xl p-6 relative overflow-hidden shadow-inner animate-fade-in">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
                 <h3 class="text-lg font-black mb-2 tracking-tight text-indigo-900 dark:text-indigo-200 flex items-center gap-2">
-                  <i class="ph-fill ph-sparkle text-indigo-500"></i> AI Overview
+                  <i class="ph-fill ph-sparkle text-indigo-500"></i> Simulated AI Overview
                 </h3>
-                <p class="text-base leading-relaxed font-medium text-indigo-800/80 dark:text-indigo-200/80">${app.aiOverview}</p>
+                <p class="text-base leading-relaxed font-medium text-indigo-800/80 dark:text-indigo-200/80">${overviewText}</p>
               </div>
-              ` : ''}
 
               <div class="mb-10 max-w-3xl">
                 <h3 class="text-2xl font-black mb-4 tracking-tight text-slate-900 dark:text-white">About</h3>
@@ -2672,7 +2704,6 @@
         }
 
         let newHistory = [];
-        const generatedAiOverview = `This is a ${document.getElementById('app-category').value.toLowerCase()} app developed by ${devNameVal}. Based on the description, it focuses on delivering a unique experience in its category.`;
 
         if (editingAppId) {
           const existingApp = apps.find(a => a.id === editingAppId);
@@ -2683,7 +2714,6 @@
             category: document.getElementById('app-category').value,
             visibility: document.getElementById('app-visibility').value,
             description: document.getElementById('app-description').value,
-            aiOverview: existingApp.aiOverview || generatedAiOverview,
             price: priceVal,
             version: versionVal,
             changelog: changelogVal,
@@ -2705,7 +2735,6 @@
             category: document.getElementById('app-category').value,
             visibility: document.getElementById('app-visibility').value,
             description: document.getElementById('app-description').value,
-            aiOverview: generatedAiOverview,
             price: priceVal,
             version: versionVal,
             changelog: changelogVal,
