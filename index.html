@@ -1902,36 +1902,40 @@
         }
     };
 
-    // Client-side Procedural "AI" Overview Generator
+    // Client-side Procedural "AI" Overview Generator (NLP-based)
     const generateDynamicOverview = (app) => {
-      const intros = {
-        'Editor': ['A streamlined editing environment', 'A specialized workspace for creators'],
-        'Video': ['A media-rich streaming platform', 'A visual content hub'],
-        'AI Tool': ['A smart algorithmic assistant', 'A computational utility'],
-        'Productivity': ['A workflow optimization tool', 'An efficiency-boosting application'],
-        'Social': ['A digital communication space', 'A community-driven platform'],
-        'Arcade': ['A reflex-testing digital game', 'A fast-paced interactive challenge'],
-        'Strategy': ['A tactical planning experience', 'A methodical interactive environment'],
-        'Game': ['An engaging interactive journey', 'A digital entertainment experience'],
-        'Games': ['An engaging interactive journey', 'A digital entertainment experience'],
-        'Sim': ['A complex virtual simulation', 'A digital sandbox environment'],
-        'Racing': ['A high-speed interactive application', 'A fast-paced vehicular experience']
+      const desc = app.description || '';
+      
+      // Extract the first sentence as a hook
+      const firstSentenceMatch = desc.match(/[^.!?]+[.!?]+/);
+      const firstSentence = firstSentenceMatch ? firstSentenceMatch[0].trim() : desc.split('\n')[0].trim();
+
+      // Keyword dictionaries to determine the app's focus
+      const keywords = {
+        creative: ['create', 'draw', 'build', 'design', 'write', 'edit', 'sandbox'],
+        action: ['fast', 'shoot', 'dodge', 'survive', 'race', 'speed', 'arcade', 'combat', 'jump'],
+        social: ['chat', 'connect', 'friends', 'social', 'community', 'share', 'multiplayer'],
+        productivity: ['manage', 'task', 'time', 'focus', 'workflow', 'organize', 'tool', 'utility'],
+        education: ['learn', 'study', 'read', 'brain', 'school', 'knowledge'],
+        video: ['watch', 'stream', 'video', 'movie', 'content']
       };
 
-      const catIntros = intros[app.category] || ['A versatile digital application', 'A uniquely crafted piece of software'];
+      let focus = 'delivering a reliable and engaging digital experience';
+      const lowerDesc = desc.toLowerCase();
       
-      // Hash function to ensure the overview stays identical for the same app every time
-      const hashString = (app.id || '') + (app.title || '') + (app.developer || '');
-      const hash = hashString.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-      
-      const intro = catIntros[hash % catIntros.length];
-      const isFree = app.price === 0;
-      const priceStr = isFree ? 'completely free of charge' : `as a premium experience for ${app.price} coins`;
-      
-      const devAdjectives = ['innovative', 'creative', 'dedicated', 'forward-thinking', 'technical', 'visionary'];
-      const adj = devAdjectives[hash % devAdjectives.length];
+      // Analyze description to determine app focus
+      if (keywords.creative.some(k => lowerDesc.includes(k))) focus = 'fostering creativity and providing powerful creation tools';
+      else if (keywords.action.some(k => lowerDesc.includes(k))) focus = 'testing your reflexes with fast-paced, action-oriented mechanics';
+      else if (keywords.social.some(k => lowerDesc.includes(k))) focus = 'connecting people and facilitating seamless communication';
+      else if (keywords.productivity.some(k => lowerDesc.includes(k))) focus = 'boosting efficiency and helping you stay organized';
+      else if (keywords.education.some(k => lowerDesc.includes(k))) focus = 'providing educational value and stimulating the mind';
+      else if (keywords.video.some(k => lowerDesc.includes(k))) focus = 'serving high-quality media and streaming content';
 
-      return `${intro} developed by the ${adj} creator <b>${app.developer}</b>. Positioned within the <b>${app.category}</b> category, <b>${app.title}</b> is offered ${priceStr}. It focuses on delivering a specialized user experience designed to excel in its specific domain.`;
+      const isFree = app.price === 0;
+      const priceContext = isFree ? "It's available completely free" : `It's offered as a premium experience for ${app.price} coins`;
+
+      // Build the simulated AI response
+      return `Based on our analysis, <b>${app.title}</b> is a standout ${app.category.toLowerCase()} application by ${app.developer}. The core experience revolves around ${focus}. As the developer states, <i>"${firstSentence}"</i> ${priceContext}, making it a notable entry in the NexusStore catalog.`;
     };
 
     function renderDetails(targetAppId) {
@@ -1971,7 +1975,7 @@
         ? { icon: 'ph-globe', title: 'Web Link Attached', desc: "This version connects to an external website. Opening it will launch a new secure tab directly to the publisher's destination." }
         : { icon: 'ph-code', title: 'Executable Code Payload', desc: "This version includes an executable HTML/JS payload. Clicking 'Open App' will run it dynamically in a secure, isolated Blob tab." };
 
-      const overviewText = app.aiOverview || generateDynamicOverview(app);
+      const overviewText = generateDynamicOverview(app);
 
       const detailsHtml = `
         <div class="max-w-5xl mx-auto">
@@ -2110,7 +2114,7 @@
               <div class="mb-10 max-w-3xl bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-3xl p-6 relative overflow-hidden shadow-inner animate-fade-in">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
                 <h3 class="text-lg font-black mb-2 tracking-tight text-indigo-900 dark:text-indigo-200 flex items-center gap-2">
-                  <i class="ph-fill ph-sparkle text-indigo-500"></i> Simulated AI Overview
+                  <i class="ph-fill ph-sparkle text-indigo-500"></i> App Analysis
                 </h3>
                 <p class="text-base leading-relaxed font-medium text-indigo-800/80 dark:text-indigo-200/80">${overviewText}</p>
               </div>
