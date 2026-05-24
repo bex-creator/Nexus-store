@@ -146,6 +146,31 @@
     </div>
   </div>
 
+  <!-- AI Assistant Modal -->
+  <div id="ai-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 max-w-lg w-full shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col h-[600px] animate-zoom-in">
+      <div class="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+         <h3 class="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+           <i class="ph-fill ph-sparkle text-indigo-500"></i> Nexus Assistant
+         </h3>
+         <button data-click="closeModal" data-arg="ai-modal" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-full transition-colors">
+           <i class="ph-bold ph-x text-xl"></i>
+         </button>
+      </div>
+      <div id="ai-chat-history" class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4 flex flex-col">
+         <div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium">
+           Hi! I'm the local Nexus Assistant. I can help you find apps, change themes, or navigate the store. Try asking me to "Switch to OLED mode" or "Find a racing game"!
+         </div>
+      </div>
+      <form data-submit="submitAiChat" class="mt-4 flex gap-2 relative">
+         <input type="text" id="ai-chat-input" required placeholder="Ask me to do something..." class="flex-1 border-2 rounded-xl px-4 py-3 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white font-medium">
+         <button type="submit" id="ai-chat-submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 rounded-xl font-bold transition-all flex items-center justify-center shadow-md">
+           <i class="ph-bold ph-paper-plane-tilt text-xl"></i>
+         </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Auth Modal -->
   <div id="auth-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
     <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
@@ -277,7 +302,12 @@
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <i class="ph ph-magnifying-glass text-slate-400 group-focus-within:text-indigo-500 transition-colors text-xl"></i>
         </div>
-        <input type="text" id="search-input" placeholder="Search apps, games... (Press '/' to focus)" class="w-full border-2 rounded-2xl py-3 pl-12 pr-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none font-medium bg-slate-100/80 border-transparent text-slate-800 placeholder-slate-400 focus:bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" />
+        <input type="text" id="search-input" placeholder="Search apps, games... (Press '/' to focus)" class="w-full border-2 rounded-2xl py-3 pl-12 pr-28 sm:pr-32 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none font-medium bg-slate-100/80 border-transparent text-slate-800 placeholder-slate-400 focus:bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" />
+        <div class="absolute inset-y-0 right-1 flex items-center pr-1">
+          <button data-click="openAiModal" class="h-9 px-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl flex items-center gap-1.5 font-bold text-sm transition-all shadow-md" title="Nexus AI Assistant">
+            <i class="ph-fill ph-sparkle"></i> <span class="hidden sm:inline">Ask AI</span>
+          </button>
+        </div>
       </div>
 
       <div class="flex items-center gap-4">
@@ -3766,6 +3796,164 @@
       } catch (err) { console.error(err); }
     };
 
+    window.openAiModal = () => {
+      document.getElementById('ai-modal').classList.remove('hidden');
+      document.getElementById('ai-modal').classList.add('flex');
+      const hist = document.getElementById('ai-chat-history');
+      hist.scrollTop = hist.scrollHeight;
+      document.getElementById('ai-chat-input').focus();
+    };
+
+    window.submitAiChat = (e) => {
+      e.preventDefault();
+      const inputEl = document.getElementById('ai-chat-input');
+      const submitBtn = document.getElementById('ai-chat-submit');
+      const hist = document.getElementById('ai-chat-history');
+      const userTextRaw = inputEl.value.trim();
+      const userText = userTextRaw.toLowerCase();
+      
+      if (!userText) return;
+      
+      // Append user msg
+      hist.innerHTML += `
+        <div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-4 rounded-2xl rounded-tr-none max-w-[85%] self-end font-medium">
+          ${escapeQuotes(userTextRaw)}
+        </div>
+      `;
+      inputEl.value = '';
+      hist.scrollTop = hist.scrollHeight;
+      
+      // Append loading msg
+      const loadId = `loading-${Date.now()}`;
+      hist.innerHTML += `
+        <div id="${loadId}" class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start flex items-center gap-2 font-medium">
+          <i class="ph ph-spinner animate-spin text-xl"></i> Thinking...
+        </div>
+      `;
+      hist.scrollTop = hist.scrollHeight;
+      
+      submitBtn.disabled = true;
+
+      // Smart Assistant NLP Logic (Local Rules Engine)
+      setTimeout(() => {
+        document.getElementById(loadId).remove();
+        let responseText = "I'm not quite sure how to help with that. Try asking me to find a specific type of app, change the theme to dark mode, or open your profile!";
+        let actionToTake = null;
+
+        // Command: Theme Changes
+        if (userText.includes('light mode') || userText.includes('light theme')) {
+           responseText = "Switching to Light Mode! ☀️";
+           actionToTake = () => window.setThemeMode('light');
+        } else if (userText.includes('oled')) {
+           responseText = "Switching to OLED Dark Mode for deep blacks! 🦇";
+           actionToTake = () => window.setThemeMode('oled');
+        } else if (userText.includes('dark mode') || userText.includes('dark theme')) {
+           responseText = "Switching to Dark Mode! 🌙";
+           actionToTake = () => window.setThemeMode('dark');
+        } 
+        // Command: Accent Colors
+        else if (userText.includes('make it red') || userText.includes('rose accent')) {
+           responseText = "Applying the Rose theme accent! 🌹";
+           actionToTake = () => window.setThemeAccent('rose');
+        } else if (userText.includes('make it green') || userText.includes('emerald accent')) {
+           responseText = "Applying the Emerald theme accent! 🌲";
+           actionToTake = () => window.setThemeAccent('emerald');
+        } else if (userText.includes('make it blue') || userText.includes('indigo accent')) {
+           responseText = "Applying the Indigo theme accent! 🌊";
+           actionToTake = () => window.setThemeAccent('indigo');
+        }
+        // Command: Navigation
+        else if (userText.includes('home') || userText.includes('main page')) {
+           responseText = "Taking you to the home page! 🏠";
+           actionToTake = () => window.navigate('home');
+        } else if (userText.includes('profile') || userText.includes('my account')) {
+           if (currentUser && currentUser.customDisplayName) {
+               responseText = "Opening your profile! 👤";
+               actionToTake = () => window.navigate('profile', currentUser.customDisplayName);
+           } else {
+               responseText = "You need to log in to view your profile!";
+           }
+        } else if (userText.includes('upload') || userText.includes('publish') || userText.includes('new app')) {
+           responseText = "Let's publish a new app! 🚀 Opening the upload terminal.";
+           actionToTake = () => window.navigate('upload');
+        } else if (userText.includes('admin') || userText.includes('panel')) {
+           if (window.isAuthorizedAdmin) {
+               responseText = "Accessing the Admin Control Panel. 🛡️";
+               actionToTake = () => window.navigate('admin');
+           } else {
+               responseText = "You don't have administrator privileges. 🛑";
+           }
+        } else if (userText.includes('help') || userText.includes('faq') || userText.includes('support')) {
+           responseText = "Taking you to the FAQ and Support page! ❓";
+           actionToTake = () => window.navigate('faq');
+        }
+        // Command: Money / Coins
+        else if (userText.includes('coin') || userText.includes('money') || userText.includes('rich') || userText.includes('broke')) {
+           responseText = "Opening the coin request menu for you! 💰 Don't forget to claim your daily allowance.";
+           actionToTake = () => window.showCoinRequestModal();
+        }
+        // Command: Auth
+        else if (userText.includes('log out') || userText.includes('sign out')) {
+           responseText = "Signing you out. See you later! 👋";
+           actionToTake = () => window.handleSignOut();
+        }
+        // Command: Search / Find
+        else if (userText.includes('find') || userText.includes('search') || userText.includes('show me') || userText.includes('looking for')) {
+           const categories = ['games', 'productivity', 'social', 'arcade', 'utilities', 'sim', 'racing', 'education', 'editor', 'video'];
+           let foundCat = categories.find(c => userText.includes(c));
+           
+           if (foundCat) {
+               responseText = `Sure! Filtering the store to show you <b>${foundCat}</b> apps. 🔎`;
+               actionToTake = () => {
+                   window.navigate('home');
+                   selectedCategory = foundCat.charAt(0).toUpperCase() + foundCat.slice(1);
+                   searchQuery = '';
+                   document.getElementById('search-input').value = '';
+                   renderHome();
+               };
+           } else {
+               let searchTerm = userText.replace('find', '').replace('search', '').replace('show me', '').replace('looking for', '').replace('a ', '').replace('an ', '').trim();
+               if(searchTerm.length > 15) searchTerm = searchTerm.substring(0, 15); // limit length
+               responseText = `Searching the store for "<b>${searchTerm}</b>"... 🔎`;
+               actionToTake = () => {
+                   window.navigate('home');
+                   selectedCategory = 'All';
+                   searchQuery = searchTerm;
+                   document.getElementById('search-input').value = searchTerm;
+                   renderHome();
+               };
+           }
+        } 
+        // Conversational Fallbacks
+        else if (userText.includes('hello') || userText.includes('hi ') || userText === 'hi') {
+           responseText = "Hello there! 👋 I can change themes, navigate the store, or find apps for you. What do you need?";
+        } else if (userText.includes('how are you')) {
+           responseText = "I'm executing my code perfectly, thank you for asking! 🤖 Ready to help you navigate NexusStore.";
+        }
+
+        hist.innerHTML += `
+          <div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed">
+            ${responseText}
+          </div>
+        `;
+        hist.scrollTop = hist.scrollHeight;
+        submitBtn.disabled = false;
+        inputEl.focus();
+
+        if (actionToTake) {
+            // Give user time to read the message before executing
+            setTimeout(() => {
+                actionToTake();
+                // Optionally auto-close the modal after executing a navigation action
+                if(responseText.includes('Opening') || responseText.includes('Taking') || responseText.includes('Searching') || responseText.includes('Filtering')) {
+                    document.getElementById('ai-modal').classList.add('hidden');
+                    document.getElementById('ai-modal').classList.remove('flex');
+                }
+            }, 1000);
+        }
+      }, 500); // 500ms simulated network delay
+    };
+
     window.submitFeedback = async (e) => {
       e.preventDefault();
       if (!currentUser || currentUserStatus !== 'active') return;
@@ -3858,6 +4046,7 @@
       else if (action === 'adminRejectCoinRequest') window.adminRejectCoinRequest(arg1);
       else if (action === 'closeAppViewer') window.closeAppViewer();
       else if (action === 'openViewerInNewTab') window.openViewerInNewTab();
+      else if (action === 'openAiModal') window.openAiModal();
       else if (action === 'showThemeModal') window.showThemeModal();
       else if (action === 'setThemeAccent') window.setThemeAccent(arg1);
       else if (action === 'setThemeMode') window.setThemeMode(arg1);
@@ -3883,6 +4072,7 @@
       else if (action === 'submitFeedback') window.submitFeedback(e);
       else if (action === 'adminAddDevUid') window.adminAddDevUid(e);
       else if (action === 'submitAuth') window.submitAuth(e);
+      else if (action === 'submitAiChat') window.submitAiChat(e);
     });
 
     // Handle App Version Dropdowns globally
