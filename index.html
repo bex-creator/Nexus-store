@@ -158,8 +158,13 @@
          </button>
       </div>
       <div id="ai-chat-history" class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4 flex flex-col">
-         <div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium">
-           Hi! I'm the local Nexus Assistant. I can help you find apps, change themes, or navigate the store. Try asking me to "Switch to OLED mode" or "Find a racing game"!
+         <div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed">
+           Hi! I'm the local Nexus Assistant. Here is what I can do for you:<br><br>
+           • <b>Launch Apps:</b> Say "open [app name]" (e.g., "open Doodle Jump").<br>
+           • <b>Navigation:</b> Say "take me home" or "open my profile".<br>
+           • <b>Themes:</b> Say "switch to OLED mode" or "make it red".<br>
+           • <b>Search:</b> Say "find a racing game" or "search for docs".<br><br>
+           What would you like to do?
          </div>
       </div>
       <form data-submit="submitAiChat" class="mt-4 flex gap-2 relative">
@@ -3896,6 +3901,46 @@
         else if (userText.includes('log out') || userText.includes('sign out')) {
            responseText = "Signing you out. See you later! 👋";
            actionToTake = () => window.handleSignOut();
+        }
+        // Command: Open/Launch Apps
+        else if (userText.startsWith('open ') || userText.startsWith('launch ') || userText.startsWith('play ')) {
+           let appName = userText.replace('open ', '').replace('launch ', '').replace('play ', '').trim();
+           let foundApp = apps.find(a => a.title.toLowerCase() === appName);
+           if (!foundApp) {
+               foundApp = apps.find(a => a.title.toLowerCase().includes(appName));
+           }
+           
+           if (foundApp) {
+               if (foundApp.isBroken) {
+                   responseText = `Sorry, <b>${foundApp.title}</b> is currently disabled for maintenance. 🛠️`;
+               } else {
+                   let appPrice = Number(foundApp.price) || 0;
+                   let hasAccess = appPrice === 0 || window.isAuthorizedAdmin;
+                   let finalPrice = appPrice;
+                   
+                   if (!hasAccess && currentUser) {
+                       const me = systemUsers.find(u => u.uid === currentUser.uid);
+                       const purchasedApps = me?.purchasedApps || [];
+                       if (me && me.isVIP) finalPrice = Math.floor(appPrice * 0.5);
+                       
+                       hasAccess = purchasedApps.includes(foundApp.id) || foundApp.authorId === currentUser.uid;
+                   }
+                   
+                   if (hasAccess) {
+                       responseText = `Launching <b>${foundApp.title}</b> right away! 🚀`;
+                       actionToTake = () => window.runApp(foundApp.id);
+                   } else {
+                       if (!currentUser) {
+                           responseText = `<b>${foundApp.title}</b> is a premium app. Please log in and purchase it first! 🔒`;
+                       } else {
+                           responseText = `You don't own <b>${foundApp.title}</b> yet. It costs <i class="ph-fill ph-coin text-yellow-500"></i> ${finalPrice} coins. Head over to its store page to buy it! 🛒`;
+                           actionToTake = () => window.navigate('details', foundApp.id);
+                       }
+                   }
+               }
+           } else {
+               responseText = `I couldn't find an app named "${appName}" in the store. 🤷‍♂️`;
+           }
         }
         // Command: Search / Find
         else if (userText.includes('find') || userText.includes('search') || userText.includes('show me') || userText.includes('looking for')) {
