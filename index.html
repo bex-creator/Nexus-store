@@ -2556,13 +2556,14 @@ What would you like to do?</div>
           showModal('App Disabled', 'This app has been flagged by security systems or administrators and cannot be launched.');
           return;
       }
-      let history = app.versionHistory || [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
-      const selectedVersionStr = window.selectedAppVersion || (app.versionHistory ? app.versionHistory[0].version : app.version);
+      
+      let history = app.versionHistory && app.versionHistory.length > 0 ? app.versionHistory : [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
+      const selectedVersionStr = window.selectedAppVersion || history[0].version;
       const activeVersionObj = history.find(v => v.version === selectedVersionStr) || history[0];
 
       let launchUrl = '';
       if (activeVersionObj.payloadType === 'url' && activeVersionObj.appUrl) {
-        launchUrl = activeVersionObj.appUrl;
+        launchUrl = activeVersionObj.appUrl.startsWith('http') ? activeVersionObj.appUrl : 'https://' + activeVersionObj.appUrl;
       } else if (activeVersionObj.payloadType === 'code' && activeVersionObj.code) {
         const blob = new Blob([activeVersionObj.code], { type: 'text/html' });
         launchUrl = URL.createObjectURL(blob);
@@ -2638,8 +2639,8 @@ What would you like to do?</div>
           return;
       }
 
-      let history = app.versionHistory || [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
-      const selectedVersionStr = window.selectedAppVersion || (app.versionHistory ? app.versionHistory[0].version : app.version);
+      let history = app.versionHistory && app.versionHistory.length > 0 ? app.versionHistory : [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
+      const selectedVersionStr = window.selectedAppVersion || history[0].version;
       const activeVersionObj = history.find(v => v.version === selectedVersionStr) || history[0];
 
       logActivity('DOWNLOAD', app.title, `Downloaded v${activeVersionObj.version} source HTML.`);
