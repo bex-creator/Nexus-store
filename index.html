@@ -2178,31 +2178,29 @@ What would you like to do?</div>
             <div class="absolute inset-0 ${app.bgClass || 'bg-indigo-600'} opacity-30 z-10 group-hover:opacity-40 transition-opacity duration-700"></div>
             <div class="absolute -right-20 -top-20 w-64 h-64 bg-white/5 blur-3xl rounded-full pointer-events-none group-hover:bg-white/10 transition-colors duration-700"></div>
             
-            <div class="relative z-20 p-8 sm:p-10 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-8 h-full">
-              <div class="flex-1 min-w-0">
-                <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border border-white/10 w-fit mb-6">
-                  <i class="ph-fill ph-star text-yellow-400"></i> App of the Day
-                </div>
-                
-                <div class="flex items-center gap-5 mb-5">
-                  ${app.icon ? 
-                    `<img src="${app.icon}" class="w-20 h-20 rounded-[1.2rem] shadow-xl border border-white/10 object-cover flex-shrink-0" />`
-                    :
-                    `<div class="w-20 h-20 rounded-[1.2rem] shadow-xl border border-white/10 flex items-center justify-center text-white ${app.bgClass || 'bg-slate-600'} flex-shrink-0">
-                      <i class="${app.iconClass || 'ph-app-window'} text-4xl"></i>
-                    </div>`
-                  }
-                  <div class="min-w-0">
-                    <h3 class="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-lg truncate">${app.title}</h3>
-                    <p class="text-indigo-200 font-medium text-lg mt-1 truncate">${app.category}</p>
-                  </div>
-                </div>
-                <p class="text-slate-200 text-base sm:text-lg line-clamp-2 leading-relaxed max-w-xl">${app.description}</p>
+            <div class="relative z-20 p-8 sm:p-10 w-full flex flex-col justify-center h-full">
+              <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border border-white/10 w-fit mb-6">
+                <i class="ph-fill ph-star text-yellow-400"></i> App of the Day
               </div>
               
-              <div class="flex flex-col items-start sm:items-end gap-4 w-full sm:w-auto mt-auto sm:mt-0 flex-shrink-0">
-                <button class="bg-white/10 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 border border-white/20 px-8 py-4 rounded-xl font-bold transition-all duration-300 w-full sm:w-auto whitespace-nowrap text-base shadow-lg">View Details</button>
-                <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${escapeQuotes(app.developer)}" class="text-white/60 hover:text-white text-sm font-bold transition-colors truncate">By ${app.developer}</p>
+              <div class="flex items-center gap-5 mb-5">
+                ${app.icon ? 
+                  `<img src="${app.icon}" class="w-20 h-20 rounded-[1.2rem] shadow-xl border border-white/10 object-cover flex-shrink-0" />`
+                  :
+                  `<div class="w-20 h-20 rounded-[1.2rem] shadow-xl border border-white/10 flex items-center justify-center text-white ${app.bgClass || 'bg-slate-600'} flex-shrink-0">
+                    <i class="${app.iconClass || 'ph-app-window'} text-4xl"></i>
+                  </div>`
+                }
+                <div class="min-w-0">
+                  <h3 class="text-3xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg truncate">${app.title}</h3>
+                  <p class="text-indigo-200 font-medium text-lg sm:text-xl mt-1 truncate">${app.category}</p>
+                </div>
+              </div>
+              <p class="text-slate-200 text-base sm:text-lg line-clamp-2 leading-relaxed max-w-3xl mb-8">${app.description}</p>
+              
+              <div class="flex flex-col sm:flex-row sm:items-center gap-6 mt-2">
+                <button class="bg-white/10 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 border border-white/20 px-10 py-4 rounded-2xl font-black transition-all duration-300 w-full sm:w-fit text-lg shadow-xl">View Details</button>
+                <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${escapeQuotes(app.developer)}" class="text-white/60 hover:text-white text-base font-bold transition-colors truncate relative z-30">By ${app.developer}</p>
               </div>
             </div>
           </div>
