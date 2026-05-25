@@ -1951,6 +1951,7 @@ What would you like to do?</div>
         searchContainer.classList.remove('hidden');
         renderHome();
       } else {
+        if (window.adRotationInterval) clearInterval(window.adRotationInterval);
         searchContainer.classList.add('hidden');
         if (viewName === 'details' && targetData) {
           window.selectedAppVersion = null; // Reset version selection
@@ -2121,17 +2122,19 @@ What would you like to do?</div>
       emptyState.classList.remove('flex');
       gridSection.classList.remove('hidden');
 
+      if (window.adRotationInterval) clearInterval(window.adRotationInterval);
+
       if (!searchQuery && promotedAds.length > 0 && sponsoredSidebar) {
           sponsoredSidebar.classList.remove('hidden');
-          // Select up to 3 random ads to display in the sidebar
-          const randomAds = [...promotedAds].sort(() => 0.5 - Math.random()).slice(0, 3);
           
-          const sponsoredHtml = randomAds.map(ad => {
+          const renderAd = (index) => {
+              const ad = promotedAds[index];
+              if (!ad) return;
               const targetApp = window.apps.find(a => a.id === ad.appId);
-              if (!targetApp) return '';
+              if (!targetApp) return;
               
-              return `
-              <div data-click="navigate" data-arg="details" data-arg2="${targetApp.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col items-center gap-4 p-5 shadow-[0_10px_40px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-white border border-yellow-200 dark:bg-slate-900 dark:border-yellow-900/30">
+              document.getElementById('sponsored-container').innerHTML = `
+              <div data-click="navigate" data-arg="details" data-arg2="${targetApp.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col items-center gap-4 p-5 shadow-[0_10px_40px_rgba(0,0,0,0.05)] transition-all duration-300 animate-fade-in hover:-translate-y-1 hover:shadow-xl bg-white border border-yellow-200 dark:bg-slate-900 dark:border-yellow-900/30">
                 <div class="absolute top-4 right-4 bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest z-20">Ad</div>
                 <div class="w-full aspect-[4/3] rounded-[1.2rem] overflow-hidden relative shadow-md border border-slate-100 dark:border-slate-800">
                   ${ad.imageUrl ? `<img src="${ad.imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />` : `<div class="w-full h-full bg-indigo-500 flex items-center justify-center text-white"><i class="ph-fill ph-app-window text-5xl"></i></div>`}
@@ -2148,8 +2151,20 @@ What would you like to do?</div>
                 </div>
               </div>
               `;
-          }).join('');
-          document.getElementById('sponsored-container').innerHTML = sponsoredHtml;
+          };
+
+          // Render first ad
+          window.currentAdIndex = window.currentAdIndex || 0;
+          if (window.currentAdIndex >= promotedAds.length) window.currentAdIndex = 0;
+          renderAd(window.currentAdIndex);
+
+          // Setup rotation every 10 seconds
+          if (promotedAds.length > 1) {
+              window.adRotationInterval = setInterval(() => {
+                  window.currentAdIndex = (window.currentAdIndex + 1) % promotedAds.length;
+                  renderAd(window.currentAdIndex);
+              }, 10000);
+          }
       } else if (sponsoredSidebar) {
           sponsoredSidebar.classList.add('hidden');
       }
