@@ -211,15 +211,16 @@
       </div>
 
       <div id="ai-chat-history" class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4 flex flex-col">
-         <div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed shadow-sm">
-           Hi! I'm the <b>Local Nexus Assistant</b> (powered by Qwen2.5). I run completely offline in your browser cache!<br><br>
-           Here is what I can do for you:<br><br>
-           • <b>Launch Apps:</b> Say "open [app name]" (e.g., "open Doodle Jump").<br>
-           • <b>Navigation:</b> Say "take me home" or "open my profile".<br>
-           • <b>Themes:</b> Say "switch to OLED mode" or "make it red".<br>
-           • <b>Search:</b> Say "find a racing game" or "search for docs".<br><br>
-           What would you like to do?
-         </div>
+         <div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed shadow-sm whitespace-pre-wrap">Hi! I'm the <b>Local Nexus Assistant</b> (powered by Qwen2.5). I run completely offline in your browser cache!
+
+Here is what I can do for you:
+
+• <b>Launch Apps:</b> Say "open [app name]" (e.g., "open Doodle Jump").
+• <b>Navigation:</b> Say "take me home" or "open my profile".
+• <b>Themes:</b> Say "switch to OLED mode" or "make it red".
+• <b>Search:</b> Say "find a racing game" or "search for docs".
+
+What would you like to do?</div>
       </div>
       <form data-submit="submitAiChat" class="mt-4 flex gap-2 relative">
          <input type="text" id="ai-chat-input" disabled placeholder="Waking up AI engine..." class="flex-1 border-2 rounded-xl px-4 py-3 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white font-medium disabled:opacity-50 transition-all">
@@ -902,7 +903,7 @@
 
                 self.postMessage({ action: 'complete', type: task.action, id: task.id, answer });
             } catch (err) {
-                self.postMessage({ action: 'error', error: String(err) });
+                self.postMessage({ action: 'error', type: task.action, id: task.id, error: String(err) });
             }
 
             isProcessing = false;
@@ -989,18 +990,18 @@
             if (type === 'chat') {
                 if (window.currentTypingBubble && window.currentTypingBubble.id === 'typing-indicator') {
                     window.currentTypingBubble.id = '';
-                    window.currentTypingBubble.innerText = '';
+                    window.currentTypingBubble.textContent = ''; // Fix space stripping
                 }
                 if (window.currentTypingBubble) {
-                    window.currentTypingBubble.innerText += token;
+                    window.currentTypingBubble.textContent += token; // Fix space stripping
                     const hist = document.getElementById('ai-chat-history');
                     if(hist) hist.scrollTop = hist.scrollHeight;
                 }
             } else if (type === 'overview') {
                 const el = document.getElementById('overview-text-' + id);
                 if (el) {
-                    if (el.innerHTML.includes('dot-flashing')) el.innerHTML = '';
-                    el.innerHTML += token.replace(/\n/g, '<br>');
+                    if (el.innerHTML.includes('dot-flashing')) el.textContent = ''; // Fix space stripping
+                    el.textContent += token; // Fix space stripping
                 }
             }
         } else if (action === 'complete') {
@@ -1016,21 +1017,23 @@
                 if (window.currentTypingBubble) {
                     if (window.currentTypingBubble.id === 'typing-indicator') {
                         window.currentTypingBubble.id = '';
-                        window.currentTypingBubble.innerText = answer;
                     }
-                    window.aiChatHistory.push({ role: "assistant", content: window.currentTypingBubble.innerText });
+                    window.currentTypingBubble.textContent = answer; // Fix space stripping
+                    window.aiChatHistory.push({ role: "assistant", content: window.currentTypingBubble.textContent });
                 }
                 window.currentTypingBubble = null;
             } else if (type === 'overview') {
                 const app = window.apps.find(a => a.id === id);
                 if (app) app.trueAiOverview = answer; // Cache it so it doesn't recalculate on next visit
+                const el = document.getElementById('overview-text-' + id);
+                if (el) el.textContent = answer;
             }
         } else if (action === 'error') {
             console.error("AI Worker Error:", error);
             if (type === 'chat') {
                 if (window.currentTypingBubble) {
                     window.currentTypingBubble.id = '';
-                    window.currentTypingBubble.innerText = `Oops, my local processor hit an error: ${error}`;
+                    window.currentTypingBubble.textContent = `Oops, my local processor hit an error: ${error}`;
                 }
                 const inputEl = document.getElementById('ai-chat-input');
                 const submitBtn = document.getElementById('ai-chat-submit');
@@ -1842,7 +1845,7 @@
 
           if (targetData) {
             editingAppId = targetData;
-            const app = apps.find(a => a.id === targetData);
+            const app = window.apps.find(a => a.id === targetData);
             document.getElementById('upload-title').textContent = 'Edit App';
             document.getElementById('btn-submit').innerHTML = '<i class="ph-fill ph-floppy-disk text-xl"></i> Save Changes';
             
@@ -2366,9 +2369,7 @@
                 <h3 class="text-lg font-black mb-2 tracking-tight text-indigo-900 dark:text-indigo-200 flex items-center gap-2">
                   <i class="ph-fill ph-sparkle text-indigo-500"></i> App Analysis
                 </h3>
-                <p id="overview-text-${app.id}" class="text-base leading-relaxed font-medium text-indigo-800/80 dark:text-indigo-200/80">
-                  ${app.trueAiOverview ? app.trueAiOverview : (window.aiReady ? '<div class="py-1"><div class="dot-flashing"></div></div>' : 'AI Engine is initializing...')}
-                </p>
+                <p id="overview-text-${app.id}" class="text-base leading-relaxed font-medium text-indigo-800/80 dark:text-indigo-200/80 whitespace-pre-wrap">${app.trueAiOverview ? escapeQuotes(app.trueAiOverview) : (window.aiReady ? '<div class="py-1"><div class="dot-flashing"></div></div>' : 'AI Engine is initializing...')}</p>
               </div>
 
               <div class="mb-10 max-w-3xl">
