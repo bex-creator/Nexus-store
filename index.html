@@ -314,40 +314,6 @@ What would you like to do?</div>
     </div>
   </div>
 
-  <!-- Create Ad Modal -->
-  <div id="create-ad-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
-    <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2"><i class="ph-fill ph-megaphone text-yellow-500"></i> Create Ad</h2>
-        <button data-click="closeModal" data-arg="create-ad-modal" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-full transition-colors">
-          <i class="ph-bold ph-x text-xl"></i>
-        </button>
-      </div>
-      <p class="text-slate-500 font-medium mb-6 leading-relaxed">Promote your app across NexusStore! Sponsored ads cost <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> 10,000</span> coins.</p>
-      
-      <form data-submit="submitCreateAd" id="create-ad-form">
-        <input type="hidden" id="ad-target-app-id">
-        <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Ad Tagline</label>
-        <input type="text" id="ad-text" required maxlength="80" placeholder="e.g. Play the #1 game today!" class="w-full border-2 rounded-2xl px-5 py-4 mb-6 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
-        
-        <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Banner Image</label>
-        <div class="relative h-40 border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center transition-all cursor-pointer group shadow-sm hover:shadow-md hover:border-yellow-400 bg-slate-50 border-slate-300 dark:bg-slate-800 dark:border-slate-700 mb-8 overflow-hidden">
-          <input type="file" accept="image/*" id="ad-image-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-          <img id="ad-image-preview" class="absolute inset-0 w-full h-full object-cover hidden transition-transform duration-300 group-hover:scale-105" />
-          <div id="ad-image-placeholder" class="text-center text-slate-400 group-hover:text-yellow-500 transition-colors z-20 pointer-events-none p-4">
-            <i class="ph ph-image text-4xl mx-auto mb-2 block"></i>
-            <span class="text-sm font-bold">Upload Custom Banner</span>
-            <p class="text-xs font-medium opacity-70 mt-1">Leave empty to use app icon</p>
-          </div>
-        </div>
-
-        <button type="submit" id="create-ad-submit-btn" class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl shadow-yellow-500/30 flex items-center justify-center gap-2 hover:-translate-y-1 active:translate-y-0">
-          Pay 10,000 <i class="ph-fill ph-coin"></i> & Publish
-        </button>
-      </form>
-    </div>
-  </div>
-
   <!-- Theme Selection Modal -->
   <div id="theme-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
     <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
@@ -450,31 +416,15 @@ What would you like to do?</div>
         <p class="text-slate-500 text-lg max-w-md">We couldn't find anything matching your search.</p>
       </div>
 
-      <!-- Top Section: Picks + Ads side-by-side -->
-      <div class="flex flex-col xl:flex-row gap-8 items-start mb-8">
-        
-        <!-- Main Content: Picks -->
-        <section id="home-picks" class="flex-1 min-w-0 w-full hidden">
-          <div class="flex items-center gap-3 mb-6">
-            <i class="ph ph-calendar text-indigo-500 text-2xl font-bold"></i>
-            <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Today's Picks</h2>
-          </div>
-          <div id="picks-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
-        </section>
-
-        <!-- Sidebar for Ads -->
-        <div id="home-sponsored-sidebar" class="w-full xl:w-[340px] flex-shrink-0 hidden">
-          <div class="flex items-center gap-3 mb-6">
-            <i class="ph-fill ph-megaphone text-yellow-500 text-2xl font-bold"></i>
-            <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Sponsored</h2>
-          </div>
-          <div id="sponsored-container" class="flex flex-col gap-6"></div>
+      <section id="home-picks" class="mb-16 hidden">
+        <div class="flex items-center gap-3 mb-6">
+          <i class="ph ph-calendar text-indigo-500 text-2xl font-bold"></i>
+          <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">App of the Day</h2>
         </div>
+        <div id="picks-container" class="grid grid-cols-1 gap-6"></div>
+      </section>
 
-      </div>
-
-      <!-- Bottom Section: Trending Now grid (Full Width) -->
-      <section id="home-grid-section" class="hidden pb-12">
+      <section id="home-grid-section" class="hidden">
         <div class="flex items-center gap-3 mb-8">
           <i class="ph ph-stack text-indigo-500 text-2xl font-bold"></i>
           <h2 id="grid-title" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Trending Now</h2>
@@ -565,14 +515,14 @@ What would you like to do?</div>
           <i class="ph-fill ph-squares-four text-indigo-500 text-3xl"></i>
           Published Apps
         </h2>
-        <div id="profile-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8"></div>
+        <div id="profile-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8"></div>
 
         <div id="favorites-section" class="hidden mt-16 border-t border-slate-100 dark:border-slate-800 pt-12">
           <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-8 flex items-center gap-3">
             <i class="ph-fill ph-heart text-pink-500 text-3xl"></i>
             My Favorites
           </h2>
-          <div id="favorites-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8"></div>
+          <div id="favorites-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8"></div>
         </div>
       </div>
     </div>
@@ -591,17 +541,6 @@ What would you like to do?</div>
             </div>
             <h1 id="upload-title" class="text-4xl font-black text-white mb-3 tracking-tight">Publish to NexusStore</h1>
             <p class="text-indigo-200 text-lg font-medium max-w-lg">Share your creations with the world. Upload standard code payloads or link directly to web apps.</p>
-          </div>
-        </div>
-
-        <div class="flex justify-center mt-8 -mb-4">
-          <div class="flex p-1.5 rounded-2xl w-fit shadow-inner bg-slate-100 dark:bg-slate-800 relative z-10">
-            <button type="button" id="tab-publish-app" data-click="switchUploadTab" data-arg="app" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-md transform scale-100 bg-white text-slate-900 dark:bg-slate-700 dark:text-white">
-              <i class="ph ph-app-window text-lg"></i> App
-            </button>
-            <button type="button" id="tab-publish-ad" data-click="switchUploadTab" data-arg="ad" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all scale-95 text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700/50">
-              <i class="ph ph-megaphone text-lg"></i> Ad Campaign
-            </button>
           </div>
         </div>
 
@@ -752,52 +691,6 @@ What would you like to do?</div>
             </button>
           </div>
         </form>
-
-        <form id="upload-ad-form" class="p-8 sm:p-12 space-y-10 hidden" data-submit="submitPublishAd">
-          <div>
-            <h3 class="text-2xl font-black mb-6 tracking-tight text-slate-900 dark:text-white">Create Advertisement</h3>
-            <p class="text-slate-500 font-medium mb-8 leading-relaxed">Promote your app across NexusStore! Sponsored ads cost <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> 10,000</span> coins.</p>
-            
-            <div class="space-y-6">
-              <div>
-                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Target App</label>
-                <div class="relative">
-                  <select id="publish-ad-target-app" required class="appearance-none w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:bg-slate-800">
-                     <!-- Options populated by JS -->
-                  </select>
-                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 text-slate-400">
-                    <i class="ph ph-caret-down"></i>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Ad Tagline</label>
-                <input type="text" id="publish-ad-text" required maxlength="80" placeholder="e.g. Play the #1 game today!" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
-              </div>
-              
-              <div>
-                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Banner Image</label>
-                <div class="relative h-48 border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center transition-all cursor-pointer group shadow-sm hover:shadow-md hover:border-yellow-400 bg-slate-50 border-slate-300 dark:bg-slate-800 dark:border-slate-700 overflow-hidden">
-                  <input type="file" accept="image/*" id="publish-ad-image-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  <img id="publish-ad-image-preview" class="absolute inset-0 w-full h-full object-cover hidden transition-transform duration-300 group-hover:scale-105" />
-                  <div id="publish-ad-image-placeholder" class="text-center text-slate-400 group-hover:text-yellow-500 transition-colors z-20 pointer-events-none p-4">
-                    <i class="ph ph-image text-4xl mx-auto mb-2 block"></i>
-                    <span class="text-sm font-bold">Upload Custom Banner</span>
-                    <p class="text-xs font-medium opacity-70 mt-1">Leave empty to use app icon</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="pt-8 mt-8 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-4">
-            <button type="button" data-click="navigateFromAdmin" class="px-8 py-4 rounded-2xl font-bold transition-all duration-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">Cancel</button>
-            <button type="submit" id="publish-ad-submit-btn" class="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-10 py-4 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl shadow-yellow-500/30 flex items-center justify-center gap-2 hover:-translate-y-1 active:translate-y-0">
-              Pay 10,000 <i class="ph-fill ph-coin"></i> & Publish Ad
-            </button>
-          </div>
-        </form>
       </div>
     </div>
 
@@ -806,9 +699,9 @@ What would you like to do?</div>
       <div class="max-w-6xl mx-auto pb-20">
         <div class="flex items-center justify-between mb-8">
           <h2 class="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3">
-      <div id="home-empty" class="hidden flex-col items-center justify-center py-32 text-center animate-fade-in">
-        <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-slate-200 dark:bg-slate-800">
-          <i class="ph ph-magnifying-glass text-4xl text-slate-400"></i>
+            <i class="ph-fill ph-shield-check text-indigo-500 text-4xl"></i> Admin Control Panel
+          </h2>
+          <button data-click="navigate" data-arg="home" class="px-6 py-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 font-bold hover:shadow-md transition-all">Exit Admin</button>
         </div>
 
         <!-- Admin Tabs -->
@@ -1206,8 +1099,6 @@ What would you like to do?</div>
     let publicListenersAttached = false;
     let publicUnsubs = [];
     let privateUnsubs = [];
-    let promotedAds = [];
-    let currentAdImageBase64 = null;
 
     const handleUserStatus = (status) => {
       currentUserStatus = status;
@@ -1361,13 +1252,6 @@ What would you like to do?</div>
               coinRequests.sort((a, b) => b.timestamp - a.timestamp);
               if (currentView === 'admin') renderAdminCoins();
             }, (error) => console.warn("Firestore coin requests error:", error)));
-
-            // Promoted Ads
-            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'promoted_ads')), (snapshot) => {
-              promotedAds = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-              promotedAds.sort((a, b) => b.timestamp - a.timestamp);
-              if (currentView === 'home') renderHome();
-            }, (error) => console.warn("Firestore ads error:", error)));
         };
 
         let hasInitializedAuth = false;
@@ -1951,7 +1835,6 @@ What would you like to do?</div>
         searchContainer.classList.remove('hidden');
         renderHome();
       } else {
-        if (window.adRotationInterval) clearInterval(window.adRotationInterval);
         searchContainer.classList.add('hidden');
         if (viewName === 'details' && targetData) {
           window.selectedAppVersion = null; // Reset version selection
@@ -1961,7 +1844,6 @@ What would you like to do?</div>
         } else if (viewName === 'admin') {
           renderAdmin();
         } else if (viewName === 'upload') {
-          window.switchUploadTab('app'); // Reset to default App Upload tab
           
           if (currentUserStatus === 'suspended' || currentUserStatus === 'banned') {
             showModal("Account Restricted", `Your account is currently ${currentUserStatus}. You cannot publish or edit apps.`);
@@ -2105,7 +1987,6 @@ What would you like to do?</div>
       const emptyState = document.getElementById('home-empty');
       const picksSection = document.getElementById('home-picks');
       const gridSection = document.getElementById('home-grid-section');
-      const sponsoredSidebar = document.getElementById('home-sponsored-sidebar');
       
       renderCategories();
 
@@ -2114,7 +1995,6 @@ What would you like to do?</div>
         emptyState.classList.add('flex');
         picksSection.classList.add('hidden');
         gridSection.classList.add('hidden');
-        if (sponsoredSidebar) sponsoredSidebar.classList.add('hidden');
         return;
       }
 
@@ -2122,57 +2002,10 @@ What would you like to do?</div>
       emptyState.classList.remove('flex');
       gridSection.classList.remove('hidden');
 
-      if (window.adRotationInterval) clearInterval(window.adRotationInterval);
-
-      if (!searchQuery && promotedAds.length > 0 && sponsoredSidebar) {
-          sponsoredSidebar.classList.remove('hidden');
-          
-          const renderAd = (index) => {
-              const ad = promotedAds[index];
-              if (!ad) return;
-              const targetApp = window.apps.find(a => a.id === ad.appId);
-              if (!targetApp) return;
-              
-              document.getElementById('sponsored-container').innerHTML = `
-              <div data-click="navigate" data-arg="details" data-arg2="${targetApp.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col items-center gap-4 p-5 shadow-[0_10px_40px_rgba(0,0,0,0.05)] transition-all duration-300 animate-fade-in hover:-translate-y-1 hover:shadow-xl bg-white border border-yellow-200 dark:bg-slate-900 dark:border-yellow-900/30">
-                <div class="absolute top-4 right-4 bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest z-20">Ad</div>
-                <div class="w-full aspect-[4/3] rounded-[1.2rem] overflow-hidden relative shadow-md border border-slate-100 dark:border-slate-800">
-                  ${ad.imageUrl ? `<img src="${ad.imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />` : `<div class="w-full h-full bg-indigo-500 flex items-center justify-center text-white"><i class="ph-fill ph-app-window text-5xl"></i></div>`}
-                </div>
-                <div class="w-full flex flex-col justify-center text-center">
-                  <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2 tracking-tight group-hover:text-indigo-500 transition-colors line-clamp-2">${escapeQuotes(ad.text)}</h3>
-                  <div class="flex items-center justify-center gap-2 mb-4">
-                    ${targetApp.icon ? `<img src="${targetApp.icon}" class="w-6 h-6 rounded-md object-cover shadow-sm border border-slate-100 dark:border-slate-800">` : `<div class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 flex items-center justify-center"><i class="${targetApp.iconClass || 'ph-app-window'} text-slate-500 text-xs"></i></div>`}
-                    <div class="font-bold text-sm text-slate-700 dark:text-slate-200 line-clamp-1">${targetApp.title}</div>
-                  </div>
-                  <button class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 py-2.5 rounded-xl font-black transition-all shadow-md text-sm flex items-center justify-center gap-2">
-                    Check it out
-                  </button>
-                </div>
-              </div>
-              `;
-          };
-
-          // Render first ad
-          window.currentAdIndex = window.currentAdIndex || 0;
-          if (window.currentAdIndex >= promotedAds.length) window.currentAdIndex = 0;
-          renderAd(window.currentAdIndex);
-
-          // Setup rotation every 10 seconds
-          if (promotedAds.length > 1) {
-              window.adRotationInterval = setInterval(() => {
-                  window.currentAdIndex = (window.currentAdIndex + 1) % promotedAds.length;
-                  renderAd(window.currentAdIndex);
-              }, 10000);
-          }
-      } else if (sponsoredSidebar) {
-          sponsoredSidebar.classList.add('hidden');
-      }
-
-      const todaysPicks = filtered.slice(0, 2);
+      const todaysPicks = filtered.slice(0, 1);
       if (!searchQuery && todaysPicks.length > 0) {
         picksSection.classList.remove('hidden');
-        const picksHtml = todaysPicks.map((app, idx) => `
+        const picksHtml = todaysPicks.map((app) => `
           <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="group relative overflow-hidden rounded-[2.5rem] cursor-pointer isolate flex flex-col justify-end min-h-[380px] shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-black dark:bg-slate-900 border border-slate-800">
             ${app.visibility === 'private' ? '<div class="absolute top-6 right-6 bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full border border-white/10 z-30 text-xs font-bold flex items-center gap-1.5"><i class="ph-fill ph-lock-key"></i> Private</div>' : ''}
             <div class="absolute inset-0 ${app.bgClass || 'bg-indigo-600'} opacity-30 z-10 group-hover:opacity-40 transition-opacity duration-700"></div>
@@ -2180,7 +2013,7 @@ What would you like to do?</div>
             <div class="relative z-20 p-8 sm:p-10 w-full flex flex-col h-full justify-between">
               <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border border-white/10 w-fit mb-6">
                 <i class="ph-fill ph-star text-yellow-400"></i>
-                ${idx === 0 ? 'App of the Day' : 'Editors Choice'}
+                App of the Day
               </div>
               
               <div>
@@ -2510,13 +2343,10 @@ What would you like to do?</div>
                       </button>
                       ${isAuthorizedAdmin ? `
                         <button data-click="adminToggleVerify" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center ${app.isVerified ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 dark:text-emerald-400' : 'bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white'}" title="${app.isVerified ? 'Remove Verification' : 'Verify App Safe'}">
-                        <i class="ph-fill ph-shield-check text-2xl"></i>
-                      </button>
+                          <i class="ph-fill ph-shield-check text-2xl"></i>
+                        </button>
                       ` : ''}
                       ${currentUser && app.authorId === currentUser.uid ? `
-                        <button data-click="showCreateAdModal" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-yellow-50 hover:bg-yellow-100 text-yellow-600 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/40 dark:text-yellow-400" title="Promote App">
-                          <i class="ph ph-megaphone text-2xl"></i>
-                        </button>
                         <button data-click="navigate" data-arg="upload" data-arg2="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Edit App">
                           <i class="ph ph-pencil-simple text-2xl"></i>
                         </button>
@@ -2997,45 +2827,6 @@ What would you like to do?</div>
     btnPayloadCode.addEventListener('click', () => { payloadType = 'code'; updatePayloadToggleUI(); });
     btnPayloadUrl.addEventListener('click', () => { payloadType = 'url'; updatePayloadToggleUI(); });
 
-    window.switchUploadTab = (tab) => {
-        const btnApp = document.getElementById('tab-publish-app');
-        const btnAd = document.getElementById('tab-publish-ad');
-        const formApp = document.getElementById('upload-form');
-        const formAd = document.getElementById('upload-ad-form');
-        const activeClasses = ['shadow-md', 'transform', 'scale-100', 'bg-white', 'text-slate-900', 'dark:bg-slate-700', 'dark:text-white'];
-        const inactiveClasses = ['scale-95', 'text-slate-500', 'hover:text-slate-700', 'hover:bg-slate-200/50', 'dark:text-slate-400', 'dark:hover:text-slate-200', 'dark:hover:bg-slate-700/50'];
-
-        if (tab === 'app') {
-            btnApp.classList.remove(...inactiveClasses);
-            btnApp.classList.add(...activeClasses);
-            btnAd.classList.remove(...activeClasses);
-            btnAd.classList.add(...inactiveClasses);
-            formApp.classList.remove('hidden');
-            formAd.classList.add('hidden');
-            document.getElementById('upload-title').textContent = editingAppId ? 'Edit App' : 'Publish to NexusStore';
-        } else {
-            btnAd.classList.remove(...inactiveClasses);
-            btnAd.classList.add(...activeClasses);
-            btnApp.classList.remove(...activeClasses);
-            btnApp.classList.add(...inactiveClasses);
-            formAd.classList.remove('hidden');
-            formApp.classList.add('hidden');
-            document.getElementById('upload-title').textContent = 'Create Ad Campaign';
-
-            const dropdown = document.getElementById('publish-ad-target-app');
-            if (currentUser) {
-                const myApps = window.apps.filter(a => a.authorId === currentUser.uid);
-                if (myApps.length === 0) {
-                    dropdown.innerHTML = '<option value="">No apps published yet</option>';
-                    dropdown.disabled = true;
-                } else {
-                    dropdown.innerHTML = myApps.map(a => `<option value="${a.id}">${escapeQuotes(a.title)}</option>`).join('');
-                    dropdown.disabled = false;
-                }
-            }
-        }
-    };
-
     const readFileAsDataURL = (file) => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -3239,71 +3030,6 @@ What would you like to do?</div>
         submitBtn.disabled = false;
       }
     });
-
-    let publishAdImageBase64 = null;
-    document.getElementById('publish-ad-image-input').addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            publishAdImageBase64 = await readFileAsDataURL(file);
-            document.getElementById('publish-ad-image-preview').src = publishAdImageBase64;
-            document.getElementById('publish-ad-image-preview').classList.remove('hidden');
-            document.getElementById('publish-ad-image-placeholder').classList.add('hidden');
-        }
-    });
-
-    window.submitPublishAd = async (e) => {
-        e.preventDefault();
-        if (!currentUser) return;
-        
-        const targetAppId = document.getElementById('publish-ad-target-app').value;
-        if (!targetAppId) {
-            showModal('Error', 'You need to publish an app first before you can promote it.');
-            return;
-        }
-
-        const me = systemUsers.find(u => u.uid === currentUser.uid);
-        let bal = me?.balance || 0;
-        
-        if (bal < 10000) {
-            showModal('Insufficient Funds', `You need <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> 10,000</span> Nexus Coins to run an ad.`);
-            return;
-        }
-        
-        const text = document.getElementById('publish-ad-text').value.trim();
-        const btn = document.getElementById('publish-ad-submit-btn');
-        
-        btn.disabled = true;
-        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Processing...';
-        
-        try {
-            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
-            await updateDoc(userRef, { balance: increment(-10000) });
-            
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'promoted_ads'), {
-                appId: targetAppId,
-                text: text,
-                imageUrl: publishAdImageBase64,
-                authorId: currentUser.uid,
-                timestamp: Date.now()
-            });
-            
-            logActivity('PURCHASE', 'Ad Campaign', `Purchased ad for ${targetAppId} for 10000 coins.`);
-            showToast('Ad Published!', 'Your app is now being promoted across NexusStore.', 'ph-megaphone', 'yellow');
-            
-            document.getElementById('upload-ad-form').reset();
-            publishAdImageBase64 = null;
-            document.getElementById('publish-ad-image-preview').classList.add('hidden');
-            document.getElementById('publish-ad-image-placeholder').classList.remove('hidden');
-            
-            window.navigate('home');
-        } catch (err) {
-            console.error("Ad creation error:", err);
-            showModal('Error', 'Failed to publish ad.');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = 'Pay 10,000 <i class="ph-fill ph-coin"></i> & Publish Ad';
-        }
-    };
 
     // --- ADMIN LOGIC & KEYBOARD SHORTCUTS ---
     let secretBuffer = '';
@@ -4310,9 +4036,7 @@ What would you like to do?</div>
       const arg2 = target.dataset.arg2;
 
       if (action === 'navigate') window.navigate(arg1, arg2);
-      else if (action === 'switchUploadTab') window.switchUploadTab(arg1);
       else if (action === 'setCategory') { selectedCategory = arg1; renderHome(); }
-      else if (action === 'showCreateAdModal') window.showCreateAdModal(arg1);
       else if (action === 'toggleNewsPanel') window.toggleNewsPanel();
       else if (action === 'toggleInboxPanel') window.toggleInboxPanel();
       else if (action === 'switchAdminTab') window.switchAdminTab(arg1);
@@ -4387,8 +4111,6 @@ What would you like to do?</div>
       const arg1 = target.dataset.arg;
 
       if (action === 'submitUsername') window.submitUsername(e);
-      else if (action === 'submitCreateAd') window.submitCreateAd(e);
-      else if (action === 'submitPublishAd') window.submitPublishAd(e);
       else if (action === 'submitProfileEdits') window.submitProfileEdits(e);
       else if (action === 'adminCreateNews') window.adminCreateNews(e);
       else if (action === 'submitReview') window.submitReview(e, arg1);
@@ -4644,92 +4366,6 @@ What would you like to do?</div>
          renderDetails(arg1);
       }
     });
-
-    // Ad Creation Logic
-    window.showCreateAdModal = (targetAppId) => {
-        if (!currentUser) return;
-        const app = window.apps.find(a => a.id === targetAppId);
-        if (!app) return;
-        
-        document.getElementById('ad-target-app-id').value = targetAppId;
-        document.getElementById('create-ad-form').reset();
-        
-        currentAdImageBase64 = app.icon || null; 
-        const preview = document.getElementById('ad-image-preview');
-        const placeholder = document.getElementById('ad-image-placeholder');
-        
-        if (currentAdImageBase64) {
-           preview.src = currentAdImageBase64;
-           preview.classList.remove('hidden');
-           placeholder.classList.add('hidden');
-        } else {
-           preview.classList.add('hidden');
-           placeholder.classList.remove('hidden');
-        }
-        
-        const modal = document.getElementById('create-ad-modal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    };
-
-    document.getElementById('ad-image-input').addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            currentAdImageBase64 = await readFileAsDataURL(file);
-            document.getElementById('ad-image-preview').src = currentAdImageBase64;
-            document.getElementById('ad-image-preview').classList.remove('hidden');
-            document.getElementById('ad-image-placeholder').classList.add('hidden');
-        }
-    });
-
-    window.submitCreateAd = async (e) => {
-        e.preventDefault();
-        if (!currentUser) return;
-        
-        const me = systemUsers.find(u => u.uid === currentUser.uid);
-        let bal = me?.balance;
-        if (isNaN(bal) || bal === undefined) bal = 0;
-        
-        if (bal < 10000) {
-            showModal('Insufficient Funds', `You need <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> 10,000</span> Nexus Coins to run an ad. You currently have ${bal}.`);
-            return;
-        }
-        
-        const text = document.getElementById('ad-text').value.trim();
-        const targetAppId = document.getElementById('ad-target-app-id').value;
-        const btn = document.getElementById('create-ad-submit-btn');
-        
-        btn.disabled = true;
-        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Processing...';
-        
-        try {
-            // Deduct 10000 coins
-            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
-            await updateDoc(userRef, { balance: increment(-10000) });
-            
-            // Save Ad
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'promoted_ads'), {
-                appId: targetAppId,
-                text: text,
-                imageUrl: currentAdImageBase64,
-                authorId: currentUser.uid,
-                timestamp: Date.now()
-            });
-            
-            logActivity('PURCHASE', 'Ad Campaign', `Purchased ad for ${targetAppId} for 10000 coins.`);
-            showToast('Ad Published!', 'Your app is now being promoted across NexusStore.', 'ph-megaphone', 'yellow');
-            
-            const modal = document.getElementById('create-ad-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        } catch (err) {
-            console.error("Ad creation error:", err);
-            showModal('Error', 'Failed to publish ad.');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = 'Pay 10,000 <i class="ph-fill ph-coin"></i> & Publish';
-        }
-    };
 
     // Theme Management Logic
     const accents = {
