@@ -865,8 +865,8 @@ What would you like to do?</div>
         import { pipeline, env, TextStreamer } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0/dist/transformers.min.js';
         
         env.allowLocalModels = false;
-        // Force 1 single thread to be completely safe against locks in browser sandboxes
-        env.backends.onnx.wasm.numThreads = 1;
+        // Optimize WASM fallback by allowing multiple threads
+        env.backends.onnx.wasm.numThreads = navigator.hardwareConcurrency ? Math.min(navigator.hardwareConcurrency, 4) : 1;
 
         let aiPipeline = null;
         let isProcessing = false;
@@ -886,10 +886,8 @@ What would you like to do?</div>
                 });
 
                 const results = await aiPipeline(task.messages, {
-                    max_new_tokens: task.action === 'overview' ? 75 : 200,
-                    temperature: 0.6,
-                    repetition_penalty: 1.1,
-                    do_sample: true,
+                    max_new_tokens: task.action === 'overview' ? 75 : 512,
+                    do_sample: false,
                     streamer: streamer
                 });
 
@@ -914,12 +912,14 @@ What would you like to do?</div>
             const { action } = e.data;
             if (action === 'load') {
                 try {
+                    // Use WebGPU if available for massive speedup, otherwise fallback to WASM
+                    const deviceToUse = navigator.gpu ? 'webgpu' : 'wasm';
                     aiPipeline = await pipeline('text-generation', 'onnx-community/Qwen2.5-0.5B-Instruct', {
-                        device: 'wasm',
+                        device: deviceToUse,
                         dtype: 'q4',
                         progress_callback: (data) => self.postMessage({ action: 'progress', data })
                     });
-                    self.postMessage({ action: 'ready' });
+                    self.postMessage({ action: 'ready', device: deviceToUse });
                     processQueue(); // Start parsing any items queued while downloading
                 } catch (err) {
                     self.postMessage({ action: 'error', error: String(err) });
@@ -978,8 +978,15 @@ What would you like to do?</div>
             const chatBtn = document.getElementById('ai-chat-submit');
             
             if (progressContainer) progressContainer.classList.add('hidden');
-            if (aiStatusText) aiStatusText.innerText = 'Local Worker Active • Online';
-            if (aiStatusText) aiStatusText.className = 'text-xs font-mono text-emerald-500 mt-1';
+            if (aiStatusText) {
+                if (e.data.device === 'webgpu') {
+                    aiStatusText.innerText = 'Status: Active • WebGPU Accelerated 🚀';
+                    aiStatusText.className = 'text-xs font-mono text-yellow-500 mt-1';
+                } else {
+                    aiStatusText.innerText = 'Local Worker Active • CPU (WASM)';
+                    aiStatusText.className = 'text-xs font-mono text-emerald-500 mt-1';
+                }
+            }
             
             if (chatInput) {
                 chatInput.disabled = false;
@@ -4403,7 +4410,7 @@ What would you like to do?</div>
                 action: 'chat',
                 id: Date.now(),
                 messages: [
-                    { role: "system", content: "You are the local Nexus Assistant, a helpful AI built into the NexusStore platform. Be concise and friendly." },
+                    { role: "system", content: "You are the local Nexus Assistant. Answer directly and accurately. Do NOT use emojis. Do NOT ramble or ask follow-up questions. Keep your answers brief." },
                     ...window.aiChatHistory
                 ]
             });
