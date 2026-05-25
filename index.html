@@ -1952,7 +1952,7 @@ What would you like to do?</div>
         renderHome();
       } else {
         if (window.adRotationInterval) clearInterval(window.adRotationInterval);
-        searchContainer.classList.add('hidden');
+        
         if (viewName === 'details' && targetData) {
           window.selectedAppVersion = null; // Reset version selection
           renderDetails(targetData);
@@ -2044,7 +2044,11 @@ What would you like to do?</div>
 
     searchInput.addEventListener('input', (e) => {
       searchQuery = e.target.value;
-      renderHome();
+      if (currentView !== 'home') {
+        window.navigate('home');
+      } else {
+        renderHome();
+      }
     });
 
     // Helper for App Stats
