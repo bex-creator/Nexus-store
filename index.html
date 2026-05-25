@@ -2571,110 +2571,25 @@ What would you like to do?</div>
       if (playTimer) clearTimeout(playTimer);
       if (rewardInterval) clearInterval(rewardInterval);
 
-      const inIframe = window.self !== window.top;
-
-      if (inIframe) {
-        // If the store is running in an iframe, open the app natively within the store as an overlay
-        const overlay = document.getElementById('app-viewer-overlay');
-        const iframe = document.getElementById('app-viewer-iframe');
-        const titleEl = document.getElementById('app-viewer-title');
-        const iconEl = document.getElementById('app-viewer-icon');
-
-        currentLaunchUrl = launchUrl;
-        isCurrentLaunchBlob = activeVersionObj.payloadType === 'code';
-
-        titleEl.textContent = app.title;
-        if (app.icon) {
-          iconEl.innerHTML = `<img src="${app.icon}" class="w-full h-full object-cover" />`;
-        } else {
-          iconEl.innerHTML = `<i class="${app.iconClass || 'ph-app-window'} text-xl text-indigo-400"></i>`;
-        }
-
-        if (activeVersionObj.payloadType === 'code') {
-          iframe.removeAttribute('src');
-          iframe.srcdoc = activeVersionObj.code;
-        } else {
-          iframe.removeAttribute('srcdoc');
-          iframe.src = launchUrl;
-        }
-        
-        overlay.classList.remove('hidden');
-        overlay.classList.add('flex');
-
-        // Setup Visual UI Timer (2 minutes = 120 seconds)
-        const timerContainer = document.getElementById('reward-timer-container');
-        timerContainer.classList.remove('hidden');
-        timerContainer.classList.add('flex');
-        timerContainer.innerHTML = `<i class="ph-fill ph-timer animate-pulse"></i> <span id="reward-timer-text">02:00</span>`;
+      const newWin = window.open(launchUrl, '_blank');
+      if (newWin) {
+        showToast('App Launched', 'App opened in a new tab. Keep it open for 2 minutes to earn 500 coins!', 'ph-rocket-launch', 'indigo');
         
         let rewardSecondsLeft = 120;
         rewardInterval = setInterval(() => {
-            rewardSecondsLeft--;
-            if (rewardSecondsLeft <= 0) {
+            if (newWin.closed) {
                 clearInterval(rewardInterval);
-                timerContainer.innerHTML = `<i class="ph-fill ph-check-circle"></i> <span>+500 Coins!</span>`;
-                setTimeout(() => {
-                    timerContainer.classList.add('hidden');
-                    timerContainer.classList.remove('flex');
-                }, 5000);
-                window.awardPlaytimeCoins(500);
+                showToast('Playtime Cancelled', 'You closed the app before 2 minutes.', 'ph-warning-circle', 'amber');
             } else {
-                const m = Math.floor(rewardSecondsLeft / 60).toString().padStart(2, '0');
-                const s = (rewardSecondsLeft % 60).toString().padStart(2, '0');
-                const timerText = document.getElementById('reward-timer-text');
-                if (timerText) timerText.textContent = `${m}:${s}`;
+                rewardSecondsLeft--;
+                if (rewardSecondsLeft <= 0) {
+                    clearInterval(rewardInterval);
+                    window.awardPlaytimeCoins(500);
+                }
             }
         }, 1000);
-
       } else {
-        // Not in an iframe -> Open outside of the store (new tab/window)
-        if (activeVersionObj.payloadType === 'code') {
-          const newWin = window.open('about:blank', '_blank');
-          if (newWin) {
-            newWin.document.open();
-            newWin.document.write(activeVersionObj.code);
-            newWin.document.close();
-            
-            showToast('Timer Started', 'Keep the game tab open for 2 minutes to earn 500 coins!', 'ph-timer', 'yellow');
-            
-            let rewardSecondsLeft = 120;
-            rewardInterval = setInterval(() => {
-                if (newWin.closed) {
-                    clearInterval(rewardInterval);
-                    showToast('Playtime Cancelled', 'You closed the game before 2 minutes.', 'ph-warning-circle', 'amber');
-                } else {
-                    rewardSecondsLeft--;
-                    if (rewardSecondsLeft <= 0) {
-                        clearInterval(rewardInterval);
-                        window.awardPlaytimeCoins(500);
-                    }
-                }
-            }, 1000);
-          } else {
-            showToast('Popup Blocked', 'Please allow popups to open the game and earn coins.', 'ph-warning-circle', 'red');
-          }
-        } else {
-          const newWin = window.open(launchUrl, '_blank');
-          if (newWin) {
-            showToast('Timer Started', 'Keep the game tab open for 2 minutes to earn 500 coins!', 'ph-timer', 'yellow');
-            
-            let rewardSecondsLeft = 120;
-            rewardInterval = setInterval(() => {
-                if (newWin.closed) {
-                    clearInterval(rewardInterval);
-                    showToast('Playtime Cancelled', 'You closed the game before 2 minutes.', 'ph-warning-circle', 'amber');
-                } else {
-                    rewardSecondsLeft--;
-                    if (rewardSecondsLeft <= 0) {
-                        clearInterval(rewardInterval);
-                        window.awardPlaytimeCoins(500);
-                    }
-                }
-            }, 1000);
-          } else {
-            showToast('Popup Blocked', 'Please allow popups to open the game and earn coins.', 'ph-warning-circle', 'red');
-          }
-        }
+        showModal('Popup Blocked', 'Please allow popups for this site to open apps and earn coins.');
       }
     };
 
@@ -2699,6 +2614,7 @@ What would you like to do?</div>
       
       overlay.classList.add('hidden');
       overlay.classList.remove('flex');
+      iframe.removeAttribute('srcdoc');
       iframe.src = 'about:blank'; // Stop execution
       
       if (isCurrentLaunchBlob && currentLaunchUrl) {
@@ -2948,6 +2864,17 @@ What would you like to do?</div>
       if (currentUserStatus !== 'active') {
         showModal('Error', 'You do not have permission to publish.');
         return;
+      }
+
+      // Validate required media assets
+      if (!iconPreviewBase64) {
+          showModal('Missing Media', 'An App Icon is required to publish your app. Please upload one before continuing.');
+          return;
+      }
+
+      if (!screenshotsBase64 || screenshotsBase64.length === 0) {
+          showModal('Missing Media', 'At least one screenshot is required to publish your app. Please upload one before continuing.');
+          return;
       }
 
       const submitBtn = document.getElementById('btn-submit');
