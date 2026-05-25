@@ -139,7 +139,10 @@
 
   <!-- News Bookmark -->
   <button data-click="toggleNewsPanel" class="fixed top-1/3 right-0 z-50 bg-indigo-600 hover:bg-indigo-50 text-white p-3 rounded-l-2xl shadow-xl hover:-translate-x-1 transition-transform group flex flex-col items-center gap-2 border border-r-0 border-indigo-400/30">
-    <i class="ph-fill ph-newspaper text-2xl group-hover:animate-pulse"></i>
+    <div class="relative">
+      <i class="ph-fill ph-newspaper text-2xl group-hover:animate-pulse"></i>
+      <span id="news-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center animate-bounce shadow-[0_0_10px_rgba(239,68,68,0.8)] border border-red-400">1</span>
+    </div>
     <span class="text-xs font-bold tracking-widest pb-1" style="writing-mode: vertical-rl; transform: rotate(180deg);">NEWS</span>
   </button>
 
@@ -4146,8 +4149,10 @@ What would you like to do?</div>
       isNewsPanelOpen = !isNewsPanelOpen;
       const panel = document.getElementById('news-panel');
       const overlay = document.getElementById('news-overlay');
+      const badge = document.getElementById('news-badge');
       
       if (isNewsPanelOpen) {
+        if (badge) badge.classList.add('hidden');
         panel.classList.remove('translate-x-full');
         overlay.classList.remove('hidden');
         setTimeout(() => overlay.classList.remove('opacity-0'), 10);
