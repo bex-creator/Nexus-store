@@ -2635,7 +2635,7 @@ What would you like to do?</div>
       // Trigger the true AI overview generation if it hasn't been cached yet
       if (!app.trueAiOverview) {
           const overviewMessages = [
-              { role: "system", content: "You are an app reviewer for NexusStore. Write a concise overview of the app based on its description (maximum 3 sentences)." },
+              { role: "system", content: "You are an app reviewer for NexusStore. Write a concise overview of the app based on its description. You must write exactly 3 short sentences." },
               { role: "user", content: `App Name: ${app.title}\nCategory: ${app.category}\nDeveloper: ${app.developer}\nDescription: ${app.description}` }
           ];
           window.aiWorker.postMessage({ action: 'overview', id: app.id, messages: overviewMessages });
