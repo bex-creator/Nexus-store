@@ -314,6 +314,40 @@ What would you like to do?</div>
     </div>
   </div>
 
+  <!-- Create Ad Modal -->
+  <div id="create-ad-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2"><i class="ph-fill ph-megaphone text-yellow-500"></i> Create Ad</h2>
+        <button data-click="closeModal" data-arg="create-ad-modal" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-full transition-colors">
+          <i class="ph-bold ph-x text-xl"></i>
+        </button>
+      </div>
+      <p class="text-slate-500 font-medium mb-6 leading-relaxed">Promote your app across NexusStore! Sponsored ads cost <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> 10,000</span> coins.</p>
+      
+      <form data-submit="submitCreateAd" id="create-ad-form">
+        <input type="hidden" id="ad-target-app-id">
+        <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Ad Tagline</label>
+        <input type="text" id="ad-text" required maxlength="80" placeholder="e.g. Play the #1 game today!" class="w-full border-2 rounded-2xl px-5 py-4 mb-6 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
+        
+        <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Banner Image</label>
+        <div class="relative h-40 border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center transition-all cursor-pointer group shadow-sm hover:shadow-md hover:border-yellow-400 bg-slate-50 border-slate-300 dark:bg-slate-800 dark:border-slate-700 mb-8 overflow-hidden">
+          <input type="file" accept="image/*" id="ad-image-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+          <img id="ad-image-preview" class="absolute inset-0 w-full h-full object-cover hidden transition-transform duration-300 group-hover:scale-105" />
+          <div id="ad-image-placeholder" class="text-center text-slate-400 group-hover:text-yellow-500 transition-colors z-20 pointer-events-none p-4">
+            <i class="ph ph-image text-4xl mx-auto mb-2 block"></i>
+            <span class="text-sm font-bold">Upload Custom Banner</span>
+            <p class="text-xs font-medium opacity-70 mt-1">Leave empty to use app icon</p>
+          </div>
+        </div>
+
+        <button type="submit" id="create-ad-submit-btn" class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl shadow-yellow-500/30 flex items-center justify-center gap-2 hover:-translate-y-1 active:translate-y-0">
+          Pay 10,000 <i class="ph-fill ph-coin"></i> & Publish
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Theme Selection Modal -->
   <div id="theme-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
     <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
@@ -422,6 +456,14 @@ What would you like to do?</div>
           <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Today's Picks</h2>
         </div>
         <div id="picks-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+      </section>
+
+      <section id="home-sponsored" class="mb-16 hidden">
+        <div class="flex items-center gap-3 mb-6">
+          <i class="ph-fill ph-megaphone text-yellow-500 text-2xl font-bold"></i>
+          <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Sponsored</h2>
+        </div>
+        <div id="sponsored-container" class="grid grid-cols-1 gap-6"></div>
       </section>
 
       <section id="home-grid-section" class="hidden">
@@ -1099,6 +1141,8 @@ What would you like to do?</div>
     let publicListenersAttached = false;
     let publicUnsubs = [];
     let privateUnsubs = [];
+    let promotedAds = [];
+    let currentAdImageBase64 = null;
 
     const handleUserStatus = (status) => {
       currentUserStatus = status;
@@ -1252,6 +1296,13 @@ What would you like to do?</div>
               coinRequests.sort((a, b) => b.timestamp - a.timestamp);
               if (currentView === 'admin') renderAdminCoins();
             }, (error) => console.warn("Firestore coin requests error:", error)));
+
+            // Promoted Ads
+            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'promoted_ads')), (snapshot) => {
+              promotedAds = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              promotedAds.sort((a, b) => b.timestamp - a.timestamp);
+              if (currentView === 'home') renderHome();
+            }, (error) => console.warn("Firestore ads error:", error)));
         };
 
         let hasInitializedAuth = false;
@@ -2002,6 +2053,44 @@ What would you like to do?</div>
       emptyState.classList.remove('flex');
       gridSection.classList.remove('hidden');
 
+      const sponsoredSection = document.getElementById('home-sponsored');
+      if (!searchQuery && promotedAds.length > 0) {
+          sponsoredSection.classList.remove('hidden');
+          // Randomly select 1 ad to display
+          const randomAds = [...promotedAds].sort(() => 0.5 - Math.random()).slice(0, 1);
+          
+          const sponsoredHtml = randomAds.map(ad => {
+              const targetApp = window.apps.find(a => a.id === ad.appId);
+              if (!targetApp) return '';
+              
+              return `
+              <div data-click="navigate" data-arg="details" data-arg2="${targetApp.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col sm:flex-row items-center sm:items-stretch gap-6 p-6 sm:p-8 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-white border border-yellow-200 dark:bg-slate-900 dark:border-yellow-900/30">
+                <div class="absolute top-4 right-4 bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest z-20">Sponsored</div>
+                <div class="w-full sm:w-56 h-48 sm:h-auto flex-shrink-0 rounded-[1.5rem] overflow-hidden relative shadow-md border-2 border-slate-100 dark:border-slate-800">
+                  ${ad.imageUrl ? `<img src="${ad.imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />` : `<div class="w-full h-full bg-indigo-500 flex items-center justify-center text-white"><i class="ph-fill ph-app-window text-5xl"></i></div>`}
+                  <div class="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div>
+                </div>
+                <div class="flex-1 flex flex-col justify-center">
+                  <h3 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mb-3 tracking-tight group-hover:text-indigo-500 transition-colors">${escapeQuotes(ad.text)}</h3>
+                  <div class="flex items-center gap-4 mb-6">
+                    ${targetApp.icon ? `<img src="${targetApp.icon}" class="w-12 h-12 rounded-xl object-cover shadow-sm border border-slate-100 dark:border-slate-800">` : `<div class="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center"><i class="${targetApp.iconClass || 'ph-app-window'} text-slate-500 text-xl"></i></div>`}
+                    <div>
+                      <div class="font-bold text-slate-700 dark:text-slate-200">${targetApp.title}</div>
+                      <div class="text-sm font-medium text-slate-500">By ${targetApp.developer}</div>
+                    </div>
+                  </div>
+                  <button class="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-8 py-3 rounded-xl font-black transition-all shadow-md w-fit text-sm hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
+                    Check it out <i class="ph-bold ph-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+              `;
+          }).join('');
+          document.getElementById('sponsored-container').innerHTML = sponsoredHtml;
+      } else {
+          sponsoredSection.classList.add('hidden');
+      }
+
       const todaysPicks = filtered.slice(0, 2);
       if (!searchQuery && todaysPicks.length > 0) {
         picksSection.classList.remove('hidden');
@@ -2343,10 +2432,13 @@ What would you like to do?</div>
                       </button>
                       ${isAuthorizedAdmin ? `
                         <button data-click="adminToggleVerify" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center ${app.isVerified ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 dark:text-emerald-400' : 'bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white'}" title="${app.isVerified ? 'Remove Verification' : 'Verify App Safe'}">
-                          <i class="ph-fill ph-shield-check text-2xl"></i>
-                        </button>
+                        <i class="ph-fill ph-shield-check text-2xl"></i>
+                      </button>
                       ` : ''}
                       ${currentUser && app.authorId === currentUser.uid ? `
+                        <button data-click="showCreateAdModal" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-yellow-50 hover:bg-yellow-100 text-yellow-600 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/40 dark:text-yellow-400" title="Promote App">
+                          <i class="ph ph-megaphone text-2xl"></i>
+                        </button>
                         <button data-click="navigate" data-arg="upload" data-arg2="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Edit App">
                           <i class="ph ph-pencil-simple text-2xl"></i>
                         </button>
@@ -4037,6 +4129,7 @@ What would you like to do?</div>
 
       if (action === 'navigate') window.navigate(arg1, arg2);
       else if (action === 'setCategory') { selectedCategory = arg1; renderHome(); }
+      else if (action === 'showCreateAdModal') window.showCreateAdModal(arg1);
       else if (action === 'toggleNewsPanel') window.toggleNewsPanel();
       else if (action === 'toggleInboxPanel') window.toggleInboxPanel();
       else if (action === 'switchAdminTab') window.switchAdminTab(arg1);
@@ -4111,6 +4204,7 @@ What would you like to do?</div>
       const arg1 = target.dataset.arg;
 
       if (action === 'submitUsername') window.submitUsername(e);
+      else if (action === 'submitCreateAd') window.submitCreateAd(e);
       else if (action === 'submitProfileEdits') window.submitProfileEdits(e);
       else if (action === 'adminCreateNews') window.adminCreateNews(e);
       else if (action === 'submitReview') window.submitReview(e, arg1);
@@ -4366,6 +4460,92 @@ What would you like to do?</div>
          renderDetails(arg1);
       }
     });
+
+    // Ad Creation Logic
+    window.showCreateAdModal = (targetAppId) => {
+        if (!currentUser) return;
+        const app = window.apps.find(a => a.id === targetAppId);
+        if (!app) return;
+        
+        document.getElementById('ad-target-app-id').value = targetAppId;
+        document.getElementById('create-ad-form').reset();
+        
+        currentAdImageBase64 = app.icon || null; 
+        const preview = document.getElementById('ad-image-preview');
+        const placeholder = document.getElementById('ad-image-placeholder');
+        
+        if (currentAdImageBase64) {
+           preview.src = currentAdImageBase64;
+           preview.classList.remove('hidden');
+           placeholder.classList.add('hidden');
+        } else {
+           preview.classList.add('hidden');
+           placeholder.classList.remove('hidden');
+        }
+        
+        const modal = document.getElementById('create-ad-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    };
+
+    document.getElementById('ad-image-input').addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            currentAdImageBase64 = await readFileAsDataURL(file);
+            document.getElementById('ad-image-preview').src = currentAdImageBase64;
+            document.getElementById('ad-image-preview').classList.remove('hidden');
+            document.getElementById('ad-image-placeholder').classList.add('hidden');
+        }
+    });
+
+    window.submitCreateAd = async (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+        
+        const me = systemUsers.find(u => u.uid === currentUser.uid);
+        let bal = me?.balance;
+        if (isNaN(bal) || bal === undefined) bal = 0;
+        
+        if (bal < 10000) {
+            showModal('Insufficient Funds', `You need <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> 10,000</span> Nexus Coins to run an ad. You currently have ${bal}.`);
+            return;
+        }
+        
+        const text = document.getElementById('ad-text').value.trim();
+        const targetAppId = document.getElementById('ad-target-app-id').value;
+        const btn = document.getElementById('create-ad-submit-btn');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Processing...';
+        
+        try {
+            // Deduct 10000 coins
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
+            await updateDoc(userRef, { balance: increment(-10000) });
+            
+            // Save Ad
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'promoted_ads'), {
+                appId: targetAppId,
+                text: text,
+                imageUrl: currentAdImageBase64,
+                authorId: currentUser.uid,
+                timestamp: Date.now()
+            });
+            
+            logActivity('PURCHASE', 'Ad Campaign', `Purchased ad for ${targetAppId} for 10000 coins.`);
+            showToast('Ad Published!', 'Your app is now being promoted across NexusStore.', 'ph-megaphone', 'yellow');
+            
+            const modal = document.getElementById('create-ad-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        } catch (err) {
+            console.error("Ad creation error:", err);
+            showModal('Error', 'Failed to publish ad.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Pay 10,000 <i class="ph-fill ph-coin"></i> & Publish';
+        }
+    };
 
     // Theme Management Logic
     const accents = {
