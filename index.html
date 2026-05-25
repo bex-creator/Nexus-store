@@ -55,6 +55,50 @@
       to { opacity: 1; transform: scale(1); }
     }
     .animate-zoom-in { animation: zoomIn 0.3s ease-out forwards; }
+
+    /* AI Typing Indicator Dots */
+    .dot-flashing {
+        position: relative;
+        width: 8px;
+        height: 8px;
+        border-radius: 5px;
+        background-color: #818cf8;
+        color: #818cf8;
+        animation: dot-flashing 1s infinite linear alternate;
+        animation-delay: 0.5s;
+        margin-left: 12px;
+    }
+    .dot-flashing::before, .dot-flashing::after {
+        content: '';
+        display: inline-block;
+        position: absolute;
+        top: 0;
+    }
+    .dot-flashing::before {
+        left: -12px;
+        width: 8px;
+        height: 8px;
+        border-radius: 5px;
+        background-color: #818cf8;
+        color: #818cf8;
+        animation: dot-flashing 1s infinite alternate;
+        animation-delay: 0s;
+    }
+    .dot-flashing::after {
+        left: 12px;
+        width: 8px;
+        height: 8px;
+        border-radius: 5px;
+        background-color: #818cf8;
+        color: #818cf8;
+        animation: dot-flashing 1s infinite alternate;
+        animation-delay: 1s;
+    }
+
+    @keyframes dot-flashing {
+        0% { background-color: #818cf8; }
+        50%, 100% { background-color: rgba(129, 140, 248, 0.2); }
+    }
   </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 transition-colors duration-300 min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
@@ -94,8 +138,11 @@
   </div>
 
   <!-- News Bookmark -->
-  <button data-click="toggleNewsPanel" class="fixed top-1/3 right-0 z-50 bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-l-2xl shadow-xl hover:-translate-x-1 transition-transform group flex flex-col items-center gap-2 border border-r-0 border-indigo-400/30">
-    <i class="ph-fill ph-newspaper text-2xl group-hover:animate-pulse"></i>
+  <button data-click="toggleNewsPanel" class="fixed top-1/3 right-0 z-50 bg-indigo-600 hover:bg-indigo-50 text-white p-3 rounded-l-2xl shadow-xl hover:-translate-x-1 transition-transform group flex flex-col items-center gap-2 border border-r-0 border-indigo-400/30">
+    <div class="relative">
+      <i class="ph-fill ph-newspaper text-2xl group-hover:animate-pulse"></i>
+      <span id="news-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center animate-bounce shadow-[0_0_10px_rgba(239,68,68,0.8)] border border-red-400">1</span>
+    </div>
     <span class="text-xs font-bold tracking-widest pb-1" style="writing-mode: vertical-rl; transform: rotate(180deg);">NEWS</span>
   </button>
 
@@ -143,6 +190,47 @@
     </div>
     <div id="inbox-feed-container" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50 dark:bg-slate-950 custom-scrollbar">
       <!-- Messages populated here -->
+    </div>
+  </div>
+
+  <!-- AI Assistant Modal -->
+  <div id="ai-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 max-w-lg w-full shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col h-[600px] animate-zoom-in">
+      <div class="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+         <div>
+             <h3 class="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+               <i class="ph-fill ph-sparkle text-indigo-500"></i> Nexus Assistant
+             </h3>
+             <p id="ai-modal-status" class="text-xs font-mono text-indigo-500/70 mt-1">Booting Local Neural Network...</p>
+         </div>
+         <button data-click="closeModal" data-arg="ai-modal" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-full transition-colors self-start">
+           <i class="ph-bold ph-x text-xl"></i>
+         </button>
+      </div>
+
+      <!-- AI Modal Progress Bar -->
+      <div id="ai-progress-container" class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 mb-4 overflow-hidden">
+        <div id="ai-progress-bar" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+
+      <div id="ai-chat-history" class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4 flex flex-col">
+         <div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed shadow-sm whitespace-pre-wrap">Hi! I'm the <b>Local Nexus Assistant</b> (powered by Qwen2.5). I run completely offline in your browser cache!
+
+Here is what I can do for you:
+
+• <b>Launch Apps:</b> Say "open [app name]" (e.g., "open Doodle Jump").
+• <b>Navigation:</b> Say "take me home" or "open my profile".
+• <b>Themes:</b> Say "switch to OLED mode" or "make it red".
+• <b>Search:</b> Say "find a racing game" or "search for docs".
+
+What would you like to do?</div>
+      </div>
+      <form data-submit="submitAiChat" class="mt-4 flex gap-2 relative">
+         <input type="text" id="ai-chat-input" disabled placeholder="Waking up AI engine..." class="flex-1 border-2 rounded-xl px-4 py-3 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white font-medium disabled:opacity-50 transition-all">
+         <button type="submit" id="ai-chat-submit" disabled class="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-400 text-white px-5 rounded-xl font-bold transition-all flex items-center justify-center shadow-md">
+           <i class="ph-bold ph-paper-plane-tilt text-xl"></i>
+         </button>
+      </form>
     </div>
   </div>
 
@@ -229,6 +317,40 @@
     </div>
   </div>
 
+  <!-- Create Ad Modal -->
+  <div id="create-ad-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2"><i class="ph-fill ph-megaphone text-yellow-500"></i> Create Ad</h2>
+        <button data-click="closeModal" data-arg="create-ad-modal" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-full transition-colors">
+          <i class="ph-bold ph-x text-xl"></i>
+        </button>
+      </div>
+      <p class="text-slate-500 font-medium mb-6 leading-relaxed">Promote your app across NexusStore! Sponsored ads cost <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> 10,000</span> coins.</p>
+      
+      <form data-submit="submitCreateAd" id="create-ad-form">
+        <input type="hidden" id="ad-target-app-id">
+        <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Ad Tagline</label>
+        <input type="text" id="ad-text" required maxlength="80" placeholder="e.g. Play the #1 game today!" class="w-full border-2 rounded-2xl px-5 py-4 mb-6 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
+        
+        <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Banner Image</label>
+        <div class="relative h-40 border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center transition-all cursor-pointer group shadow-sm hover:shadow-md hover:border-yellow-400 bg-slate-50 border-slate-300 dark:bg-slate-800 dark:border-slate-700 mb-8 overflow-hidden">
+          <input type="file" accept="image/*" id="ad-image-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+          <img id="ad-image-preview" class="absolute inset-0 w-full h-full object-cover hidden transition-transform duration-300 group-hover:scale-105" />
+          <div id="ad-image-placeholder" class="text-center text-slate-400 group-hover:text-yellow-500 transition-colors z-20 pointer-events-none p-4">
+            <i class="ph ph-image text-4xl mx-auto mb-2 block"></i>
+            <span class="text-sm font-bold">Upload Custom Banner</span>
+            <p class="text-xs font-medium opacity-70 mt-1">Leave empty to use app icon</p>
+          </div>
+        </div>
+
+        <button type="submit" id="create-ad-submit-btn" class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl shadow-yellow-500/30 flex items-center justify-center gap-2 hover:-translate-y-1 active:translate-y-0">
+          Pay 10,000 <i class="ph-fill ph-coin"></i> & Publish
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Theme Selection Modal -->
   <div id="theme-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
     <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
@@ -277,7 +399,12 @@
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <i class="ph ph-magnifying-glass text-slate-400 group-focus-within:text-indigo-500 transition-colors text-xl"></i>
         </div>
-        <input type="text" id="search-input" placeholder="Search apps, games... (Press '/' to focus)" class="w-full border-2 rounded-2xl py-3 pl-12 pr-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none font-medium bg-slate-100/80 border-transparent text-slate-800 placeholder-slate-400 focus:bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" />
+        <input type="text" id="search-input" placeholder="Search apps, games... (Press '/' to focus)" class="w-full border-2 rounded-2xl py-3 pl-12 pr-28 sm:pr-32 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none font-medium bg-slate-100/80 border-transparent text-slate-800 placeholder-slate-400 focus:bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" />
+        <div class="absolute inset-y-0 right-1 flex items-center pr-1">
+          <button id="ask-ai-btn" data-click="openAiModal" disabled class="h-9 px-3 bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-xl flex items-center gap-1.5 font-bold text-sm transition-all shadow-md" title="Nexus AI Assistant">
+            <i id="ai-btn-icon" class="ph-fill ph-spinner animate-spin"></i> <span id="ai-btn-text" class="hidden sm:inline">Loading AI...</span>
+          </button>
+        </div>
       </div>
 
       <div class="flex items-center gap-4">
@@ -326,15 +453,31 @@
         <p class="text-slate-500 text-lg max-w-md">We couldn't find anything matching your search.</p>
       </div>
 
-      <section id="home-picks" class="mb-16 hidden">
-        <div class="flex items-center gap-3 mb-6">
-          <i class="ph ph-calendar text-indigo-500 text-2xl font-bold"></i>
-          <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Today's Picks</h2>
-        </div>
-        <div id="picks-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
-      </section>
+      <!-- Top Section: Picks + Ads side-by-side -->
+      <div class="flex flex-col xl:flex-row gap-8 items-stretch mb-12">
+        
+        <!-- Main Content: Picks -->
+        <section id="home-picks" class="flex-1 min-w-0 w-full hidden">
+          <div class="flex items-center gap-3 mb-6">
+            <i class="ph ph-calendar text-indigo-500 text-2xl font-bold"></i>
+            <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Today's Picks</h2>
+          </div>
+          <div id="picks-container" class="grid grid-cols-1 gap-6 h-[calc(100%-3rem)]"></div>
+        </section>
 
-      <section id="home-grid-section" class="hidden">
+        <!-- Sidebar for Ads -->
+        <div id="home-sponsored-sidebar" class="w-full xl:w-[340px] flex-shrink-0 hidden">
+          <div class="flex items-center gap-3 mb-6">
+            <i class="ph-fill ph-megaphone text-yellow-500 text-2xl font-bold"></i>
+            <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Sponsored</h2>
+          </div>
+          <div id="sponsored-container" class="flex flex-col gap-6 h-[calc(100%-3rem)]"></div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Section: Trending Now grid (Full Width) -->
+      <section id="home-grid-section" class="hidden pb-12">
         <div class="flex items-center gap-3 mb-8">
           <i class="ph ph-stack text-indigo-500 text-2xl font-bold"></i>
           <h2 id="grid-title" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Trending Now</h2>
@@ -349,7 +492,7 @@
     <!-- FAQ & SUPPORT VIEW -->
     <div id="view-faq" class="view-section hidden animate-fade-in">
       <div class="max-w-4xl mx-auto pb-20">
-        <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-sm w-fit hover:shadow-md bg-white text-slate-500 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-100 dark:border-slate-800">
+        <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-sm w-fit hover:shadow-md bg-white text-slate-50 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-100 dark:border-slate-800">
           <i class="ph ph-caret-left text-xl group-hover:-translate-x-1 transition-transform"></i> Back
         </button>
 
@@ -391,7 +534,7 @@
     <!-- PROFILE VIEW -->
     <div id="view-profile" class="view-section hidden animate-fade-in">
       <div class="max-w-7xl mx-auto">
-        <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-sm w-fit hover:shadow-md bg-white text-slate-500 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-100 dark:border-slate-800">
+        <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-sm w-fit hover:shadow-md bg-white text-slate-50 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-100 dark:border-slate-800">
           <i class="ph ph-caret-left text-xl group-hover:-translate-x-1 transition-transform"></i> Back
         </button>
         
@@ -425,14 +568,14 @@
           <i class="ph-fill ph-squares-four text-indigo-500 text-3xl"></i>
           Published Apps
         </h2>
-        <div id="profile-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8"></div>
+        <div id="profile-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8"></div>
 
         <div id="favorites-section" class="hidden mt-16 border-t border-slate-100 dark:border-slate-800 pt-12">
           <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-8 flex items-center gap-3">
             <i class="ph-fill ph-heart text-pink-500 text-3xl"></i>
             My Favorites
           </h2>
-          <div id="favorites-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8"></div>
+          <div id="favorites-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8"></div>
         </div>
       </div>
     </div>
@@ -451,6 +594,17 @@
             </div>
             <h1 id="upload-title" class="text-4xl font-black text-white mb-3 tracking-tight">Publish to NexusStore</h1>
             <p class="text-indigo-200 text-lg font-medium max-w-lg">Share your creations with the world. Upload standard code payloads or link directly to web apps.</p>
+          </div>
+        </div>
+
+        <div class="flex justify-center mt-8 -mb-4">
+          <div class="flex p-1.5 rounded-2xl w-fit shadow-inner bg-slate-100 dark:bg-slate-800 relative z-10">
+            <button type="button" id="tab-publish-app" data-click="switchUploadTab" data-arg="app" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-md transform scale-100 bg-white text-slate-900 dark:bg-slate-700 dark:text-white">
+              <i class="ph ph-app-window text-lg"></i> App
+            </button>
+            <button type="button" id="tab-publish-ad" data-click="switchUploadTab" data-arg="ad" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all scale-95 text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700/50">
+              <i class="ph ph-megaphone text-lg"></i> Ad Campaign
+            </button>
           </div>
         </div>
 
@@ -590,7 +744,7 @@
                   <p class="font-medium text-slate-600 dark:text-slate-400">When users launch your app, they will be redirected to this secure URL in a new tab.</p>
                 </div>
               </div>
-              <input type="url" id="app-url" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-lg bg-white border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-900 dark:border-slate-700 dark:text-white dark:placeholder-slate-500" placeholder="https://your-web-app.com">
+              <input type="url" id="app-url" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-blue-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-white border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-900 dark:border-slate-700 dark:text-white dark:placeholder-slate-500" placeholder="https://your-web-app.com">
             </div>
           </div>
 
@@ -598,6 +752,52 @@
             <button type="button" data-click="navigateFromAdmin" class="px-8 py-4 rounded-2xl font-bold transition-all duration-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">Cancel</button>
             <button type="submit" id="btn-submit" class="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 text-white px-10 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl shadow-indigo-500/30 hover:-translate-y-1 active:translate-y-0 flex items-center gap-2">
               <i class="ph-fill ph-lightning text-xl"></i> Publish App
+            </button>
+          </div>
+        </form>
+
+        <form id="upload-ad-form" class="p-8 sm:p-12 space-y-10 hidden" data-submit="submitPublishAd">
+          <div>
+            <h3 class="text-2xl font-black mb-6 tracking-tight text-slate-900 dark:text-white">Create Advertisement</h3>
+            <p class="text-slate-500 font-medium mb-8 leading-relaxed">Promote your app across NexusStore! Sponsored ads cost <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> 10,000</span> coins.</p>
+            
+            <div class="space-y-6">
+              <div>
+                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Target App</label>
+                <div class="relative">
+                  <select id="publish-ad-target-app" required class="appearance-none w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:bg-slate-800">
+                     <!-- Options populated by JS -->
+                  </select>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 text-slate-400">
+                    <i class="ph ph-caret-down"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Ad Tagline</label>
+                <input type="text" id="publish-ad-text" required maxlength="80" placeholder="e.g. Play the #1 game today!" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Banner Image</label>
+                <div class="relative h-48 border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center transition-all cursor-pointer group shadow-sm hover:shadow-md hover:border-yellow-400 bg-slate-50 border-slate-300 dark:bg-slate-800 dark:border-slate-700 overflow-hidden">
+                  <input type="file" accept="image/*" id="publish-ad-image-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                  <img id="publish-ad-image-preview" class="absolute inset-0 w-full h-full object-cover hidden transition-transform duration-300 group-hover:scale-105" />
+                  <div id="publish-ad-image-placeholder" class="text-center text-slate-400 group-hover:text-yellow-500 transition-colors z-20 pointer-events-none p-4">
+                    <i class="ph ph-image text-4xl mx-auto mb-2 block"></i>
+                    <span class="text-sm font-bold">Upload Custom Banner</span>
+                    <p class="text-xs font-medium opacity-70 mt-1">Leave empty to use app icon</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-8 mt-8 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-4">
+            <button type="button" data-click="navigateFromAdmin" class="px-8 py-4 rounded-2xl font-bold transition-all duration-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">Cancel</button>
+            <button type="submit" id="publish-ad-submit-btn" class="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-10 py-4 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl shadow-yellow-500/30 flex items-center justify-center gap-2 hover:-translate-y-1 active:translate-y-0">
+              Pay 10,000 <i class="ph-fill ph-coin"></i> & Publish Ad
             </button>
           </div>
         </form>
@@ -768,6 +968,267 @@
   
   </div> <!-- END APP ROOT -->
 
+  <!-- Include Transformers.js Local AI Web Worker Script inline -->
+  <script type="module">
+    // Define the Web Worker code strictly as a blob so it runs on a separate thread locally
+    const workerBlobCode = `
+        import { pipeline, env, TextStreamer } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0/dist/transformers.min.js';
+        
+        env.allowLocalModels = false;
+        // Optimize WASM fallback by allowing multiple threads
+        env.backends.onnx.wasm.numThreads = navigator.hardwareConcurrency ? Math.min(navigator.hardwareConcurrency, 4) : 1;
+
+        // --- 2. Segmented Downloading (Chunking) for Low-End Chromebooks ---
+        // Instructs the browser to stream model weights in tiny 10MB chunks to prevent memory hogging
+        const originalFetch = self.fetch;
+        self.fetch = async (url, options) => {
+            if (typeof url === 'string' && (url.endsWith('.onnx') || url.endsWith('.bin') || url.endsWith('.safetensors'))) {
+                try {
+                    const headResponse = await originalFetch(url, { ...options, method: 'HEAD' });
+                    const contentLength = headResponse.headers.get('content-length');
+                    const totalSize = contentLength ? parseInt(contentLength, 10) : 0;
+                    
+                    // Only chunk files larger than 10MB
+                    if (totalSize > 10 * 1024 * 1024) {
+                        const chunkSize = 10 * 1024 * 1024; // 10MB pieces
+                        
+                        const stream = new ReadableStream({
+                            async start(controller) {
+                                let startPos = 0;
+                                while (startPos < totalSize) {
+                                    const endPos = Math.min(startPos + chunkSize - 1, totalSize - 1);
+                                    
+                                    // Clone options safely without breaking template literal syntax
+                                    const chunkOptions = Object.assign({}, options);
+                                    chunkOptions.headers = Object.assign({}, options ? options.headers : {});
+                                    chunkOptions.headers['Range'] = 'bytes=' + startPos + '-' + endPos;
+                                    
+                                    const chunkResponse = await originalFetch(url, chunkOptions);
+                                    const reader = chunkResponse.body.getReader();
+                                    
+                                    while (true) {
+                                        const { done, value } = await reader.read();
+                                        if (done) break;
+                                        controller.enqueue(value);
+                                    }
+                                    startPos += chunkSize;
+                                }
+                                controller.close();
+                            }
+                        });
+                        
+                        // Return the stitched stream disguised as a standard 200 OK response
+                        return new Response(stream, {
+                            status: 200,
+                            headers: headResponse.headers
+                        });
+                    }
+                } catch (e) {
+                    console.warn("Chunked fetch failed, falling back to standard fetch", e);
+                }
+            }
+            return originalFetch(url, options);
+        };
+
+        let aiPipeline = null;
+        let isProcessing = false;
+        let queue = [];
+
+        async function processQueue() {
+            if (isProcessing || queue.length === 0 || !aiPipeline) return;
+            isProcessing = true;
+            const task = queue.shift();
+
+            try {
+                const streamer = new TextStreamer(aiPipeline.tokenizer, {
+                    skip_prompt: true,
+                    callback_function: (token) => {
+                        self.postMessage({ action: 'token', type: task.action, id: task.id, token });
+                    }
+                });
+
+                const results = await aiPipeline(task.messages, {
+                    max_new_tokens: task.action === 'overview' ? 120 : 512, // Increased slightly so it doesn't cut off mid-sentence
+                    do_sample: false,
+                    repetition_penalty: 1.15,
+                    streamer: streamer
+                });
+
+                let answer = "";
+                const genText = results[0].generated_text;
+                if (Array.isArray(genText)) {
+                    answer = genText[genText.length - 1].content;
+                } else if (typeof genText === 'string') {
+                    answer = genText;
+                }
+
+                self.postMessage({ action: 'complete', type: task.action, id: task.id, answer });
+            } catch (err) {
+                self.postMessage({ action: 'error', type: task.action, id: task.id, error: String(err) });
+            }
+
+            isProcessing = false;
+            processQueue();
+        }
+
+        self.onmessage = async function(e) {
+            const { action } = e.data;
+            if (action === 'load') {
+                try {
+                    // Use WebGPU if available for massive speedup, otherwise fallback to WASM
+                    const deviceToUse = navigator.gpu ? 'webgpu' : 'wasm';
+                    aiPipeline = await pipeline('text-generation', 'onnx-community/Qwen2.5-0.5B-Instruct', {
+                        device: deviceToUse,
+                        dtype: 'q4',
+                        progress_callback: (data) => self.postMessage({ action: 'progress', data })
+                    });
+                    self.postMessage({ action: 'ready', device: deviceToUse });
+                    processQueue(); // Start parsing any items queued while downloading
+                } catch (err) {
+                    self.postMessage({ action: 'error', error: String(err) });
+                }
+            } else if (action === 'chat' || action === 'overview') {
+                queue.push(e.data);
+                processQueue();
+            }
+        };
+    `;
+
+    // Turn string into blob and launch the AI web worker safely
+    const aiBlob = new Blob([workerBlobCode], { type: 'application/javascript' });
+    window.aiWorker = new Worker(URL.createObjectURL(aiBlob), { type: 'module' });
+    window.aiReady = false;
+
+    // Listen to messages sent back from the AI Thread to the main Thread
+    window.aiWorker.onmessage = function(e) {
+        const { action, data, token, type, id, answer, error } = e.data;
+
+        if (action === 'progress') {
+            const progressContainer = document.getElementById('ai-progress-container');
+            const progressBar = document.getElementById('ai-progress-bar');
+            const aiBtnIcon = document.getElementById('ai-btn-icon');
+            const aiBtnText = document.getElementById('ai-btn-text');
+            const aiStatusText = document.getElementById('ai-modal-status');
+            
+            if (progressContainer) progressContainer.classList.remove('hidden');
+
+            if (data.status === 'initiate') {
+                if (aiStatusText) aiStatusText.innerText = `Fetching ${data.file}...`;
+            } else if (data.status === 'progress') {
+                const percent = data.progress !== undefined ? data.progress : Math.round((data.loaded / data.total) * 100);
+                if (progressBar) progressBar.style.width = `${percent}%`;
+                if (aiStatusText) aiStatusText.innerText = `Caching Neural Weights... ${Math.round(percent)}%`;
+                if (aiBtnText) aiBtnText.innerText = `${Math.round(percent)}%`;
+            } else if (data.status === 'done') {
+                if (aiStatusText) aiStatusText.innerText = `Compiling Engine...`;
+                if (aiBtnText) aiBtnText.innerText = 'Compiling...';
+            }
+        } else if (action === 'ready') {
+            window.aiReady = true;
+            
+            // Header Button Updates
+            const btn = document.getElementById('ask-ai-btn');
+            const btnIcon = document.getElementById('ai-btn-icon');
+            const btnText = document.getElementById('ai-btn-text');
+            if (btn) btn.disabled = false;
+            if (btnIcon) btnIcon.className = 'ph-fill ph-sparkle';
+            if (btnText) btnText.textContent = 'Ask AI';
+            
+            // AI Modal Updates
+            const progressContainer = document.getElementById('ai-progress-container');
+            const aiStatusText = document.getElementById('ai-modal-status');
+            const chatInput = document.getElementById('ai-chat-input');
+            const chatBtn = document.getElementById('ai-chat-submit');
+            
+            if (progressContainer) progressContainer.classList.add('hidden');
+            if (aiStatusText) {
+                if (e.data.device === 'webgpu') {
+                    aiStatusText.innerText = 'Status: Active • WebGPU Accelerated 🚀';
+                    aiStatusText.className = 'text-xs font-mono text-yellow-500 mt-1';
+                } else {
+                    aiStatusText.innerText = 'Local Worker Active • CPU (WASM)';
+                    aiStatusText.className = 'text-xs font-mono text-emerald-500 mt-1';
+                }
+            }
+            
+            if (chatInput) {
+                chatInput.disabled = false;
+                chatInput.placeholder = 'Ask me to do something...';
+            }
+            if (chatBtn) chatBtn.disabled = false;
+        } else if (action === 'token') {
+            if (type === 'chat') {
+                if (window.currentTypingBubble && window.currentTypingBubble.id === 'typing-indicator') {
+                    window.currentTypingBubble.id = '';
+                    window.currentTypingBubble.textContent = ''; // Fix space stripping
+                }
+                if (window.currentTypingBubble) {
+                    window.currentTypingBubble.textContent += token; // Fix space stripping
+                    const hist = document.getElementById('ai-chat-history');
+                    if(hist) hist.scrollTop = hist.scrollHeight;
+                }
+            } else if (type === 'overview') {
+                const el = document.getElementById('overview-text-' + id);
+                if (el) {
+                    if (el.innerHTML.includes('dot-flashing')) el.textContent = ''; // Fix space stripping
+                    el.textContent += token; // Fix space stripping
+                }
+            }
+        } else if (action === 'complete') {
+            if (type === 'chat') {
+                const inputEl = document.getElementById('ai-chat-input');
+                const submitBtn = document.getElementById('ai-chat-submit');
+                if (submitBtn) submitBtn.disabled = false;
+                if (inputEl) {
+                    inputEl.disabled = false;
+                    inputEl.focus();
+                }
+
+                if (window.currentTypingBubble) {
+                    if (window.currentTypingBubble.id === 'typing-indicator') {
+                        window.currentTypingBubble.id = '';
+                    }
+                    window.currentTypingBubble.textContent = answer; // Fix space stripping
+                    window.aiChatHistory.push({ role: "assistant", content: window.currentTypingBubble.textContent });
+                }
+                window.currentTypingBubble = null;
+            } else if (type === 'overview') {
+                const app = window.apps.find(a => a.id === id);
+                if (app) app.trueAiOverview = answer; // Cache it so it doesn't recalculate on next visit
+                const el = document.getElementById('overview-text-' + id);
+                if (el) el.textContent = answer;
+            }
+        } else if (action === 'error') {
+            console.error("AI Worker Error:", error);
+            if (type === 'chat') {
+                if (window.currentTypingBubble) {
+                    window.currentTypingBubble.id = '';
+                    window.currentTypingBubble.textContent = `Oops, my local processor hit an error: ${error}`;
+                }
+                const inputEl = document.getElementById('ai-chat-input');
+                const submitBtn = document.getElementById('ai-chat-submit');
+                if (submitBtn) submitBtn.disabled = false;
+                if (inputEl) inputEl.disabled = false;
+                window.currentTypingBubble = null;
+            } else if (type === 'overview') {
+                const el = document.getElementById('overview-text-' + id);
+                if (el) el.innerHTML = `<span class="text-red-400">Failed to generate review. Engine error.</span>`;
+            } else {
+                const aiStatusText = document.getElementById('ai-modal-status');
+                if (aiStatusText) aiStatusText.innerText = `Model Loading Error: Check console`;
+                if (aiStatusText) aiStatusText.className = 'text-xs font-mono text-red-500 mt-1';
+            }
+        }
+    };
+
+    // Chat History array for the Assistant
+    window.aiChatHistory = [];
+    window.currentTypingBubble = null;
+
+    // Instruct Worker to Load immediately!
+    window.aiWorker.postMessage({ action: 'load' });
+  </script>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -800,6 +1261,8 @@
     let publicListenersAttached = false;
     let publicUnsubs = [];
     let privateUnsubs = [];
+    let promotedAds = [];
+    let currentAdImageBase64 = null;
 
     const handleUserStatus = (status) => {
       currentUserStatus = status;
@@ -863,7 +1326,7 @@
               }).filter(a => a !== null);
               
               fetchedApps.sort((a, b) => b.createdAt - a.createdAt);
-              apps = [...fetchedApps, ...defaultApps];
+              window.apps = [...fetchedApps, ...defaultApps];
               
               if (currentView === 'home') renderHome();
               if (currentView === 'profile' && selectedAppId) renderProfile(selectedAppId); 
@@ -953,6 +1416,13 @@
               coinRequests.sort((a, b) => b.timestamp - a.timestamp);
               if (currentView === 'admin') renderAdminCoins();
             }, (error) => console.warn("Firestore coin requests error:", error)));
+
+            // Promoted Ads
+            publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'promoted_ads')), (snapshot) => {
+              promotedAds = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              promotedAds.sort((a, b) => b.timestamp - a.timestamp);
+              if (currentView === 'home') renderHome();
+            }, (error) => console.warn("Firestore ads error:", error)));
         };
 
         let hasInitializedAuth = false;
@@ -1134,7 +1604,7 @@
        }];
     });
     
-    let apps = [...defaultApps];
+    window.apps = [...defaultApps]; // Made global for True AI to access
     let systemUsers = [];
     let activityLogs = [];
     let newsItems = [];
@@ -1536,7 +2006,8 @@
         searchContainer.classList.remove('hidden');
         renderHome();
       } else {
-        searchContainer.classList.add('hidden');
+        if (window.adRotationInterval) clearInterval(window.adRotationInterval);
+        
         if (viewName === 'details' && targetData) {
           window.selectedAppVersion = null; // Reset version selection
           renderDetails(targetData);
@@ -1545,6 +2016,7 @@
         } else if (viewName === 'admin') {
           renderAdmin();
         } else if (viewName === 'upload') {
+          window.switchUploadTab('app'); // Reset to default App Upload tab
           
           if (currentUserStatus === 'suspended' || currentUserStatus === 'banned') {
             showModal("Account Restricted", `Your account is currently ${currentUserStatus}. You cannot publish or edit apps.`);
@@ -1554,7 +2026,7 @@
 
           if (targetData) {
             editingAppId = targetData;
-            const app = apps.find(a => a.id === targetData);
+            const app = window.apps.find(a => a.id === targetData);
             document.getElementById('upload-title').textContent = 'Edit App';
             document.getElementById('btn-submit').innerHTML = '<i class="ph-fill ph-floppy-disk text-xl"></i> Save Changes';
             
@@ -1627,7 +2099,11 @@
 
     searchInput.addEventListener('input', (e) => {
       searchQuery = e.target.value;
-      renderHome();
+      if (currentView !== 'home') {
+        window.navigate('home');
+      } else {
+        renderHome();
+      }
     });
 
     // Helper for App Stats
@@ -1674,7 +2150,7 @@
     };
 
     function renderHome() {
-      const filtered = apps.filter(app => {
+      const filtered = window.apps.filter(app => {
         const titleMatch = (app.title || '').toLowerCase().includes(searchQuery.toLowerCase());
         const devMatch = (app.developer || '').toLowerCase().includes(searchQuery.toLowerCase());
         const catMatch = (app.category || '').toLowerCase().includes(searchQuery.toLowerCase());
@@ -1686,16 +2162,18 @@
       });
 
       const emptyState = document.getElementById('home-empty');
-      const picksSection = document.getElementById('home-picks');
       const gridSection = document.getElementById('home-grid-section');
+      const sponsoredSidebar = document.getElementById('home-sponsored-sidebar');
+      const picksSection = document.getElementById('home-picks');
       
       renderCategories();
 
       if (filtered.length === 0) {
         emptyState.classList.remove('hidden');
         emptyState.classList.add('flex');
-        picksSection.classList.add('hidden');
         gridSection.classList.add('hidden');
+        if (sponsoredSidebar) sponsoredSidebar.classList.add('hidden');
+        if (picksSection) picksSection.classList.add('hidden');
         return;
       }
 
@@ -1703,45 +2181,91 @@
       emptyState.classList.remove('flex');
       gridSection.classList.remove('hidden');
 
-      const todaysPicks = filtered.slice(0, 2);
-      if (!searchQuery && todaysPicks.length > 0) {
+      if (window.adRotationInterval) clearInterval(window.adRotationInterval);
+
+      if (!searchQuery && promotedAds.length > 0 && sponsoredSidebar) {
+          sponsoredSidebar.classList.remove('hidden');
+          
+          const renderAd = (index) => {
+              const ad = promotedAds[index];
+              if (!ad) return;
+              const targetApp = window.apps.find(a => a.id === ad.appId);
+              if (!targetApp) return;
+              
+              document.getElementById('sponsored-container').innerHTML = `
+              <div data-click="navigate" data-arg="details" data-arg2="${targetApp.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col items-center gap-4 p-5 shadow-[0_10px_40px_rgba(0,0,0,0.05)] transition-all duration-300 animate-fade-in hover:-translate-y-1 hover:shadow-xl bg-white border border-yellow-200 dark:bg-slate-900 dark:border-yellow-900/30 h-full w-full">
+                <div class="absolute top-4 right-4 bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest z-20">Ad</div>
+                <div class="w-full aspect-[4/3] rounded-[1.2rem] overflow-hidden relative shadow-md border border-slate-100 dark:border-slate-800 flex-shrink-0">
+                  ${ad.imageUrl ? `<img src="${ad.imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />` : `<div class="w-full h-full bg-indigo-500 flex items-center justify-center text-white"><i class="ph-fill ph-app-window text-5xl"></i></div>`}
+                </div>
+                <div class="w-full flex flex-col justify-center text-center flex-1">
+                  <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2 tracking-tight group-hover:text-indigo-500 transition-colors line-clamp-2">${escapeQuotes(ad.text)}</h3>
+                  <div class="flex items-center justify-center gap-2 mb-4 mt-auto">
+                    ${targetApp.icon ? `<img src="${targetApp.icon}" class="w-6 h-6 rounded-md object-cover shadow-sm border border-slate-100 dark:border-slate-800">` : `<div class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 flex items-center justify-center"><i class="${targetApp.iconClass || 'ph-app-window'} text-slate-500 text-xs"></i></div>`}
+                    <div class="font-bold text-sm text-slate-700 dark:text-slate-200 line-clamp-1">${targetApp.title}</div>
+                  </div>
+                  <button class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 py-2.5 rounded-xl font-black transition-all shadow-md text-sm flex items-center justify-center gap-2 mt-2">
+                    Check it out
+                  </button>
+                </div>
+              </div>
+              `;
+          };
+
+          // Render first ad
+          window.currentAdIndex = window.currentAdIndex || 0;
+          if (window.currentAdIndex >= promotedAds.length) window.currentAdIndex = 0;
+          renderAd(window.currentAdIndex);
+
+          // Setup rotation every 10 seconds
+          if (promotedAds.length > 1) {
+              window.adRotationInterval = setInterval(() => {
+                  window.currentAdIndex = (window.currentAdIndex + 1) % promotedAds.length;
+                  renderAd(window.currentAdIndex);
+              }, 10000);
+          }
+      } else if (sponsoredSidebar) {
+          sponsoredSidebar.classList.add('hidden');
+      }
+
+      const todaysPicks = filtered.slice(0, 1);
+      if (!searchQuery && todaysPicks.length > 0 && picksSection) {
         picksSection.classList.remove('hidden');
         const picksHtml = todaysPicks.map((app, idx) => `
-          <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="group relative overflow-hidden rounded-[2.5rem] cursor-pointer isolate flex flex-col justify-end min-h-[380px] shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-black dark:bg-slate-900 border border-slate-800">
-            ${app.visibility === 'private' ? '<div class="absolute top-6 right-6 bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full border border-white/10 z-30 text-xs font-bold flex items-center gap-1.5"><i class="ph-fill ph-lock-key"></i> Private</div>' : ''}
+          <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col justify-center min-h-[300px] shadow-lg transition-all duration-300 hover:-translate-y-1 bg-black dark:bg-slate-900 border border-slate-800 h-full">
+            ${app.visibility === 'private' ? '<div class="absolute top-5 right-5 bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full border border-white/10 z-30 text-xs font-bold flex items-center gap-1.5"><i class="ph-fill ph-lock-key"></i> Private</div>' : ''}
             <div class="absolute inset-0 ${app.bgClass || 'bg-indigo-600'} opacity-30 z-10 group-hover:opacity-40 transition-opacity duration-700"></div>
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-white/5 blur-3xl rounded-full pointer-events-none group-hover:bg-white/10 transition-colors duration-700"></div>
             
-            <div class="relative z-20 p-8 sm:p-10 w-full flex flex-col h-full justify-between">
-              <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border border-white/10 w-fit mb-6">
-                <i class="ph-fill ph-star text-yellow-400"></i>
-                ${idx === 0 ? 'App of the Day' : 'Editors Choice'}
+            <div class="relative z-20 p-8 sm:p-10 w-full flex flex-col justify-center h-full">
+              <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border border-white/10 w-fit mb-6">
+                <i class="ph-fill ph-star text-yellow-400"></i> App of the Day
               </div>
               
-              <div>
-                <div class="flex items-center gap-5 mb-5 mt-auto">
-                  ${app.icon ? 
-                    `<img src="${app.icon}" class="w-16 h-16 sm:w-20 sm:h-20 rounded-[1.2rem] shadow-xl border-2 border-white/10 object-cover" />`
-                    :
-                    `<div class="w-16 h-16 sm:w-20 sm:h-20 rounded-[1.2rem] shadow-xl border-2 border-white/10 flex items-center justify-center text-white ${app.bgClass || 'bg-slate-600'}">
-                      <i class="${app.iconClass || 'ph-app-window'} text-3xl sm:text-4xl"></i>
-                    </div>`
-                  }
-                  <div>
-                    <h3 class="text-3xl sm:text-4xl font-black text-white tracking-tighter drop-shadow-lg">${app.title}</h3>
-                    <p class="text-indigo-300 font-medium">${app.category}</p>
-                  </div>
+              <div class="flex items-center gap-5 mb-5">
+                ${app.icon ? 
+                  `<img src="${app.icon}" class="w-20 h-20 rounded-[1.2rem] shadow-xl border border-white/10 object-cover flex-shrink-0" />`
+                  :
+                  `<div class="w-20 h-20 rounded-[1.2rem] shadow-xl border border-white/10 flex items-center justify-center text-white ${app.bgClass || 'bg-slate-600'} flex-shrink-0">
+                    <i class="${app.iconClass || 'ph-app-window'} text-4xl"></i>
+                  </div>`
+                }
+                <div class="min-w-0">
+                  <h3 class="text-3xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg truncate">${app.title}</h3>
+                  <p class="text-indigo-200 font-medium text-lg sm:text-xl mt-1 truncate">${app.category}</p>
                 </div>
-                <p class="text-slate-200 text-base sm:text-lg line-clamp-2 max-w-lg leading-relaxed mb-6">${app.description}</p>
-                <div class="flex items-center gap-4">
-                  <button class="bg-white/10 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 border border-white/20 px-6 py-3 rounded-xl font-bold transition-all duration-300 w-fit">View Details</button>
-                  <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${escapeQuotes(app.developer)}" class="text-white/60 hover:text-white text-sm font-bold transition-colors">By ${app.developer}</p>
-                </div>
+              </div>
+              <p class="text-slate-200 text-base sm:text-lg line-clamp-2 leading-relaxed max-w-3xl mb-8">${app.description}</p>
+              
+              <div class="flex flex-col sm:flex-row sm:items-center gap-6 mt-2">
+                <button class="bg-white/10 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 border border-white/20 px-10 py-4 rounded-2xl font-black transition-all duration-300 w-full sm:w-fit text-lg shadow-xl">View Details</button>
+                <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${escapeQuotes(app.developer)}" class="text-white/60 hover:text-white text-base font-bold transition-colors truncate relative z-30">By ${app.developer}</p>
               </div>
             </div>
           </div>
         `).join('');
         document.getElementById('picks-container').innerHTML = picksHtml;
-      } else {
+      } else if (picksSection) {
         picksSection.classList.add('hidden');
       }
 
@@ -1783,7 +2307,7 @@
     };
 
     function renderProfile(developerName) {
-      const devApps = apps.filter(a => a.developer === developerName && (a.visibility !== 'private' || (currentUser && a.authorId === currentUser.uid)));
+      const devApps = window.apps.filter(a => a.developer === developerName && (a.visibility !== 'private' || (currentUser && a.authorId === currentUser.uid)));
       
       document.getElementById('profile-header-avatar').innerHTML = `<img src="https://api.dicebear.com/7.x/initials/svg?seed=${escapeQuotes(developerName)}&backgroundColor=6366f1,8b5cf6,ec4899" class="w-32 h-32 sm:w-40 sm:h-40 rounded-[2.5rem] shadow-2xl border-4 border-white dark:border-slate-800 object-cover" />`;
       document.getElementById('profile-header-name').textContent = developerName;
@@ -1832,7 +2356,7 @@
       
       if (myName === developerName && currentUser) {
         favSection.classList.remove('hidden');
-        const favApps = apps.filter(a => myFavorites.has(a.id));
+        const favApps = window.apps.filter(a => myFavorites.has(a.id));
         if (favApps.length > 0) {
           favGridContainer.innerHTML = generateGridHtml(favApps);
         } else {
@@ -1844,7 +2368,7 @@
     }
 
     window.buyApp = async (targetAppId) => {
-        const app = apps.find(a => a.id === targetAppId);
+        const app = window.apps.find(a => a.id === targetAppId);
         if (!app || !currentUser) return;
 
         const me = systemUsers.find(u => u.uid === currentUser.uid);
@@ -1902,44 +2426,8 @@
         }
     };
 
-    // Client-side Procedural "AI" Overview Generator (NLP-based)
-    const generateDynamicOverview = (app) => {
-      const desc = app.description || '';
-      
-      // Extract the first sentence as a hook
-      const firstSentenceMatch = desc.match(/[^.!?]+[.!?]+/);
-      const firstSentence = firstSentenceMatch ? firstSentenceMatch[0].trim() : desc.split('\n')[0].trim();
-
-      // Keyword dictionaries to determine the app's focus
-      const keywords = {
-        creative: ['create', 'draw', 'build', 'design', 'write', 'edit', 'sandbox'],
-        action: ['fast', 'shoot', 'dodge', 'survive', 'race', 'speed', 'arcade', 'combat', 'jump'],
-        social: ['chat', 'connect', 'friends', 'social', 'community', 'share', 'multiplayer'],
-        productivity: ['manage', 'task', 'time', 'focus', 'workflow', 'organize', 'tool', 'utility'],
-        education: ['learn', 'study', 'read', 'brain', 'school', 'knowledge'],
-        video: ['watch', 'stream', 'video', 'movie', 'content']
-      };
-
-      let focus = 'delivering a reliable and engaging digital experience';
-      const lowerDesc = desc.toLowerCase();
-      
-      // Analyze description to determine app focus
-      if (keywords.creative.some(k => lowerDesc.includes(k))) focus = 'fostering creativity and providing powerful creation tools';
-      else if (keywords.action.some(k => lowerDesc.includes(k))) focus = 'testing your reflexes with fast-paced, action-oriented mechanics';
-      else if (keywords.social.some(k => lowerDesc.includes(k))) focus = 'connecting people and facilitating seamless communication';
-      else if (keywords.productivity.some(k => lowerDesc.includes(k))) focus = 'boosting efficiency and helping you stay organized';
-      else if (keywords.education.some(k => lowerDesc.includes(k))) focus = 'providing educational value and stimulating the mind';
-      else if (keywords.video.some(k => lowerDesc.includes(k))) focus = 'serving high-quality media and streaming content';
-
-      const isFree = app.price === 0;
-      const priceContext = isFree ? "It's available completely free" : `It's offered as a premium experience for ${app.price} coins`;
-
-      // Build the simulated AI response
-      return `Based on our analysis, <b>${app.title}</b> is a standout ${app.category.toLowerCase()} application by ${app.developer}. The core experience revolves around ${focus}. As the developer states, <i>"${firstSentence}"</i> ${priceContext}, making it a notable entry in the NexusStore catalog.`;
-    };
-
     function renderDetails(targetAppId) {
-      const app = apps.find(a => a.id === targetAppId);
+      const app = window.apps.find(a => a.id === targetAppId);
       if (!app) return;
 
       const isInstalled = installedApps.has(app.id);
@@ -1953,7 +2441,7 @@
       const hasAccess = app.price === 0 || purchasedApps.includes(app.id) || (currentUser && app.authorId === currentUser.uid) || isAuthorizedAdmin;
 
       // Find related apps (same category or developer, excluding current app and private apps)
-      const relatedApps = apps.filter(a => a.id !== targetAppId && a.visibility !== 'private' && (a.category === app.category || a.developer === app.developer)).slice(0, 6);
+      const relatedApps = window.apps.filter(a => a.id !== targetAppId && a.visibility !== 'private' && (a.category === app.category || a.developer === app.developer)).slice(0, 6);
 
       let history = app.versionHistory || [];
       if (history.length === 0) {
@@ -1974,8 +2462,6 @@
       const payloadInfo = activeVersionObj.payloadType === 'url' 
         ? { icon: 'ph-globe', title: 'Web Link Attached', desc: "This version connects to an external website. Opening it will launch a new secure tab directly to the publisher's destination." }
         : { icon: 'ph-code', title: 'Executable Code Payload', desc: "This version includes an executable HTML/JS payload. Clicking 'Open App' will run it dynamically in a secure, isolated Blob tab." };
-
-      const overviewText = generateDynamicOverview(app);
 
       const detailsHtml = `
         <div class="max-w-5xl mx-auto">
@@ -2082,10 +2568,13 @@
                       </button>
                       ${isAuthorizedAdmin ? `
                         <button data-click="adminToggleVerify" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center ${app.isVerified ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 dark:text-emerald-400' : 'bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white'}" title="${app.isVerified ? 'Remove Verification' : 'Verify App Safe'}">
-                          <i class="ph-fill ph-shield-check text-2xl"></i>
-                        </button>
+                        <i class="ph-fill ph-shield-check text-2xl"></i>
+                      </button>
                       ` : ''}
                       ${currentUser && app.authorId === currentUser.uid ? `
+                        <button data-click="showCreateAdModal" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-yellow-50 hover:bg-yellow-100 text-yellow-600 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/40 dark:text-yellow-400" title="Promote App">
+                          <i class="ph ph-megaphone text-2xl"></i>
+                        </button>
                         <button data-click="navigate" data-arg="upload" data-arg2="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Edit App">
                           <i class="ph ph-pencil-simple text-2xl"></i>
                         </button>
@@ -2116,7 +2605,7 @@
                 <h3 class="text-lg font-black mb-2 tracking-tight text-indigo-900 dark:text-indigo-200 flex items-center gap-2">
                   <i class="ph-fill ph-sparkle text-indigo-500"></i> App Analysis
                 </h3>
-                <p class="text-base leading-relaxed font-medium text-indigo-800/80 dark:text-indigo-200/80">${overviewText}</p>
+                <p id="overview-text-${app.id}" class="text-base leading-relaxed font-medium text-indigo-800/80 dark:text-indigo-200/80 whitespace-pre-wrap">${app.trueAiOverview ? escapeQuotes(app.trueAiOverview) : (window.aiReady ? '<div class="py-1"><div class="dot-flashing"></div></div>' : 'AI Engine is initializing...')}</p>
               </div>
 
               <div class="mb-10 max-w-3xl">
@@ -2201,6 +2690,15 @@
         </div>
       `;
       views.details.innerHTML = detailsHtml;
+
+      // Trigger the true AI overview generation if it hasn't been cached yet
+      if (!app.trueAiOverview) {
+          const overviewMessages = [
+              { role: "system", content: "You are an app reviewer for NexusStore. Write exactly ONE short paragraph summarizing this app based on its description. You MUST limit your response to a maximum of 2 sentences. Do not use line breaks, bullet points, or multiple paragraphs." },
+              { role: "user", content: `App Name: ${app.title}\nCategory: ${app.category}\nDeveloper: ${app.developer}\nDescription: ${app.description}` }
+          ];
+          window.aiWorker.postMessage({ action: 'overview', id: app.id, messages: overviewMessages });
+      }
     }
 
     window.toggleFavorite = async (targetAppId) => {
@@ -2248,7 +2746,7 @@
     };
 
     window.installApp = (targetAppId) => {
-      const app = apps.find(a => a.id === targetAppId);
+      const app = window.apps.find(a => a.id === targetAppId);
       if (app && app.isBroken) {
          showModal('Install Disabled', 'This app has been flagged and cannot be installed.');
          return;
@@ -2280,104 +2778,47 @@
     };
 
     window.runApp = (targetAppId) => {
-      const app = apps.find(a => a.id === targetAppId);
+      const app = window.apps.find(a => a.id === targetAppId);
       if (!app) return;
       if (app.isBroken) {
           showModal('App Disabled', 'This app has been flagged by security systems or administrators and cannot be launched.');
           return;
       }
-      let history = app.versionHistory || [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
-      const selectedVersionStr = window.selectedAppVersion || (app.versionHistory ? app.versionHistory[0].version : app.version);
+      
+      let history = app.versionHistory && app.versionHistory.length > 0 ? app.versionHistory : [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
+      const selectedVersionStr = window.selectedAppVersion || history[0].version;
       const activeVersionObj = history.find(v => v.version === selectedVersionStr) || history[0];
 
       let launchUrl = '';
       if (activeVersionObj.payloadType === 'url' && activeVersionObj.appUrl) {
-        launchUrl = activeVersionObj.appUrl;
+        launchUrl = activeVersionObj.appUrl.startsWith('http') ? activeVersionObj.appUrl : 'https://' + activeVersionObj.appUrl;
       } else if (activeVersionObj.payloadType === 'code' && activeVersionObj.code) {
         const blob = new Blob([activeVersionObj.code], { type: 'text/html' });
         launchUrl = URL.createObjectURL(blob);
       }
 
-      if (!launchUrl) return;
-
       if (playTimer) clearTimeout(playTimer);
       if (rewardInterval) clearInterval(rewardInterval);
 
-      const inIframe = window.self !== window.top;
-
-      if (inIframe) {
-        // If the store is running in an iframe, open the app natively within the store as an overlay
-        const overlay = document.getElementById('app-viewer-overlay');
-        const iframe = document.getElementById('app-viewer-iframe');
-        const titleEl = document.getElementById('app-viewer-title');
-        const iconEl = document.getElementById('app-viewer-icon');
-
-        currentLaunchUrl = launchUrl;
-        isCurrentLaunchBlob = activeVersionObj.payloadType === 'code';
-
-        titleEl.textContent = app.title;
-        if (app.icon) {
-          iconEl.innerHTML = `<img src="${app.icon}" class="w-full h-full object-cover" />`;
-        } else {
-          iconEl.innerHTML = `<i class="${app.iconClass || 'ph-app-window'} text-xl text-indigo-400"></i>`;
-        }
-
-        iframe.src = launchUrl;
-        overlay.classList.remove('hidden');
-        overlay.classList.add('flex');
-
-        // Setup Visual UI Timer (2 minutes = 120 seconds)
-        const timerContainer = document.getElementById('reward-timer-container');
-        timerContainer.classList.remove('hidden');
-        timerContainer.classList.add('flex');
-        timerContainer.innerHTML = `<i class="ph-fill ph-timer animate-pulse"></i> <span id="reward-timer-text">02:00</span>`;
+      const newWin = window.open(launchUrl, '_blank');
+      if (newWin) {
+        showToast('App Launched', 'App opened in a new tab. Keep it open for 2 minutes to earn 500 coins!', 'ph-rocket-launch', 'indigo');
         
         let rewardSecondsLeft = 120;
         rewardInterval = setInterval(() => {
-            rewardSecondsLeft--;
-            if (rewardSecondsLeft <= 0) {
+            if (newWin.closed) {
                 clearInterval(rewardInterval);
-                timerContainer.innerHTML = `<i class="ph-fill ph-check-circle"></i> <span>+500 Coins!</span>`;
-                setTimeout(() => {
-                    timerContainer.classList.add('hidden');
-                    timerContainer.classList.remove('flex');
-                }, 5000);
-                window.awardPlaytimeCoins(500);
+                showToast('Playtime Cancelled', 'You closed the app before 2 minutes.', 'ph-warning-circle', 'amber');
             } else {
-                const m = Math.floor(rewardSecondsLeft / 60).toString().padStart(2, '0');
-                const s = (rewardSecondsLeft % 60).toString().padStart(2, '0');
-                const timerText = document.getElementById('reward-timer-text');
-                if (timerText) timerText.textContent = `${m}:${s}`;
+                rewardSecondsLeft--;
+                if (rewardSecondsLeft <= 0) {
+                    clearInterval(rewardInterval);
+                    window.awardPlaytimeCoins(500);
+                }
             }
         }, 1000);
-
       } else {
-        // Not in an iframe -> Open outside of the store (new tab/window)
-        const newWin = window.open(launchUrl, '_blank');
-        
-        if (newWin) {
-            showToast('Timer Started', 'Keep the game tab open for 2 minutes to earn 500 coins!', 'ph-timer', 'yellow');
-            
-            let rewardSecondsLeft = 120;
-            rewardInterval = setInterval(() => {
-                if (newWin.closed) {
-                    clearInterval(rewardInterval);
-                    showToast('Playtime Cancelled', 'You closed the game before 2 minutes.', 'ph-warning-circle', 'amber');
-                } else {
-                    rewardSecondsLeft--;
-                    if (rewardSecondsLeft <= 0) {
-                        clearInterval(rewardInterval);
-                        window.awardPlaytimeCoins(500);
-                    }
-                }
-            }, 1000);
-        } else {
-            showToast('Popup Blocked', 'Please allow popups to open the game and earn coins.', 'ph-warning-circle', 'red');
-        }
-
-        if (activeVersionObj.payloadType === 'code') {
-          setTimeout(() => URL.revokeObjectURL(launchUrl), 15000);
-        }
+        showModal('Popup Blocked', 'Please allow popups for this site to open apps and earn coins.');
       }
     };
 
@@ -2402,6 +2843,7 @@
       
       overlay.classList.add('hidden');
       overlay.classList.remove('flex');
+      iframe.removeAttribute('srcdoc');
       iframe.src = 'about:blank'; // Stop execution
       
       if (isCurrentLaunchBlob && currentLaunchUrl) {
@@ -2418,15 +2860,15 @@
     };
 
     window.downloadApp = (targetAppId) => {
-      const app = apps.find(a => a.id === targetAppId);
+      const app = window.apps.find(a => a.id === targetAppId);
       if (!app) return;
       if (app.isBroken) {
           showModal('Download Disabled', 'This app has been flagged for safety concerns and its source code cannot be downloaded.');
           return;
       }
 
-      let history = app.versionHistory || [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
-      const selectedVersionStr = window.selectedAppVersion || (app.versionHistory ? app.versionHistory[0].version : app.version);
+      let history = app.versionHistory && app.versionHistory.length > 0 ? app.versionHistory : [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
+      const selectedVersionStr = window.selectedAppVersion || history[0].version;
       const activeVersionObj = history.find(v => v.version === selectedVersionStr) || history[0];
 
       logActivity('DOWNLOAD', app.title, `Downloaded v${activeVersionObj.version} source HTML.`);
@@ -2564,7 +3006,7 @@
         btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>';
         btn.disabled = true;
         try {
-          const app = apps.find(a => a.id === targetAppId);
+          const app = window.apps.find(a => a.id === targetAppId);
           await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps', targetAppId));
           if(app) logActivity('DELETE', app.title, 'Deleted app from the store.');
           
@@ -2613,6 +3055,45 @@
     btnPayloadCode.addEventListener('click', () => { payloadType = 'code'; updatePayloadToggleUI(); });
     btnPayloadUrl.addEventListener('click', () => { payloadType = 'url'; updatePayloadToggleUI(); });
 
+    window.switchUploadTab = (tab) => {
+        const btnApp = document.getElementById('tab-publish-app');
+        const btnAd = document.getElementById('tab-publish-ad');
+        const formApp = document.getElementById('upload-form');
+        const formAd = document.getElementById('upload-ad-form');
+        const activeClasses = ['shadow-md', 'transform', 'scale-100', 'bg-white', 'text-slate-900', 'dark:bg-slate-700', 'dark:text-white'];
+        const inactiveClasses = ['scale-95', 'text-slate-500', 'hover:text-slate-700', 'hover:bg-slate-200/50', 'dark:text-slate-400', 'dark:hover:text-slate-200', 'dark:hover:bg-slate-700/50'];
+
+        if (tab === 'app') {
+            btnApp.classList.remove(...inactiveClasses);
+            btnApp.classList.add(...activeClasses);
+            btnAd.classList.remove(...activeClasses);
+            btnAd.classList.add(...inactiveClasses);
+            formApp.classList.remove('hidden');
+            formAd.classList.add('hidden');
+            document.getElementById('upload-title').textContent = editingAppId ? 'Edit App' : 'Publish to NexusStore';
+        } else {
+            btnAd.classList.remove(...inactiveClasses);
+            btnAd.classList.add(...activeClasses);
+            btnApp.classList.remove(...activeClasses);
+            btnApp.classList.add(...inactiveClasses);
+            formAd.classList.remove('hidden');
+            formApp.classList.add('hidden');
+            document.getElementById('upload-title').textContent = 'Create Ad Campaign';
+
+            const dropdown = document.getElementById('publish-ad-target-app');
+            if (currentUser) {
+                const myApps = window.apps.filter(a => a.authorId === currentUser.uid);
+                if (myApps.length === 0) {
+                    dropdown.innerHTML = '<option value="">No apps published yet</option>';
+                    dropdown.disabled = true;
+                } else {
+                    dropdown.innerHTML = myApps.map(a => `<option value="${a.id}">${escapeQuotes(a.title)}</option>`).join('');
+                    dropdown.disabled = false;
+                }
+            }
+        }
+    };
+
     const readFileAsDataURL = (file) => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -2651,6 +3132,17 @@
       if (currentUserStatus !== 'active') {
         showModal('Error', 'You do not have permission to publish.');
         return;
+      }
+
+      // Validate required media assets
+      if (!iconPreviewBase64) {
+          showModal('Missing Media', 'An App Icon is required to publish your app. Please upload one before continuing.');
+          return;
+      }
+
+      if (!screenshotsBase64 || screenshotsBase64.length === 0) {
+          showModal('Missing Media', 'At least one screenshot is required to publish your app. Please upload one before continuing.');
+          return;
       }
 
       const submitBtn = document.getElementById('btn-submit');
@@ -2710,7 +3202,7 @@
         let newHistory = [];
 
         if (editingAppId) {
-          const existingApp = apps.find(a => a.id === editingAppId);
+          const existingApp = window.apps.find(a => a.id === editingAppId);
           const appRef = doc(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps', editingAppId);
           await updateDoc(appRef, {
             title: titleVal,
@@ -2805,6 +3297,71 @@
         submitBtn.disabled = false;
       }
     });
+
+    let publishAdImageBase64 = null;
+    document.getElementById('publish-ad-image-input').addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            publishAdImageBase64 = await readFileAsDataURL(file);
+            document.getElementById('publish-ad-image-preview').src = publishAdImageBase64;
+            document.getElementById('publish-ad-image-preview').classList.remove('hidden');
+            document.getElementById('publish-ad-image-placeholder').classList.add('hidden');
+        }
+    });
+
+    window.submitPublishAd = async (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+        
+        const targetAppId = document.getElementById('publish-ad-target-app').value;
+        if (!targetAppId) {
+            showModal('Error', 'You need to publish an app first before you can promote it.');
+            return;
+        }
+
+        const me = systemUsers.find(u => u.uid === currentUser.uid);
+        let bal = me?.balance || 0;
+        
+        if (bal < 10000) {
+            showModal('Insufficient Funds', `You need <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> 10,000</span> Nexus Coins to run an ad.`);
+            return;
+        }
+        
+        const text = document.getElementById('publish-ad-text').value.trim();
+        const btn = document.getElementById('publish-ad-submit-btn');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Processing...';
+        
+        try {
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
+            await updateDoc(userRef, { balance: increment(-10000) });
+            
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'promoted_ads'), {
+                appId: targetAppId,
+                text: text,
+                imageUrl: publishAdImageBase64,
+                authorId: currentUser.uid,
+                timestamp: Date.now()
+            });
+            
+            logActivity('PURCHASE', 'Ad Campaign', `Purchased ad for ${targetAppId} for 10000 coins.`);
+            showToast('Ad Published!', 'Your app is now being promoted across NexusStore.', 'ph-megaphone', 'yellow');
+            
+            document.getElementById('upload-ad-form').reset();
+            publishAdImageBase64 = null;
+            document.getElementById('publish-ad-image-preview').classList.add('hidden');
+            document.getElementById('publish-ad-image-placeholder').classList.remove('hidden');
+            
+            window.navigate('home');
+        } catch (err) {
+            console.error("Ad creation error:", err);
+            showModal('Error', 'Failed to publish ad.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Pay 10,000 <i class="ph-fill ph-coin"></i> & Publish Ad';
+        }
+    };
 
     // --- ADMIN LOGIC & KEYBOARD SHORTCUTS ---
     let secretBuffer = '';
@@ -3041,7 +3598,7 @@
 
     window.renderAdminApps = () => {
       const adminList = document.getElementById('admin-apps-list');
-      adminList.innerHTML = apps.map(app => {
+      adminList.innerHTML = window.apps.map(app => {
         const isDefault = defaultApps.some(da => da.id === app.id);
         return `
         <tr class="hover:bg-slate-50 dark:bg-slate-800/20 transition-colors group">
@@ -3474,7 +4031,7 @@
     };
 
     window.adminToggleVerify = async (targetAppId) => {
-      const app = apps.find(a => a.id === targetAppId);
+      const app = window.apps.find(a => a.id === targetAppId);
       if (!app) return;
       try {
         const newState = !app.isVerified;
@@ -3486,7 +4043,7 @@
     };
 
     window.adminFlagApp = (targetAppId) => {
-      const app = apps.find(a => a.id === targetAppId);
+      const app = window.apps.find(a => a.id === targetAppId);
       if (!app) return;
       if (app.isBroken) {
         updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps', targetAppId), {
@@ -3644,8 +4201,10 @@
       isNewsPanelOpen = !isNewsPanelOpen;
       const panel = document.getElementById('news-panel');
       const overlay = document.getElementById('news-overlay');
+      const badge = document.getElementById('news-badge');
       
       if (isNewsPanelOpen) {
+        if (badge) badge.classList.add('hidden');
         panel.classList.remove('translate-x-full');
         overlay.classList.remove('hidden');
         setTimeout(() => overlay.classList.remove('opacity-0'), 10);
@@ -3800,7 +4359,7 @@
     // WAF Bypass: Global Event Delegation
     document.addEventListener('click', (e) => {
       const target = e.target.closest('[data-click]');
-      if (!target) return;
+      if (!target || target.disabled) return;
       if (target.dataset.stop === 'true') {
         e.stopPropagation();
         e.preventDefault();
@@ -3811,7 +4370,9 @@
       const arg2 = target.dataset.arg2;
 
       if (action === 'navigate') window.navigate(arg1, arg2);
+      else if (action === 'switchUploadTab') window.switchUploadTab(arg1);
       else if (action === 'setCategory') { selectedCategory = arg1; renderHome(); }
+      else if (action === 'showCreateAdModal') window.showCreateAdModal(arg1);
       else if (action === 'toggleNewsPanel') window.toggleNewsPanel();
       else if (action === 'toggleInboxPanel') window.toggleInboxPanel();
       else if (action === 'switchAdminTab') window.switchAdminTab(arg1);
@@ -3858,6 +4419,15 @@
       else if (action === 'adminRejectCoinRequest') window.adminRejectCoinRequest(arg1);
       else if (action === 'closeAppViewer') window.closeAppViewer();
       else if (action === 'openViewerInNewTab') window.openViewerInNewTab();
+      else if (action === 'openAiModal') {
+          if (!window.aiReady) return;
+          document.getElementById('ai-modal').classList.remove('hidden');
+          document.getElementById('ai-modal').classList.add('flex');
+          const hist = document.getElementById('ai-chat-history');
+          if(hist) hist.scrollTop = hist.scrollHeight;
+          const input = document.getElementById('ai-chat-input');
+          if(input) input.focus();
+      }
       else if (action === 'showThemeModal') window.showThemeModal();
       else if (action === 'setThemeAccent') window.setThemeAccent(arg1);
       else if (action === 'setThemeMode') window.setThemeMode(arg1);
@@ -3877,12 +4447,250 @@
       const arg1 = target.dataset.arg;
 
       if (action === 'submitUsername') window.submitUsername(e);
+      else if (action === 'submitCreateAd') window.submitCreateAd(e);
+      else if (action === 'submitPublishAd') window.submitPublishAd(e);
       else if (action === 'submitProfileEdits') window.submitProfileEdits(e);
       else if (action === 'adminCreateNews') window.adminCreateNews(e);
       else if (action === 'submitReview') window.submitReview(e, arg1);
       else if (action === 'submitFeedback') window.submitFeedback(e);
       else if (action === 'adminAddDevUid') window.adminAddDevUid(e);
       else if (action === 'submitAuth') window.submitAuth(e);
+      else if (action === 'submitAiChat') {
+        e.preventDefault();
+        const inputEl = document.getElementById('ai-chat-input');
+        const submitBtn = document.getElementById('ai-chat-submit');
+        
+        if (submitBtn.disabled || inputEl.disabled || window.currentTypingBubble) return;
+
+        const hist = document.getElementById('ai-chat-history');
+        const userTextRaw = inputEl.value.trim();
+        const userText = userTextRaw.toLowerCase();
+        
+        if (!userText) return;
+        
+        // Append user msg
+        hist.innerHTML += `
+          <div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-4 rounded-2xl rounded-tr-none max-w-[85%] self-end font-medium">
+            ${escapeQuotes(userTextRaw)}
+          </div>
+        `;
+        inputEl.value = '';
+        hist.scrollTop = hist.scrollHeight;
+        
+        submitBtn.disabled = true;
+        inputEl.disabled = true;
+
+        // Check for local hardcoded commands BEFORE hitting the heavy neural network
+        let handledLocally = false;
+        let localResponse = "";
+        let actionToTake = null;
+
+        // Command: Theme Changes
+        if (userText.includes('light mode') || userText.includes('light theme')) {
+           localResponse = "Switching to Light Mode! ☀️";
+           actionToTake = () => window.setThemeMode('light');
+           handledLocally = true;
+        } else if (userText.includes('oled')) {
+           localResponse = "Switching to OLED Dark Mode for deep blacks! 🦇";
+           actionToTake = () => window.setThemeMode('oled');
+           handledLocally = true;
+        } else if (userText.includes('dark mode') || userText.includes('dark theme')) {
+           localResponse = "Switching to Dark Mode! 🌙";
+           actionToTake = () => window.setThemeMode('dark');
+           handledLocally = true;
+        } 
+        // Command: Accent Colors
+        else if (userText.includes('make it red') || userText.includes('rose accent')) {
+           localResponse = "Applying the Rose theme accent! 🌹";
+           actionToTake = () => window.setThemeAccent('rose');
+           handledLocally = true;
+        } else if (userText.includes('make it green') || userText.includes('emerald accent')) {
+           localResponse = "Applying the Emerald theme accent! 🌲";
+           actionToTake = () => window.setThemeAccent('emerald');
+           handledLocally = true;
+        } else if (userText.includes('make it blue') || userText.includes('indigo accent')) {
+           localResponse = "Applying the Indigo theme accent! 🌊";
+           actionToTake = () => window.setThemeAccent('indigo');
+           handledLocally = true;
+        }
+        // Command: Navigation
+        else if (userText === 'home' || userText === 'take me home' || userText.includes('main page')) {
+           localResponse = "Taking you to the home page! 🏠";
+           actionToTake = () => window.navigate('home');
+           handledLocally = true;
+        } else if (userText.includes('profile') || userText.includes('my account')) {
+           if (currentUser && currentUser.customDisplayName) {
+               localResponse = "Opening your profile! 👤";
+               actionToTake = () => window.navigate('profile', currentUser.customDisplayName);
+           } else {
+               localResponse = "You need to log in to view your profile!";
+           }
+           handledLocally = true;
+        } else if (userText.includes('upload') || userText.includes('publish') || userText.includes('new app')) {
+           localResponse = "Let's publish a new app! 🚀 Opening the upload terminal.";
+           actionToTake = () => window.navigate('upload');
+           handledLocally = true;
+        } else if (userText.includes('admin') || userText.includes('panel')) {
+           if (window.isAuthorizedAdmin) {
+               localResponse = "Accessing the Admin Control Panel. 🛡️";
+               actionToTake = () => window.navigate('admin');
+           } else {
+               localResponse = "You don't have administrator privileges. 🛑";
+           }
+           handledLocally = true;
+        } else if (userText.includes('help') || userText.includes('faq') || userText.includes('support')) {
+           localResponse = "Taking you to the FAQ and Support page! ❓";
+           actionToTake = () => window.navigate('faq');
+           handledLocally = true;
+        }
+        // Command: Money / Coins
+        else if (userText.includes('request coin') || userText.includes('need money') || userText.includes('claim daily')) {
+           localResponse = "Opening the coin request menu for you! 💰 Don't forget to claim your daily allowance.";
+           actionToTake = () => window.showCoinRequestModal();
+           handledLocally = true;
+        }
+        // Command: Auth
+        else if (userText.includes('log out') || userText.includes('sign out')) {
+           localResponse = "Signing you out. See you later! 👋";
+           actionToTake = () => window.handleSignOut();
+           handledLocally = true;
+        }
+        // Command: Open/Launch Apps
+        else if (userText.startsWith('open ') || userText.startsWith('launch ') || userText.startsWith('play ')) {
+           let appName = userText.replace('open ', '').replace('launch ', '').replace('play ', '').trim();
+           let foundApp = window.apps.find(a => a.title.toLowerCase() === appName);
+           if (!foundApp) {
+               foundApp = window.apps.find(a => a.title.toLowerCase().includes(appName));
+           }
+           
+           if (foundApp) {
+               if (foundApp.isBroken) {
+                   localResponse = `Sorry, <b>${foundApp.title}</b> is currently disabled for maintenance. 🛠️`;
+               } else {
+                   let appPrice = Number(foundApp.price) || 0;
+                   let hasAccess = appPrice === 0 || window.isAuthorizedAdmin;
+                   let finalPrice = appPrice;
+                   
+                   if (!hasAccess && currentUser) {
+                       const me = systemUsers.find(u => u.uid === currentUser.uid);
+                       const purchasedApps = me?.purchasedApps || [];
+                       if (me && me.isVIP) finalPrice = Math.floor(appPrice * 0.5);
+                       
+                       hasAccess = purchasedApps.includes(foundApp.id) || foundApp.authorId === currentUser.uid;
+                   }
+                   
+                   if (hasAccess) {
+                       localResponse = `Launching <b>${foundApp.title}</b> right away! 🚀`;
+                       actionToTake = () => window.runApp(foundApp.id);
+                   } else {
+                       if (!currentUser) {
+                           localResponse = `<b>${foundApp.title}</b> is a premium app. Please log in and purchase it first! 🔒`;
+                       } else {
+                           localResponse = `You don't own <b>${foundApp.title}</b> yet. It costs <i class="ph-fill ph-coin text-yellow-500"></i> ${finalPrice} coins. Head over to its store page to buy it! 🛒`;
+                           actionToTake = () => window.navigate('details', foundApp.id);
+                       }
+                   }
+               }
+           } else {
+               localResponse = `I couldn't find an app named "${appName}" in the store. 🤷‍♂️`;
+           }
+           handledLocally = true;
+        }
+        // Command: Search / Find
+        else if (userText.includes('find') || userText.includes('search') || userText.includes('show me') || userText.includes('looking for')) {
+           const categories = ['games', 'productivity', 'social', 'arcade', 'utilities', 'sim', 'racing', 'education', 'editor', 'video', 'ai tool', 'strategy'];
+           let foundCat = categories.find(c => userText.includes(c));
+           
+           if (foundCat) {
+               localResponse = `Sure! Filtering the store to show you <b>${foundCat}</b> apps. 🔎`;
+               actionToTake = () => {
+                   window.navigate('home');
+                   // Handle edge cases in formatting
+                   if(foundCat === 'ai tool') foundCat = 'AI Tool';
+                   else foundCat = foundCat.charAt(0).toUpperCase() + foundCat.slice(1);
+                   selectedCategory = foundCat;
+                   searchQuery = '';
+                   document.getElementById('search-input').value = '';
+                   renderHome();
+               };
+           } else {
+               let searchTerm = userText.replace('find', '').replace('search', '').replace('show me', '').replace('looking for', '').replace('a ', '').replace('an ', '').trim();
+               if(searchTerm.length > 15) searchTerm = searchTerm.substring(0, 15); // limit length
+               localResponse = `Searching the store for "<b>${searchTerm}</b>"... 🔎`;
+               actionToTake = () => {
+                   window.navigate('home');
+                   selectedCategory = 'All';
+                   searchQuery = searchTerm;
+                   document.getElementById('search-input').value = searchTerm;
+                   renderHome();
+               };
+           }
+           handledLocally = true;
+        } 
+
+        if (handledLocally) {
+            hist.innerHTML += `
+              <div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed">
+                ${localResponse}
+              </div>
+            `;
+            hist.scrollTop = hist.scrollHeight;
+
+            if (actionToTake) {
+                setTimeout(() => {
+                    actionToTake();
+                    submitBtn.disabled = false;
+                    inputEl.disabled = false;
+                    inputEl.focus();
+                    // Close the modal if it's a navigation action
+                    if(localResponse.includes('Opening') || localResponse.includes('Taking') || localResponse.includes('Searching') || localResponse.includes('Filtering') || localResponse.includes('Launching')) {
+                        document.getElementById('ai-modal').classList.add('hidden');
+                        document.getElementById('ai-modal').classList.remove('flex');
+                    }
+                }, 1000);
+            } else {
+                submitBtn.disabled = false;
+                inputEl.disabled = false;
+                inputEl.focus();
+            }
+        } else {
+            // Hand off to True AI Worker
+            if (!window.aiReady) {
+                hist.innerHTML += `
+                  <div class="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed">
+                    My neural engine is still booting up! Please wait a moment.
+                  </div>
+                `;
+                hist.scrollTop = hist.scrollHeight;
+                submitBtn.disabled = false;
+                inputEl.disabled = false;
+                return;
+            }
+
+            const loadId = `loading-${Date.now()}`;
+            hist.innerHTML += `
+                <div id="${loadId}" class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start flex items-center gap-2 font-medium">
+                  <div class="dot-flashing"></div>
+                </div>
+            `;
+            hist.scrollTop = hist.scrollHeight;
+            window.currentTypingBubble = document.getElementById(loadId);
+            window.currentTypingBubble.id = 'typing-indicator'; // Mark it for the token stream handler
+
+            // Add user message to AI history
+            window.aiChatHistory.push({ role: "user", content: userTextRaw });
+
+            // Post to web worker
+            window.aiWorker.postMessage({
+                action: 'chat',
+                id: Date.now(),
+                messages: [
+                    { role: "system", content: "You are the local Nexus Assistant. Your answers must be extremely short, direct, and factual. For simple questions or math, provide ONLY the final answer without any conversational filler, reasoning, or explanation. Never use emojis. Limit all answers to 1 or 2 sentences unless specifically asked for more." },
+                    ...window.aiChatHistory
+                ]
+            });
+        }
+      }
     });
 
     // Handle App Version Dropdowns globally
@@ -3896,6 +4704,92 @@
          renderDetails(arg1);
       }
     });
+
+    // Ad Creation Logic
+    window.showCreateAdModal = (targetAppId) => {
+        if (!currentUser) return;
+        const app = window.apps.find(a => a.id === targetAppId);
+        if (!app) return;
+        
+        document.getElementById('ad-target-app-id').value = targetAppId;
+        document.getElementById('create-ad-form').reset();
+        
+        currentAdImageBase64 = app.icon || null; 
+        const preview = document.getElementById('ad-image-preview');
+        const placeholder = document.getElementById('ad-image-placeholder');
+        
+        if (currentAdImageBase64) {
+           preview.src = currentAdImageBase64;
+           preview.classList.remove('hidden');
+           placeholder.classList.add('hidden');
+        } else {
+           preview.classList.add('hidden');
+           placeholder.classList.remove('hidden');
+        }
+        
+        const modal = document.getElementById('create-ad-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    };
+
+    document.getElementById('ad-image-input').addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            currentAdImageBase64 = await readFileAsDataURL(file);
+            document.getElementById('ad-image-preview').src = currentAdImageBase64;
+            document.getElementById('ad-image-preview').classList.remove('hidden');
+            document.getElementById('ad-image-placeholder').classList.add('hidden');
+        }
+    });
+
+    window.submitCreateAd = async (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+        
+        const me = systemUsers.find(u => u.uid === currentUser.uid);
+        let bal = me?.balance;
+        if (isNaN(bal) || bal === undefined) bal = 0;
+        
+        if (bal < 10000) {
+            showModal('Insufficient Funds', `You need <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> 10,000</span> Nexus Coins to run an ad. You currently have ${bal}.`);
+            return;
+        }
+        
+        const text = document.getElementById('ad-text').value.trim();
+        const targetAppId = document.getElementById('ad-target-app-id').value;
+        const btn = document.getElementById('create-ad-submit-btn');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Processing...';
+        
+        try {
+            // Deduct 10000 coins
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
+            await updateDoc(userRef, { balance: increment(-10000) });
+            
+            // Save Ad
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'promoted_ads'), {
+                appId: targetAppId,
+                text: text,
+                imageUrl: currentAdImageBase64,
+                authorId: currentUser.uid,
+                timestamp: Date.now()
+            });
+            
+            logActivity('PURCHASE', 'Ad Campaign', `Purchased ad for ${targetAppId} for 10000 coins.`);
+            showToast('Ad Published!', 'Your app is now being promoted across NexusStore.', 'ph-megaphone', 'yellow');
+            
+            const modal = document.getElementById('create-ad-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        } catch (err) {
+            console.error("Ad creation error:", err);
+            showModal('Error', 'Failed to publish ad.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Pay 10,000 <i class="ph-fill ph-coin"></i> & Publish';
+        }
+    };
 
     // Theme Management Logic
     const accents = {
