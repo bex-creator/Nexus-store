@@ -450,35 +450,37 @@ What would you like to do?</div>
         <p class="text-slate-500 text-lg max-w-md">We couldn't find anything matching your search.</p>
       </div>
 
-      <div class="flex flex-col xl:flex-row gap-8 items-start">
-        <!-- Main Content -->
-        <div class="flex-1 min-w-0 w-full">
-          <section id="home-picks" class="mb-16 hidden">
-            <div class="flex items-center gap-3 mb-6">
-              <i class="ph ph-calendar text-indigo-500 text-2xl font-bold"></i>
-              <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Today's Picks</h2>
-            </div>
-            <div id="picks-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
-          </section>
-
-          <section id="home-grid-section" class="hidden">
-            <div class="flex items-center gap-3 mb-8">
-              <i class="ph ph-stack text-indigo-500 text-2xl font-bold"></i>
-              <h2 id="grid-title" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Trending Now</h2>
-            </div>
-            <div id="grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8"></div>
-          </section>
-        </div>
+      <!-- Top Section: Picks + Ads side-by-side -->
+      <div class="flex flex-col xl:flex-row gap-8 items-start mb-8">
+        
+        <!-- Main Content: Picks -->
+        <section id="home-picks" class="flex-1 min-w-0 w-full hidden">
+          <div class="flex items-center gap-3 mb-6">
+            <i class="ph ph-calendar text-indigo-500 text-2xl font-bold"></i>
+            <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Today's Picks</h2>
+          </div>
+          <div id="picks-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+        </section>
 
         <!-- Sidebar for Ads -->
-        <div id="home-sponsored-sidebar" class="w-full xl:w-80 flex-shrink-0 hidden sticky top-28 mb-16 xl:mb-0">
+        <div id="home-sponsored-sidebar" class="w-full xl:w-[340px] flex-shrink-0 hidden">
           <div class="flex items-center gap-3 mb-6">
             <i class="ph-fill ph-megaphone text-yellow-500 text-2xl font-bold"></i>
             <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Sponsored</h2>
           </div>
           <div id="sponsored-container" class="flex flex-col gap-6"></div>
         </div>
+
       </div>
+
+      <!-- Bottom Section: Trending Now grid (Full Width) -->
+      <section id="home-grid-section" class="hidden pb-12">
+        <div class="flex items-center gap-3 mb-8">
+          <i class="ph ph-stack text-indigo-500 text-2xl font-bold"></i>
+          <h2 id="grid-title" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Trending Now</h2>
+        </div>
+        <div id="grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8"></div>
+      </section>
     </div>
 
     <!-- DETAILS VIEW -->
