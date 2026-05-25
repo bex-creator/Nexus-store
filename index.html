@@ -993,7 +993,7 @@ What would you like to do?</div>
                 });
 
                 const results = await aiPipeline(task.messages, {
-                    max_new_tokens: task.action === 'overview' ? 110 : 512, // Hard cap tokens for overview so it physically cannot ramble
+                    max_new_tokens: task.action === 'overview' ? 60 : 512, // Hard cap tokens for overview so it physically cannot exceed ~40 words
                     do_sample: false,
                     repetition_penalty: 1.15,
                     streamer: streamer
@@ -2635,7 +2635,7 @@ What would you like to do?</div>
       // Trigger the true AI overview generation if it hasn't been cached yet
       if (!app.trueAiOverview) {
           const overviewMessages = [
-              { role: "system", content: "You are an app reviewer for NexusStore. Write a single, brief paragraph (exactly 2 to 3 sentences) summarizing this app based on its description. Be engaging but extremely concise. Do not write a long review." },
+              { role: "system", content: "You are an app reviewer for NexusStore. Write a single, brief summary of this app based on its description. You MUST write a maximum of 40 words. Keep it under 2 short sentences." },
               { role: "user", content: `App Name: ${app.title}\nCategory: ${app.category}\nDeveloper: ${app.developer}\nDescription: ${app.description}` }
           ];
           window.aiWorker.postMessage({ action: 'overview', id: app.id, messages: overviewMessages });
