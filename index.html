@@ -2571,15 +2571,17 @@ What would you like to do?</div>
       if (playTimer) clearTimeout(playTimer);
       if (rewardInterval) clearInterval(rewardInterval);
 
-      // Always use overlay for code, new tab for URLs to bypass X-Frame-Options blocking
-      if (activeVersionObj.payloadType === 'code') {
+      const inIframe = window.self !== window.top;
+
+      if (inIframe) {
+        // If the store is running in an iframe, open the app natively within the store as an overlay
         const overlay = document.getElementById('app-viewer-overlay');
         const iframe = document.getElementById('app-viewer-iframe');
         const titleEl = document.getElementById('app-viewer-title');
         const iconEl = document.getElementById('app-viewer-icon');
 
         currentLaunchUrl = launchUrl;
-        isCurrentLaunchBlob = true;
+        isCurrentLaunchBlob = activeVersionObj.payloadType === 'code';
 
         titleEl.textContent = app.title;
         if (app.icon) {
@@ -2588,8 +2590,13 @@ What would you like to do?</div>
           iconEl.innerHTML = `<i class="${app.iconClass || 'ph-app-window'} text-xl text-indigo-400"></i>`;
         }
 
-        iframe.removeAttribute('src');
-        iframe.srcdoc = activeVersionObj.code;
+        if (activeVersionObj.payloadType === 'code') {
+          iframe.removeAttribute('src');
+          iframe.srcdoc = activeVersionObj.code;
+        } else {
+          iframe.removeAttribute('srcdoc');
+          iframe.src = launchUrl;
+        }
         
         overlay.classList.remove('hidden');
         overlay.classList.add('flex');
@@ -2618,27 +2625,55 @@ What would you like to do?</div>
                 if (timerText) timerText.textContent = `${m}:${s}`;
             }
         }, 1000);
+
       } else {
-        // External URL. Framing usually blocked. Open in new tab.
-        const newWin = window.open(launchUrl, '_blank');
-        if (newWin) {
-          showToast('App Launched', 'External app opened in a new tab. Keep it open for 2 minutes to earn 500 coins!', 'ph-rocket-launch', 'indigo');
-          
-          let rewardSecondsLeft = 120;
-          rewardInterval = setInterval(() => {
-              if (newWin.closed) {
-                  clearInterval(rewardInterval);
-                  showToast('Playtime Cancelled', 'You closed the game before 2 minutes.', 'ph-warning-circle', 'amber');
-              } else {
-                  rewardSecondsLeft--;
-                  if (rewardSecondsLeft <= 0) {
-                      clearInterval(rewardInterval);
-                      window.awardPlaytimeCoins(500);
-                  }
-              }
-          }, 1000);
+        // Not in an iframe -> Open outside of the store (new tab/window)
+        if (activeVersionObj.payloadType === 'code') {
+          const newWin = window.open('about:blank', '_blank');
+          if (newWin) {
+            newWin.document.open();
+            newWin.document.write(activeVersionObj.code);
+            newWin.document.close();
+            
+            showToast('Timer Started', 'Keep the game tab open for 2 minutes to earn 500 coins!', 'ph-timer', 'yellow');
+            
+            let rewardSecondsLeft = 120;
+            rewardInterval = setInterval(() => {
+                if (newWin.closed) {
+                    clearInterval(rewardInterval);
+                    showToast('Playtime Cancelled', 'You closed the game before 2 minutes.', 'ph-warning-circle', 'amber');
+                } else {
+                    rewardSecondsLeft--;
+                    if (rewardSecondsLeft <= 0) {
+                        clearInterval(rewardInterval);
+                        window.awardPlaytimeCoins(500);
+                    }
+                }
+            }, 1000);
+          } else {
+            showToast('Popup Blocked', 'Please allow popups to open the game and earn coins.', 'ph-warning-circle', 'red');
+          }
         } else {
-          showModal('Popup Blocked', 'Please allow popups for this site to open external apps and earn coins.');
+          const newWin = window.open(launchUrl, '_blank');
+          if (newWin) {
+            showToast('Timer Started', 'Keep the game tab open for 2 minutes to earn 500 coins!', 'ph-timer', 'yellow');
+            
+            let rewardSecondsLeft = 120;
+            rewardInterval = setInterval(() => {
+                if (newWin.closed) {
+                    clearInterval(rewardInterval);
+                    showToast('Playtime Cancelled', 'You closed the game before 2 minutes.', 'ph-warning-circle', 'amber');
+                } else {
+                    rewardSecondsLeft--;
+                    if (rewardSecondsLeft <= 0) {
+                        clearInterval(rewardInterval);
+                        window.awardPlaytimeCoins(500);
+                    }
+                }
+            }, 1000);
+          } else {
+            showToast('Popup Blocked', 'Please allow popups to open the game and earn coins.', 'ph-warning-circle', 'red');
+          }
         }
       }
     };
@@ -2664,7 +2699,6 @@ What would you like to do?</div>
       
       overlay.classList.add('hidden');
       overlay.classList.remove('flex');
-      iframe.removeAttribute('srcdoc');
       iframe.src = 'about:blank'; // Stop execution
       
       if (isCurrentLaunchBlob && currentLaunchUrl) {
@@ -2914,17 +2948,6 @@ What would you like to do?</div>
       if (currentUserStatus !== 'active') {
         showModal('Error', 'You do not have permission to publish.');
         return;
-      }
-
-      // Validate required media assets
-      if (!iconPreviewBase64) {
-          showModal('Missing Media', 'An App Icon is required to publish your app. Please upload one before continuing.');
-          return;
-      }
-
-      if (!screenshotsBase64 || screenshotsBase64.length === 0) {
-          showModal('Missing Media', 'At least one screenshot is required to publish your app. Please upload one before continuing.');
-          return;
       }
 
       const submitBtn = document.getElementById('btn-submit');
