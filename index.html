@@ -888,6 +888,7 @@ What would you like to do?</div>
                 const results = await aiPipeline(task.messages, {
                     max_new_tokens: task.action === 'overview' ? 75 : 512,
                     do_sample: false,
+                    repetition_penalty: 1.15,
                     streamer: streamer
                 });
 
@@ -2949,6 +2950,17 @@ What would you like to do?</div>
         return;
       }
 
+      // Validate required media assets
+      if (!iconPreviewBase64) {
+          showModal('Missing Media', 'An App Icon is required to publish your app. Please upload one before continuing.');
+          return;
+      }
+
+      if (!screenshotsBase64 || screenshotsBase64.length === 0) {
+          showModal('Missing Media', 'At least one screenshot is required to publish your app. Please upload one before continuing.');
+          return;
+      }
+
       const submitBtn = document.getElementById('btn-submit');
       const titleVal = document.getElementById('app-title').value;
       const versionVal = document.getElementById('app-version').value.trim() || '1.0.0';
@@ -4096,7 +4108,7 @@ What would you like to do?</div>
     // WAF Bypass: Global Event Delegation
     document.addEventListener('click', (e) => {
       const target = e.target.closest('[data-click]');
-      if (!target) return;
+      if (!target || target.disabled) return;
       if (target.dataset.stop === 'true') {
         e.stopPropagation();
         e.preventDefault();
@@ -4155,6 +4167,7 @@ What would you like to do?</div>
       else if (action === 'closeAppViewer') window.closeAppViewer();
       else if (action === 'openViewerInNewTab') window.openViewerInNewTab();
       else if (action === 'openAiModal') {
+          if (!window.aiReady) return;
           document.getElementById('ai-modal').classList.remove('hidden');
           document.getElementById('ai-modal').classList.add('flex');
           const hist = document.getElementById('ai-chat-history');
@@ -4191,6 +4204,9 @@ What would you like to do?</div>
         e.preventDefault();
         const inputEl = document.getElementById('ai-chat-input');
         const submitBtn = document.getElementById('ai-chat-submit');
+        
+        if (submitBtn.disabled || inputEl.disabled || window.currentTypingBubble) return;
+
         const hist = document.getElementById('ai-chat-history');
         const userTextRaw = inputEl.value.trim();
         const userText = userTextRaw.toLowerCase();
@@ -4364,19 +4380,23 @@ What would you like to do?</div>
               </div>
             `;
             hist.scrollTop = hist.scrollHeight;
-            submitBtn.disabled = false;
-            inputEl.disabled = false;
-            inputEl.focus();
 
             if (actionToTake) {
                 setTimeout(() => {
                     actionToTake();
+                    submitBtn.disabled = false;
+                    inputEl.disabled = false;
+                    inputEl.focus();
                     // Close the modal if it's a navigation action
                     if(localResponse.includes('Opening') || localResponse.includes('Taking') || localResponse.includes('Searching') || localResponse.includes('Filtering') || localResponse.includes('Launching')) {
                         document.getElementById('ai-modal').classList.add('hidden');
                         document.getElementById('ai-modal').classList.remove('flex');
                     }
                 }, 1000);
+            } else {
+                submitBtn.disabled = false;
+                inputEl.disabled = false;
+                inputEl.focus();
             }
         } else {
             // Hand off to True AI Worker
@@ -4410,7 +4430,7 @@ What would you like to do?</div>
                 action: 'chat',
                 id: Date.now(),
                 messages: [
-                    { role: "system", content: "You are the local Nexus Assistant. Answer directly and accurately. Do NOT use emojis. Do NOT ramble or ask follow-up questions. Keep your answers brief." },
+                    { role: "system", content: "You are the local Nexus Assistant. Your answers must be extremely short, direct, and factual. For simple questions or math, provide ONLY the final answer without any conversational filler, reasoning, or explanation. Never use emojis. Limit all answers to 1 or 2 sentences unless specifically asked for more." },
                     ...window.aiChatHistory
                 ]
             });
