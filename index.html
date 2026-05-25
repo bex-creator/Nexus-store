@@ -2173,35 +2173,36 @@ What would you like to do?</div>
       if (!searchQuery && todaysPicks.length > 0 && picksSection) {
         picksSection.classList.remove('hidden');
         const picksHtml = todaysPicks.map((app, idx) => `
-          <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col justify-end min-h-[300px] shadow-lg transition-all duration-300 hover:-translate-y-1 bg-black dark:bg-slate-900 border border-slate-800 h-full">
+          <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col justify-center min-h-[300px] shadow-lg transition-all duration-300 hover:-translate-y-1 bg-black dark:bg-slate-900 border border-slate-800 h-full">
             ${app.visibility === 'private' ? '<div class="absolute top-5 right-5 bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full border border-white/10 z-30 text-xs font-bold flex items-center gap-1.5"><i class="ph-fill ph-lock-key"></i> Private</div>' : ''}
             <div class="absolute inset-0 ${app.bgClass || 'bg-indigo-600'} opacity-30 z-10 group-hover:opacity-40 transition-opacity duration-700"></div>
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-white/5 blur-3xl rounded-full pointer-events-none group-hover:bg-white/10 transition-colors duration-700"></div>
             
-            <div class="relative z-20 p-6 w-full flex flex-col h-full justify-between">
-              <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border border-white/10 w-fit mb-4">
-                <i class="ph-fill ph-star text-yellow-400"></i>
-                App of the Day
-              </div>
-              
-              <div>
-                <div class="flex items-center gap-4 mb-4 mt-auto">
+            <div class="relative z-20 p-8 sm:p-10 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-8 h-full">
+              <div class="flex-1 min-w-0">
+                <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border border-white/10 w-fit mb-6">
+                  <i class="ph-fill ph-star text-yellow-400"></i> App of the Day
+                </div>
+                
+                <div class="flex items-center gap-5 mb-5">
                   ${app.icon ? 
-                    `<img src="${app.icon}" class="w-14 h-14 rounded-xl shadow-xl border border-white/10 object-cover" />`
+                    `<img src="${app.icon}" class="w-20 h-20 rounded-[1.2rem] shadow-xl border border-white/10 object-cover flex-shrink-0" />`
                     :
-                    `<div class="w-14 h-14 rounded-xl shadow-xl border border-white/10 flex items-center justify-center text-white ${app.bgClass || 'bg-slate-600'}">
-                      <i class="${app.iconClass || 'ph-app-window'} text-2xl"></i>
+                    `<div class="w-20 h-20 rounded-[1.2rem] shadow-xl border border-white/10 flex items-center justify-center text-white ${app.bgClass || 'bg-slate-600'} flex-shrink-0">
+                      <i class="${app.iconClass || 'ph-app-window'} text-4xl"></i>
                     </div>`
                   }
-                  <div>
-                    <h3 class="text-2xl font-black text-white tracking-tight drop-shadow-lg line-clamp-1">${app.title}</h3>
-                    <p class="text-indigo-200 font-medium text-sm">${app.category}</p>
+                  <div class="min-w-0">
+                    <h3 class="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-lg truncate">${app.title}</h3>
+                    <p class="text-indigo-200 font-medium text-lg mt-1 truncate">${app.category}</p>
                   </div>
                 </div>
-                <p class="text-slate-300 text-sm line-clamp-2 leading-relaxed mb-4">${app.description}</p>
-                <div class="flex items-center gap-4">
-                  <button class="bg-white/10 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 border border-white/20 px-5 py-2 rounded-xl font-bold transition-all duration-300 w-fit text-sm">View Details</button>
-                  <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${escapeQuotes(app.developer)}" class="text-white/60 hover:text-white text-xs font-bold transition-colors truncate flex-1 text-right">By ${app.developer}</p>
-                </div>
+                <p class="text-slate-200 text-base sm:text-lg line-clamp-2 leading-relaxed max-w-xl">${app.description}</p>
+              </div>
+              
+              <div class="flex flex-col items-start sm:items-end gap-4 w-full sm:w-auto mt-auto sm:mt-0 flex-shrink-0">
+                <button class="bg-white/10 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 border border-white/20 px-8 py-4 rounded-xl font-bold transition-all duration-300 w-full sm:w-auto whitespace-nowrap text-base shadow-lg">View Details</button>
+                <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${escapeQuotes(app.developer)}" class="text-white/60 hover:text-white text-sm font-bold transition-colors truncate">By ${app.developer}</p>
               </div>
             </div>
           </div>
