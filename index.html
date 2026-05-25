@@ -190,6 +190,47 @@
     </div>
   </div>
 
+  <!-- AI Assistant Modal -->
+  <div id="ai-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 max-w-lg w-full shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col h-[600px] animate-zoom-in">
+      <div class="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+         <div>
+             <h3 class="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+               <i class="ph-fill ph-sparkle text-indigo-500"></i> Nexus Assistant
+             </h3>
+             <p id="ai-modal-status" class="text-xs font-mono text-indigo-500/70 mt-1">Booting Local Neural Network...</p>
+         </div>
+         <button data-click="closeModal" data-arg="ai-modal" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-full transition-colors self-start">
+           <i class="ph-bold ph-x text-xl"></i>
+         </button>
+      </div>
+
+      <!-- AI Modal Progress Bar -->
+      <div id="ai-progress-container" class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 mb-4 overflow-hidden">
+        <div id="ai-progress-bar" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+
+      <div id="ai-chat-history" class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4 flex flex-col">
+         <div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed shadow-sm whitespace-pre-wrap">Hi! I'm the <b>Local Nexus Assistant</b> (powered by Qwen2.5). I run completely offline in your browser cache!
+
+Here is what I can do for you:
+
+• <b>Launch Apps:</b> Say "open [app name]" (e.g., "open Doodle Jump").
+• <b>Navigation:</b> Say "take me home" or "open my profile".
+• <b>Themes:</b> Say "switch to OLED mode" or "make it red".
+• <b>Search:</b> Say "find a racing game" or "search for docs".
+
+What would you like to do?</div>
+      </div>
+      <form data-submit="submitAiChat" class="mt-4 flex gap-2 relative">
+         <input type="text" id="ai-chat-input" disabled placeholder="Waking up AI engine..." class="flex-1 border-2 rounded-xl px-4 py-3 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white font-medium disabled:opacity-50 transition-all">
+         <button type="submit" id="ai-chat-submit" disabled class="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-400 text-white px-5 rounded-xl font-bold transition-all flex items-center justify-center shadow-md">
+           <i class="ph-bold ph-paper-plane-tilt text-xl"></i>
+         </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Auth Modal -->
   <div id="auth-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
     <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
@@ -317,26 +358,15 @@
         </span>
       </div>
 
-      <div id="search-container" class="flex-1 max-w-2xl relative group transition-opacity z-50">
-        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+      <div id="search-container" class="flex-1 max-w-2xl relative group transition-opacity">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <i class="ph ph-magnifying-glass text-slate-400 group-focus-within:text-indigo-500 transition-colors text-xl"></i>
         </div>
-        <input type="text" id="search-input" placeholder="Search apps, games, or ask AI... (Press '/' to focus)" class="w-full border-2 rounded-2xl py-3 pl-12 pr-28 sm:pr-32 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none font-medium bg-slate-100/80 border-transparent text-slate-800 placeholder-slate-400 focus:bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800 relative z-10" />
-        <div class="absolute inset-y-0 right-1 flex items-center pr-1 z-10">
-          <button id="ask-ai-btn" data-click="askInlineAi" disabled class="h-9 px-3 bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-xl flex items-center gap-1.5 font-bold text-sm transition-all shadow-md" title="Nexus AI Assistant">
+        <input type="text" id="search-input" placeholder="Search apps, games... (Press '/' to focus)" class="w-full border-2 rounded-2xl py-3 pl-12 pr-28 sm:pr-32 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none font-medium bg-slate-100/80 border-transparent text-slate-800 placeholder-slate-400 focus:bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" />
+        <div class="absolute inset-y-0 right-1 flex items-center pr-1">
+          <button id="ask-ai-btn" data-click="openAiModal" disabled class="h-9 px-3 bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-xl flex items-center gap-1.5 font-bold text-sm transition-all shadow-md" title="Nexus AI Assistant">
             <i id="ai-btn-icon" class="ph-fill ph-spinner animate-spin"></i> <span id="ai-btn-text" class="hidden sm:inline">Loading AI...</span>
           </button>
-        </div>
-
-        <!-- Inline AI Panel -->
-        <div id="inline-ai-panel" class="hidden absolute top-full left-0 w-full mt-2 bg-white dark:bg-slate-900 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-slate-200 dark:border-slate-700 p-5 z-50 transform origin-top animate-zoom-in">
-           <div class="flex justify-between items-center mb-3 border-b border-slate-100 dark:border-slate-800 pb-2">
-             <div class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-black text-sm uppercase tracking-wider">
-               <i class="ph-fill ph-sparkle text-lg"></i> Nexus AI Assistant
-             </div>
-             <button data-click="closeInlineAi" class="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors p-1"><i class="ph-bold ph-x text-lg"></i></button>
-           </div>
-           <div id="inline-ai-content" class="text-slate-800 dark:text-slate-200 text-sm font-medium whitespace-pre-wrap max-h-60 overflow-y-auto custom-scrollbar leading-relaxed"></div>
         </div>
       </div>
 
@@ -942,14 +972,38 @@
             if (btnIcon) btnIcon.className = 'ph-fill ph-sparkle';
             if (btnText) btnText.textContent = 'Ask AI';
             
+            // AI Modal Updates
+            const progressContainer = document.getElementById('ai-progress-container');
+            const aiStatusText = document.getElementById('ai-modal-status');
+            const chatInput = document.getElementById('ai-chat-input');
+            const chatBtn = document.getElementById('ai-chat-submit');
+            
+            if (progressContainer) progressContainer.classList.add('hidden');
+            if (aiStatusText) {
+                if (e.data.device === 'webgpu') {
+                    aiStatusText.innerText = 'Status: Active • WebGPU Accelerated 🚀';
+                    aiStatusText.className = 'text-xs font-mono text-yellow-500 mt-1';
+                } else {
+                    aiStatusText.innerText = 'Local Worker Active • CPU (WASM)';
+                    aiStatusText.className = 'text-xs font-mono text-emerald-500 mt-1';
+                }
+            }
+            
+            if (chatInput) {
+                chatInput.disabled = false;
+                chatInput.placeholder = 'Ask me to do something...';
+            }
+            if (chatBtn) chatBtn.disabled = false;
         } else if (action === 'token') {
             if (type === 'chat') {
+                if (window.currentTypingBubble && window.currentTypingBubble.id === 'typing-indicator') {
+                    window.currentTypingBubble.id = '';
+                    window.currentTypingBubble.textContent = ''; // Fix space stripping
+                }
                 if (window.currentTypingBubble) {
-                    if (window.currentTypingBubble.dataset.isStreaming === 'true') {
-                        window.currentTypingBubble.innerHTML = ''; 
-                        window.currentTypingBubble.dataset.isStreaming = 'false';
-                    }
-                    window.currentTypingBubble.textContent += token; 
+                    window.currentTypingBubble.textContent += token; // Fix space stripping
+                    const hist = document.getElementById('ai-chat-history');
+                    if(hist) hist.scrollTop = hist.scrollHeight;
                 }
             } else if (type === 'overview') {
                 const el = document.getElementById('overview-text-' + id);
@@ -960,27 +1014,21 @@
             }
         } else if (action === 'complete') {
             if (type === 'chat') {
-                const btn = document.getElementById('ask-ai-btn');
-                if (btn) btn.disabled = false;
+                const inputEl = document.getElementById('ai-chat-input');
+                const submitBtn = document.getElementById('ai-chat-submit');
+                if (submitBtn) submitBtn.disabled = false;
+                if (inputEl) {
+                    inputEl.disabled = false;
+                    inputEl.focus();
+                }
 
                 if (window.currentTypingBubble) {
+                    if (window.currentTypingBubble.id === 'typing-indicator') {
+                        window.currentTypingBubble.id = '';
+                    }
+                    window.currentTypingBubble.textContent = answer; // Fix space stripping
                     window.aiChatHistory.push({ role: "assistant", content: window.currentTypingBubble.textContent });
                 }
-                window.currentTypingBubble = null;
-            } else if (type === 'overview') {
-                const app = window.apps.find(a => a.id === id);
-                if (app) app.trueAiOverview = answer; // Cache it so it doesn't recalculate on next visit
-                const el = document.getElementById('overview-text-' + id);
-                if (el) el.textContent = answer;
-            }
-        } else if (action === 'error') {
-            console.error("AI Worker Error:", error);
-            if (type === 'chat') {
-                if (window.currentTypingBubble) {
-                    window.currentTypingBubble.innerHTML = `<span class="text-red-500">Oops, my local processor hit an error: ${error}</span>`;
-                }
-                const btn = document.getElementById('ask-ai-btn');
-                if (btn) btn.disabled = false;
                 window.currentTypingBubble = null;
             } else if (type === 'overview') {
                 const app = window.apps.find(a => a.id === id);
@@ -4035,9 +4083,14 @@
       else if (action === 'adminRejectCoinRequest') window.adminRejectCoinRequest(arg1);
       else if (action === 'closeAppViewer') window.closeAppViewer();
       else if (action === 'openViewerInNewTab') window.openViewerInNewTab();
-      else if (action === 'askInlineAi') window.askInlineAi();
-      else if (action === 'closeInlineAi') {
-          document.getElementById('inline-ai-panel').classList.add('hidden');
+      else if (action === 'openAiModal') {
+          if (!window.aiReady) return;
+          document.getElementById('ai-modal').classList.remove('hidden');
+          document.getElementById('ai-modal').classList.add('flex');
+          const hist = document.getElementById('ai-chat-history');
+          if(hist) hist.scrollTop = hist.scrollHeight;
+          const input = document.getElementById('ai-chat-input');
+          if(input) input.focus();
       }
       else if (action === 'showThemeModal') window.showThemeModal();
       else if (action === 'setThemeAccent') window.setThemeAccent(arg1);
@@ -4064,36 +4117,32 @@
       else if (action === 'submitFeedback') window.submitFeedback(e);
       else if (action === 'adminAddDevUid') window.adminAddDevUid(e);
       else if (action === 'submitAuth') window.submitAuth(e);
-    });
-
-    // Handle Search Bar Enter Key for AI
-    document.getElementById('search-input').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            window.askInlineAi();
-        }
-    });
-
-    window.askInlineAi = () => {
-        if (!window.aiReady) return;
-        const inputEl = document.getElementById('search-input');
-        const userTextRaw = inputEl.value.trim();
+      else if (action === 'submitAiChat') {
+        e.preventDefault();
+        const inputEl = document.getElementById('ai-chat-input');
+        const submitBtn = document.getElementById('ai-chat-submit');
         
-        if (!userTextRaw) {
-            showToast('AI', 'Please type a command or question in the search bar first.', 'ph-sparkle', 'indigo');
-            inputEl.focus();
-            return;
-        }
+        if (submitBtn.disabled || inputEl.disabled || window.currentTypingBubble) return;
 
+        const hist = document.getElementById('ai-chat-history');
+        const userTextRaw = inputEl.value.trim();
         const userText = userTextRaw.toLowerCase();
-        const panel = document.getElementById('inline-ai-panel');
-        const content = document.getElementById('inline-ai-content');
-        const btn = document.getElementById('ask-ai-btn');
+        
+        if (!userText) return;
+        
+        // Append user msg
+        hist.innerHTML += `
+          <div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-4 rounded-2xl rounded-tr-none max-w-[85%] self-end font-medium">
+            ${escapeQuotes(userTextRaw)}
+          </div>
+        `;
+        inputEl.value = '';
+        hist.scrollTop = hist.scrollHeight;
+        
+        submitBtn.disabled = true;
+        inputEl.disabled = true;
 
-        panel.classList.remove('hidden');
-        content.innerHTML = '<div class="py-2"><div class="dot-flashing"></div></div>';
-        btn.disabled = true;
-
+        // Check for local hardcoded commands BEFORE hitting the heavy neural network
         let handledLocally = false;
         let localResponse = "";
         let actionToTake = null;
@@ -4129,7 +4178,7 @@
         // Command: Navigation
         else if (userText === 'home' || userText === 'take me home' || userText.includes('main page')) {
            localResponse = "Taking you to the home page! 🏠";
-           actionToTake = () => { window.navigate('home'); inputEl.value = ''; window.renderHome(); };
+           actionToTake = () => window.navigate('home');
            handledLocally = true;
         } else if (userText.includes('profile') || userText.includes('my account')) {
            if (currentUser && currentUser.customDisplayName) {
@@ -4166,78 +4215,6 @@
         else if (userText.includes('log out') || userText.includes('sign out')) {
            localResponse = "Signing you out. See you later! 👋";
            actionToTake = () => window.handleSignOut();
-           handledLocally = true;
-        }
-        // NEW Command: Install
-        else if (userText.startsWith('install ') || userText.startsWith('get ') || userText.startsWith('download ')) {
-           let appName = userText.replace('install ', '').replace('get ', '').replace('download ', '').trim();
-           let foundApp = window.apps.find(a => a.title.toLowerCase() === appName) || window.apps.find(a => a.title.toLowerCase().includes(appName));
-           
-           if (foundApp) {
-               if (foundApp.isBroken) {
-                   localResponse = `Sorry, <b>${foundApp.title}</b> is currently disabled for maintenance. 🛠️`;
-               } else {
-                   const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
-                   const purchasedApps = me?.purchasedApps || [];
-                   const hasAccess = foundApp.price === 0 || window.isAuthorizedAdmin || purchasedApps.includes(foundApp.id) || (currentUser && foundApp.authorId === currentUser.uid);
-                   
-                   if (hasAccess) {
-                       localResponse = `Installing <b>${foundApp.title}</b> for you! 📥`;
-                       actionToTake = () => {
-                           window.installApp(foundApp.id);
-                           window.navigate('details', foundApp.id);
-                       };
-                   } else {
-                       localResponse = `<b>${foundApp.title}</b> is a premium app. Please purchase it first before installing! 🛒`;
-                       actionToTake = () => window.navigate('details', foundApp.id);
-                   }
-               }
-           } else {
-               localResponse = `I couldn't find an app named "${appName}" to install. 🤷‍♂️`;
-           }
-           handledLocally = true;
-        }
-        // NEW Command: Buy
-        else if (userText.startsWith('buy ') || userText.startsWith('purchase ')) {
-           let appName = userText.replace('buy ', '').replace('purchase ', '').trim();
-           let foundApp = window.apps.find(a => a.title.toLowerCase() === appName) || window.apps.find(a => a.title.toLowerCase().includes(appName));
-           
-           if (foundApp) {
-               if (!currentUser) {
-                   localResponse = `You must be logged in to buy apps! 🔒`;
-               } else if (foundApp.price === 0) {
-                   localResponse = `<b>${foundApp.title}</b> is actually free! I'll install it for you instead. 🎉`;
-                   actionToTake = () => {
-                       window.installApp(foundApp.id);
-                       window.navigate('details', foundApp.id);
-                   };
-               } else {
-                   localResponse = `Initiating purchase for <b>${foundApp.title}</b>... 💳`;
-                   actionToTake = () => {
-                       window.navigate('details', foundApp.id);
-                       setTimeout(() => window.buyApp(foundApp.id), 500); 
-                   };
-               }
-           } else {
-               localResponse = `I couldn't find an app named "${appName}" to buy.`;
-           }
-           handledLocally = true;
-        }
-        // NEW Command: Favorite
-        else if (userText.startsWith('favorite ') || userText.startsWith('like ')) {
-           let appName = userText.replace('favorite ', '').replace('like ', '').trim();
-           let foundApp = window.apps.find(a => a.title.toLowerCase() === appName) || window.apps.find(a => a.title.toLowerCase().includes(appName));
-           
-           if (foundApp) {
-               if (!currentUser) {
-                   localResponse = `You must be logged in to favorite apps! 🔒`;
-               } else {
-                   localResponse = `Adding <b>${foundApp.title}</b> to your favorites! ❤️`;
-                   actionToTake = () => window.toggleFavorite(foundApp.id);
-               }
-           } else {
-               localResponse = `I couldn't find an app named "${appName}".`;
-           }
            handledLocally = true;
         }
         // Command: Open/Launch Apps
@@ -4281,38 +4258,102 @@
            }
            handledLocally = true;
         }
+        // Command: Search / Find
+        else if (userText.includes('find') || userText.includes('search') || userText.includes('show me') || userText.includes('looking for')) {
+           const categories = ['games', 'productivity', 'social', 'arcade', 'utilities', 'sim', 'racing', 'education', 'editor', 'video', 'ai tool', 'strategy'];
+           let foundCat = categories.find(c => userText.includes(c));
+           
+           if (foundCat) {
+               localResponse = `Sure! Filtering the store to show you <b>${foundCat}</b> apps. 🔎`;
+               actionToTake = () => {
+                   window.navigate('home');
+                   // Handle edge cases in formatting
+                   if(foundCat === 'ai tool') foundCat = 'AI Tool';
+                   else foundCat = foundCat.charAt(0).toUpperCase() + foundCat.slice(1);
+                   selectedCategory = foundCat;
+                   searchQuery = '';
+                   document.getElementById('search-input').value = '';
+                   renderHome();
+               };
+           } else {
+               let searchTerm = userText.replace('find', '').replace('search', '').replace('show me', '').replace('looking for', '').replace('a ', '').replace('an ', '').trim();
+               if(searchTerm.length > 15) searchTerm = searchTerm.substring(0, 15); // limit length
+               localResponse = `Searching the store for "<b>${searchTerm}</b>"... 🔎`;
+               actionToTake = () => {
+                   window.navigate('home');
+                   selectedCategory = 'All';
+                   searchQuery = searchTerm;
+                   document.getElementById('search-input').value = searchTerm;
+                   renderHome();
+               };
+           }
+           handledLocally = true;
+        } 
 
         if (handledLocally) {
-            content.innerHTML = localResponse;
-            btn.disabled = false;
-            
+            hist.innerHTML += `
+              <div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed">
+                ${localResponse}
+              </div>
+            `;
+            hist.scrollTop = hist.scrollHeight;
+
             if (actionToTake) {
                 setTimeout(() => {
                     actionToTake();
+                    submitBtn.disabled = false;
+                    inputEl.disabled = false;
+                    inputEl.focus();
+                    // Close the modal if it's a navigation action
+                    if(localResponse.includes('Opening') || localResponse.includes('Taking') || localResponse.includes('Searching') || localResponse.includes('Filtering') || localResponse.includes('Launching')) {
+                        document.getElementById('ai-modal').classList.add('hidden');
+                        document.getElementById('ai-modal').classList.remove('flex');
+                    }
                 }, 1000);
+            } else {
+                submitBtn.disabled = false;
+                inputEl.disabled = false;
+                inputEl.focus();
             }
         } else {
             // Hand off to True AI Worker
             if (!window.aiReady) {
-                content.innerHTML = `<span class="text-red-500">Neural engine is still booting... Please wait.</span>`;
-                btn.disabled = false;
+                hist.innerHTML += `
+                  <div class="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed">
+                    My neural engine is still booting up! Please wait a moment.
+                  </div>
+                `;
+                hist.scrollTop = hist.scrollHeight;
+                submitBtn.disabled = false;
+                inputEl.disabled = false;
                 return;
             }
-            
-            window.currentTypingBubble = content;
-            window.currentTypingBubble.dataset.isStreaming = 'true';
-            
+
+            const loadId = `loading-${Date.now()}`;
+            hist.innerHTML += `
+                <div id="${loadId}" class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start flex items-center gap-2 font-medium">
+                  <div class="dot-flashing"></div>
+                </div>
+            `;
+            hist.scrollTop = hist.scrollHeight;
+            window.currentTypingBubble = document.getElementById(loadId);
+            window.currentTypingBubble.id = 'typing-indicator'; // Mark it for the token stream handler
+
+            // Add user message to AI history
             window.aiChatHistory.push({ role: "user", content: userTextRaw });
+
+            // Post to web worker
             window.aiWorker.postMessage({
                 action: 'chat',
                 id: Date.now(),
                 messages: [
-                    { role: "system", content: "You are the local Nexus Assistant. Answer concisely. Limit to 1 or 2 short sentences. No emojis." },
+                    { role: "system", content: "You are the local Nexus Assistant. Your answers must be extremely short, direct, and factual. For simple questions or math, provide ONLY the final answer without any conversational filler, reasoning, or explanation. Never use emojis. Limit all answers to 1 or 2 sentences unless specifically asked for more." },
                     ...window.aiChatHistory
                 ]
             });
         }
-    };
+      }
+    });
 
     // Handle App Version Dropdowns globally
     document.addEventListener('change', (e) => {
