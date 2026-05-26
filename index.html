@@ -214,7 +214,7 @@
       </div>
 
       <div id="ai-chat-history" class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4 flex flex-col">
-         <div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed shadow-sm whitespace-pre-wrap">The AI is disabled for now.</div>
+         <div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed shadow-sm whitespace-pre-wrap">Connected to Local AI Engine! (Chromebook battery-saver mode enabled). How can I help you today?</div>
       </div>
       <form data-submit="submitAiChat" class="mt-4 flex gap-2 relative">
          <input type="text" id="ai-chat-input" disabled placeholder="Waking up AI engine..." class="flex-1 border-2 rounded-xl px-4 py-3 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white font-medium disabled:opacity-50 transition-all">
@@ -963,9 +963,6 @@
   <script type="module">
     // Define the Web Worker code strictly as a blob so it runs on a separate thread locally
     const workerBlobCode = `
-        // AI ENGINE TEMPORARILY DISABLED FOR CHROMEBOOK OPTIMIZATION
-        // Placeholder worker to handle UI events without crashing the browser
-        
         let isProcessing = false;
         let queue = [];
 
@@ -975,24 +972,44 @@
             const task = queue.shift();
 
             try {
-                // Simulate a slight network delay
-                await new Promise(resolve => setTimeout(resolve, 600));
-
-                let answer = "";
-                if (task.action === 'overview') {
-                    answer = "The AI is disabled for now.";
-                } else if (task.action === 'chat') {
-                    answer = "The AI is disabled for now.";
+                // Convert message format to Gemini format
+                let systemInstruction = "";
+                let contents = [];
+                
+                for (const msg of task.messages) {
+                    if (msg.role === 'system') {
+                        systemInstruction = msg.content;
+                    } else {
+                        contents.push({
+                            role: msg.role === 'assistant' ? 'model' : 'user',
+                            parts: [{ text: msg.content }]
+                        });
+                    }
                 }
 
-                // Simulate token streaming for the UI
-                const tokens = answer.split(' ');
-                for (let i = 0; i < tokens.length; i++) {
-                    self.postMessage({ action: 'token', type: task.action, id: task.id, token: tokens[i] + (i < tokens.length - 1 ? ' ' : '') });
-                    await new Promise(r => setTimeout(r, 30));
+                const apiKey = task.apiKey || "";
+                const url = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=\${apiKey}\`;
+
+                const payload = { contents };
+                if (systemInstruction) {
+                    payload.systemInstruction = { parts: [{ text: systemInstruction }] };
                 }
 
-                self.postMessage({ action: 'complete', type: task.action, id: task.id, answer });
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(\`Gemini API Error (\${response.status}): \${errText}\`);
+                }
+
+                const result = await response.json();
+                const answer = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+                self.postMessage({ action: 'complete', type: task.action, id: task.id, answer: answer.trim() });
             } catch (err) {
                 self.postMessage({ action: 'error', type: task.action, id: task.id, error: String(err) });
             }
@@ -1004,13 +1021,12 @@
         self.onmessage = async function(e) {
             const { action } = e.data;
             if (action === 'load') {
-                // Instantly bypass the heavy 350MB model download
-                self.postMessage({ action: 'progress', data: { status: 'initiate', file: 'Cloud API Wrapper' } });
+                self.postMessage({ action: 'progress', data: { status: 'initiate', file: 'Connecting to Gemini API...' } });
                 self.postMessage({ action: 'progress', data: { status: 'progress', progress: 100 } });
                 self.postMessage({ action: 'progress', data: { status: 'done' } });
                 
                 setTimeout(() => {
-                    self.postMessage({ action: 'ready', device: 'placeholder' });
+                    self.postMessage({ action: 'ready', device: 'gemini' });
                     processQueue();
                 }, 500);
             } else if (action === 'chat' || action === 'overview') {
@@ -1057,8 +1073,13 @@
             const btnIcon = document.getElementById('ai-btn-icon');
             const btnText = document.getElementById('ai-btn-text');
             if (btn) btn.disabled = false;
-            if (btnIcon) btnIcon.className = 'ph-fill ph-sparkle';
-            if (btnText) btnText.textContent = 'Ask AI';
+            
+            if (btnIcon) {
+                btnIcon.className = e.data.device === 'offline-fallback' ? 'ph-bold ph-wifi-slash text-amber-500' : 'ph-fill ph-sparkle';
+            }
+            if (btnText) {
+                btnText.textContent = e.data.device === 'offline-fallback' ? 'AI Offline' : 'Ask AI';
+            }
             
             // AI Modal Updates
             const progressContainer = document.getElementById('ai-progress-container');
@@ -1068,12 +1089,18 @@
             
             if (progressContainer) progressContainer.classList.add('hidden');
             if (aiStatusText) {
-                if (e.data.device === 'webgpu') {
+                if (e.data.device === 'gemini') {
+                    aiStatusText.innerText = 'Status: Active • Gemini API ✨';
+                    aiStatusText.className = 'text-xs font-mono text-emerald-500 mt-1';
+                } else if (e.data.device === 'webgpu') {
                     aiStatusText.innerText = 'Status: Active • WebGPU Accelerated 🚀';
                     aiStatusText.className = 'text-xs font-mono text-yellow-500 mt-1';
-                } else if (e.data.device === 'placeholder') {
-                    aiStatusText.innerText = 'Status: Disabled';
+                } else if (e.data.device === 'offline-fallback') {
+                    aiStatusText.innerText = 'Status: Active • Offline Fallback Mode 🛡️';
                     aiStatusText.className = 'text-xs font-mono text-amber-500 mt-1';
+                } else if (e.data.device === 'chromebook-optimized') {
+                    aiStatusText.innerText = 'Status: Active • Local AI (Battery Saver) 🔋';
+                    aiStatusText.className = 'text-xs font-mono text-emerald-500 mt-1';
                 } else {
                     aiStatusText.innerText = 'Local Worker Active • CPU (WASM)';
                     aiStatusText.className = 'text-xs font-mono text-emerald-500 mt-1';
@@ -2622,11 +2649,16 @@
 
       // Trigger the true AI overview generation if it hasn't been cached yet
       if (!app.trueAiOverview) {
-          const overviewMessages = [
-              { role: "system", content: "You are an app reviewer for NexusStore. Write exactly ONE short paragraph summarizing this app based on its description. You MUST limit your response to a maximum of 2 sentences. Do not use line breaks, bullet points, or multiple paragraphs." },
-              { role: "user", content: `App Name: ${app.title}\nCategory: ${app.category}\nDeveloper: ${app.developer}\nDescription: ${app.description}` }
-          ];
-          window.aiWorker.postMessage({ action: 'overview', id: app.id, messages: overviewMessages });
+          const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
+          if (me && me.customApiKey) {
+              const overviewMessages = [
+                  { role: "system", content: "You are an app reviewer for NexusStore. Write exactly ONE short paragraph summarizing this app based on its description. You MUST limit your response to a maximum of 2 sentences. Do not use line breaks, bullet points, or multiple paragraphs." },
+                  { role: "user", content: `App Name: ${app.title}\nCategory: ${app.category}\nDeveloper: ${app.developer}\nDescription: ${app.description}` }
+              ];
+              window.aiWorker.postMessage({ action: 'overview', id: app.id, apiKey: me.customApiKey, messages: overviewMessages });
+          } else {
+              document.getElementById(`overview-text-${app.id}`).textContent = "No API key configured. Ask an admin to assign you an API key to view AI Analysis.";
+          }
       }
     }
 
@@ -3596,6 +3628,7 @@
           <td class="p-6 text-right">
              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button data-click="adminManageCoins" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Manage Nexus Coins"><i class="ph-fill ph-coin"></i> Coins</button>
+              <button data-click="adminSetApiKey" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Assign Custom API Key"><i class="ph-fill ph-key"></i> API</button>
               <button data-click="adminToggleVIP" data-arg="${u.uid}" class="${u.isVIP ? 'text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/40' : 'text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20'} px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Toggle VIP Status"><i class="ph-fill ph-star"></i> VIP</button>
               <button data-click="viewUserHistory" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-clock-counter-clockwise"></i> History</button>
               <button data-click="adminMessageUser" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-paper-plane-tilt"></i> Msg</button>
@@ -3642,6 +3675,34 @@
                 } catch(e) {
                     console.error(e);
                     document.getElementById(`confirm-btn-${modalId}`).innerHTML = 'Error';
+                }
+            }
+        );
+    };
+
+    window.adminSetApiKey = (uid, username) => {
+        const user = systemUsers.find(u => u.uid === uid);
+        const currentKey = user?.customApiKey || '';
+        showPromptModal(
+            `Assign API Key for ${username}`,
+            `Enter a custom Gemini API key for this user. The AI Assistant will use this key when they submit questions.`,
+            currentKey || `Paste API Key here...`,
+            `Save Key`,
+            `bg-cyan-600 hover:bg-cyan-500 shadow-cyan-500/30`,
+            async (val, modalId) => {
+                const btn = document.getElementById(`confirm-btn-${modalId}`);
+                btn.disabled = true;
+                btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>';
+                try {
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', uid);
+                    await updateDoc(userRef, { customApiKey: val ? val.trim() : null });
+                    logActivity('MODERATION', 'Assigned API Key', `Set custom API key for user ${uid}`);
+                    showToast('API Key Saved', `Successfully updated API credentials for ${username}.`, 'ph-key', 'cyan');
+                    document.getElementById(modalId).remove();
+                } catch(e) {
+                    console.error(e);
+                    btn.innerHTML = 'Error';
+                    btn.disabled = false;
                 }
             }
         );
@@ -4339,6 +4400,7 @@
       else if (action === 'adminRejectDev') window.adminRejectDev(arg1);
       else if (action === 'adminRemoveDevUid') window.adminRemoveDevUid(arg1);
       else if (action === 'adminManageCoins') window.adminManageCoins(arg1, arg2);
+      else if (action === 'adminSetApiKey') window.adminSetApiKey(arg1, arg2);
       else if (action === 'deleteReview') window.deleteReview(arg1);
       else if (action === 'buyApp') window.buyApp(arg1);
       else if (action === 'toggleFollow') window.toggleFollow(arg1);
@@ -4596,6 +4658,50 @@
                 return;
             }
 
+            const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
+            const userApiKey = me?.customApiKey || null;
+
+            if (!userApiKey) {
+                hist.innerHTML += `
+                  <div class="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed">
+                    No Gemini API key assigned! Please ask an admin to add an API key to your account.
+                  </div>
+                `;
+                hist.scrollTop = hist.scrollHeight;
+                submitBtn.disabled = false;
+                inputEl.disabled = false;
+                return;
+            }
+
+            // --- QUOTA ENFORCEMENT ---
+            const todayStr = new Date().toDateString();
+            const usageCount = me?.aiUsageDate === todayStr ? (me?.aiUsageCount || 0) : 0;
+            const isLimitReached = usageCount >= 50 && !window.isAuthorizedAdmin;
+
+            if (isLimitReached) {
+                hist.innerHTML += `
+                  <div class="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed">
+                    You have reached your daily limit of 50 AI responses. Please come back tomorrow!
+                  </div>
+                `;
+                hist.scrollTop = hist.scrollHeight;
+                submitBtn.disabled = false;
+                inputEl.disabled = false;
+                return;
+            }
+
+            if (currentUser && me) {
+                try {
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
+                    if (me.aiUsageDate !== todayStr) {
+                        updateDoc(userRef, { aiUsageDate: todayStr, aiUsageCount: 1 });
+                    } else {
+                        updateDoc(userRef, { aiUsageCount: increment(1) });
+                    }
+                } catch(e) { console.error("Quota update error:", e); }
+            }
+            // -------------------------
+
             const loadId = `loading-${Date.now()}`;
             hist.innerHTML += `
                 <div id="${loadId}" class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start flex items-center gap-2 font-medium">
@@ -4613,6 +4719,7 @@
             window.aiWorker.postMessage({
                 action: 'chat',
                 id: Date.now(),
+                apiKey: userApiKey,
                 messages: [
                     { role: "system", content: "You are the local Nexus Assistant. Your answers must be extremely short, direct, and factual. For simple questions or math, provide ONLY the final answer without any conversational filler, reasoning, or explanation. Never use emojis. Limit all answers to 1 or 2 sentences unless specifically asked for more." },
                     ...window.aiChatHistory
