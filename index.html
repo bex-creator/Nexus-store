@@ -1005,12 +1005,28 @@
                         max_new_tokens: 60, // Extremely short to prevent OOM
                         temperature: 0.6,
                         repetition_penalty: 1.1,
+                        return_full_text: false, // FIX: Forces the engine to ONLY return the new answer
                     }),
                     new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout: The AI took too long to think.")), 60000))
                 ]);
 
-                // Clean the generated output (remove the prompt and stop tokens)
-                let answer = output[0].generated_text.replace(prompt, '').replace(/<\\|im_end\\|>/g, '').trim();
+                // Clean the generated output safely
+                let answer = output[0].generated_text;
+                
+                // Fallback cleanup in case the prompt still leaks into the output
+                if (answer.includes('<|im_start|>assistant\\n')) {
+                    answer = answer.split('<|im_start|>assistant\\n').pop();
+                } else if (answer.includes(prompt)) {
+                    answer = answer.replace(prompt, '');
+                }
+
+                // Strip out remaining chat tokens
+                answer = answer.replace(/<\\|im_start\\|>/g, '').replace(/<\\|im_end\\|>/g, '').trim();
+                
+                // Fix for the model hallucinating "Assistant:" or "Assistant \n" at the start
+                if (answer.toLowerCase().startsWith('assistant\\n') || answer.toLowerCase().startsWith('assistant:')) {
+                    answer = answer.replace(/^assistant:?\\n?/i, '').trim();
+                }
 
                 self.postMessage({ action: 'complete', type: task.action, id: task.id, answer: answer });
             } catch (err) {
