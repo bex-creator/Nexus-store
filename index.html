@@ -963,19 +963,6 @@
   <script type="module">
     // Define the Web Worker code strictly as a blob so it runs on a separate thread locally
     const workerBlobCode = `
-        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
-
-        // EXTREME CHROMEBOOK OPTIMIZATIONS (2GB RAM / Celeron)
-        env.allowLocalModels = false;
-        
-        // FINAL SPEED HACK 1: Prevent Thread Thrashing. 
-        // Forcing all cores on a cheap Celeron causes them to fight over memory. 2 is the sweet spot.
-        env.backends.onnx.wasm.numThreads = 2; 
-        env.backends.onnx.wasm.simd = true; 
-        
-        env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/';
-
-        let generator = null;
         let isProcessing = false;
         let queue = [];
 
@@ -984,82 +971,92 @@
             isProcessing = true;
             const task = queue.shift();
 
-            if (!generator) {
-                self.postMessage({ action: 'error', type: task.action, id: task.id, error: "Model not loaded yet." });
-                isProcessing = false;
-                processQueue();
-                return;
-            }
-
             try {
-                // Qwen1.5-0.5B ChatML Formatting
-                let prompt = "<|im_start|>system\\nYou are Nexus. Be brief and friendly.<|im_end|>\\n";
+                // Formatting for Pollinations.ai (Free, Keyless Cloud AI for GitHub Pages)
+                let messages = [];
+                messages.push({ role: "system", content: "You are Nexus, a friendly AI assistant in a web store. Keep answers short and human-like." });
                 
                 if (task.action === 'overview') {
-                    let extractAfterText = task.messages[1].content;
-                    if (extractAfterText.length > 300) extractAfterText = extractAfterText.substring(0, 300) + "..."; // Cap length to save RAM
-                    prompt += \`<|im_start|>user\\nWrite a friendly 1-sentence summary of this app:\\n\${extractAfterText}<|im_end|>\\n<|im_start|>assistant\\n\`;
+                    messages.push({ role: "user", content: "Write a friendly 1-sentence summary of this app: " + task.messages[1].content });
                 } else {
-                    // SMART MEMORY TRICK: Keep ONLY the last 2 messages for context. Less context = massively faster math.
-                    let recentMessages = task.messages.slice(-2);
-                    let conversationHistory = "";
-                    for (const msg of recentMessages) {
-                        if (msg.role === 'system') continue; 
-                        let content = msg.content;
-                        if (content.length > 150) content = content.substring(0, 150) + "..."; // Limit string length heavily
-                        conversationHistory += \`<|im_start|>\${msg.role}\\n\${content}<|im_end|>\\n\`;
-                    }
-                    prompt += \`\${conversationHistory}<|im_start|>assistant\\n\`;
+                    // Send the last 4 messages for good conversation memory
+                    const recent = task.messages.filter(m => m.role !== 'system').slice(-4);
+                    messages.push(...recent);
                 }
 
-                let promptTokensCount = -1;
-                let finalStreamedText = "";
-                let generatedTokenCount = 0;
-                let lastUpdateTime = 0;
+                let answer = "";
+                let success = false;
+                let lastErr = "";
 
-                // Add a timeout safeguard to prevent infinite hanging
-                const output = await Promise.race([
-                    generator(prompt, {
-                        max_new_tokens: 60, // Keep responses short
-                        do_sample: false, // SPEED HACK: Greedy decoding skips all probability math and generates instantly
-                        repetition_penalty: 1.1,
-                        return_full_text: false,
-                        callback_function: x => {
-                            const ids = x[0].output_token_ids;
+                // Added an automatic 3-retry loop because free APIs get congested
+                for (let i = 0; i < 3; i++) {
+                    try {
+                        // FIX: Switched to the dedicated streaming endpoint for 0-latency responses
+                        const response = await fetch("https://text.pollinations.ai/openai/chat/completions", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                messages: messages,
+                                stream: true // THIS ENABLES REAL-TIME WORD-BY-WORD TYPING
+                                // Removed specific model so the server auto-routes to the fastest available node
+                            })
+                        });
+
+                        if (!response.ok) throw new Error("HTTP " + response.status);
+
+                        // INSTANT STREAMING: Parse the Server-Sent Events (SSE) data stream
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder('utf-8');
+                        
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
                             
-                            // On the first generated token, map the exact mathematical length of the prompt
-                            if (promptTokensCount === -1) {
-                                promptTokensCount = ids.length - 1;
-                            }
+                            const chunk = decoder.decode(value, { stream: true });
+                            const lines = chunk.split('\n'); // Split data packets
                             
-                            generatedTokenCount++;
-                            const now = Date.now();
-                            
-                            // SMOOTH TYPING HACK: Update screen every 2 tokens or 50ms. 
-                            // This creates a smooth, continuous typewriter effect without freezing the browser.
-                            if (generatedTokenCount % 2 === 0 || now - lastUpdateTime > 50) {
-                                // Slice off the prompt tokens completely so they NEVER leak into the UI
-                                const newIds = ids.slice(promptTokensCount);
-                                let textSoFar = generator.tokenizer.decode(newIds, { skip_special_tokens: true });
-                                
-                                // Clean up hallucinated prefixes
-                                textSoFar = textSoFar.trimStart();
-                                if (textSoFar.toLowerCase().startsWith('assistant:')) textSoFar = textSoFar.substring(10).trimStart();
-                                if (textSoFar.toLowerCase().startsWith('nexus:')) textSoFar = textSoFar.substring(6).trimStart();
-                                
-                                finalStreamedText = textSoFar;
-                                self.postMessage({ action: 'token', type: task.action, id: task.id, textSoFar: textSoFar });
-                                lastUpdateTime = now;
+                            for (const line of lines) {
+                                if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                                    try {
+                                        // Extract the exact word generated in this microsecond
+                                        const data = JSON.parse(line.slice(6));
+                                        if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
+                                            answer += data.choices[0].delta.content;
+                                            
+                                            // Clean prefixes on the fly
+                                            let displayAnswer = answer;
+                                            if (displayAnswer.toLowerCase().startsWith('nexus:')) displayAnswer = displayAnswer.substring(6).trimStart();
+                                            if (displayAnswer.toLowerCase().startsWith('assistant:')) displayAnswer = displayAnswer.substring(10).trimStart();
+                                            
+                                            // Send text to UI instantly!
+                                            self.postMessage({ action: 'token', type: task.action, id: task.id, textSoFar: displayAnswer });
+                                        }
+                                    } catch (err) {
+                                        // Ignore split JSON chunks, they complete in the next loop
+                                    }
+                                }
                             }
                         }
-                    }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout: The AI took too long to think.")), 60000))
-                ]);
+                        
+                        // If we successfully streamed an answer, break the retry loop
+                        if (answer.length > 0) {
+                            success = true;
+                            break;
+                        } else {
+                            throw new Error("Stream returned empty");
+                        }
+                    } catch (e) {
+                        lastErr = e.message;
+                        await new Promise(r => setTimeout(r, 500)); // wait 0.5s before trying again
+                    }
+                }
 
-                // Fallback to our clean streamed text to ensure 100% safety
-                let answer = finalStreamedText || output[0].generated_text.trim();
-                if (answer.toLowerCase().startsWith('assistant:')) answer = answer.substring(10).trim();
+                if (!success) throw new Error("Cloud Node Congested: " + lastErr);
+
+                // Final aggressive cleanup just in case
+                answer = answer.trim();
                 if (answer.toLowerCase().startsWith('nexus:')) answer = answer.substring(6).trim();
+                if (answer.toLowerCase().startsWith('assistant:')) answer = answer.substring(10).trim();
 
                 self.postMessage({ action: 'complete', type: task.action, id: task.id, answer: answer });
             } catch (err) {
@@ -1073,26 +1070,8 @@
         self.onmessage = async function(e) {
             const { action } = e.data;
             if (action === 'load') {
-                try {
-                    self.postMessage({ action: 'progress', data: { status: 'initiate', file: 'Initializing WebGPU AI Engine...' } });
-                    
-                    if (!navigator.gpu) {
-                        throw new Error("WebGPU is not supported on this browser/device. Please ask your administrator to enable it in chrome://flags.");
-                    }
-
-                    // Use Qwen 0.5B - Forcing the WebGPU Backend for extreme speed
-                    generator = await pipeline('text-generation', 'Xenova/Qwen1.5-0.5B-Chat', {
-                        quantized: true, // Forces 8-bit mode to save VRAM
-                        device: 'webgpu', // <--- EXTREME SPEED HACK: Hardware Acceleration
-                        progress_callback: (data) => {
-                            self.postMessage({ action: 'progress', data });
-                        }
-                    });
-                    
-                    self.postMessage({ action: 'ready', device: 'webgpu' });
-                } catch (err) {
-                    self.postMessage({ action: 'error', error: String(err) });
-                }
+                self.postMessage({ action: 'progress', data: { status: 'initiate', file: 'Connecting to Fast Cloud Node...' } });
+                self.postMessage({ action: 'ready', device: 'cloud-keyless' }); // SPEED HACK: Removed fake 500ms delay for instant boot!
             } else if (action === 'chat' || action === 'overview') {
                 queue.push(e.data);
                 processQueue();
@@ -1162,6 +1141,9 @@
             if (aiStatusText) {
                 if (e.data.device === 'gemini') {
                     aiStatusText.innerText = 'Status: Active • Gemini API ✨';
+                    aiStatusText.className = 'text-xs font-mono text-emerald-500 mt-1';
+                } else if (e.data.device === 'cloud-keyless') {
+                    aiStatusText.innerText = 'Status: Active • Free Cloud Node ☁️';
                     aiStatusText.className = 'text-xs font-mono text-emerald-500 mt-1';
                 } else if (e.data.device === 'webgpu') {
                     aiStatusText.innerText = 'Status: Active • WebGPU Accelerated 🚀';
@@ -2739,9 +2721,9 @@
           window.aiFailSafeTimer = setTimeout(() => {
               const el = document.getElementById(`overview-text-${app.id}`);
               if (el && el.innerHTML.includes('dot-flashing')) {
-                  el.innerHTML = '<span class="text-red-500 font-bold">⚠️ AI Overview failed. Chromebook ran out of memory.</span>';
+                  el.innerHTML = '<span class="text-red-500 font-bold">⚠️ AI Overview failed to connect to cloud.</span>';
               }
-          }, 60000);
+          }, 45000); // FIX: Increased timeout from 15s to 45s for free APIs
       }
     }
 
@@ -4795,18 +4777,18 @@
                 ]
             });
             
-            // Set a 60-second fallback timeout in case the Chromebook's RAM kills the Web Worker silently
+            // Set a fallback timeout in case the cloud connection drops
             if (window.aiFailSafeTimer) clearTimeout(window.aiFailSafeTimer);
             window.aiFailSafeTimer = setTimeout(() => {
                 const el = document.getElementById('typing-indicator');
                 if (el) {
                     el.id = '';
-                    el.innerHTML = '<span class="text-red-500 font-bold">⚠️ Crash Detected: Your Chromebook ran out of RAM and killed the AI. Try closing other tabs.</span>';
+                    el.innerHTML = '<span class="text-red-500 font-bold">⚠️ Connection Timeout: The Cloud AI took too long to respond.</span>';
                     submitBtn.disabled = false;
                     inputEl.disabled = false;
                     window.currentTypingBubble = null;
                 }
-            }, 60000);
+            }, 45000); // FIX: Increased timeout from 15s to 45s for free APIs
         }
       }
     });
