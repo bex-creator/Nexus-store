@@ -1074,17 +1074,22 @@
             const { action } = e.data;
             if (action === 'load') {
                 try {
-                    self.postMessage({ action: 'progress', data: { status: 'initiate', file: 'Downloading Chat AI (Qwen 0.5B)...' } });
+                    self.postMessage({ action: 'progress', data: { status: 'initiate', file: 'Initializing WebGPU AI Engine...' } });
                     
-                    // Use Qwen 0.5B - True conversational model quantized for low-end hardware
+                    if (!navigator.gpu) {
+                        throw new Error("WebGPU is not supported on this browser/device. Please ask your administrator to enable it in chrome://flags.");
+                    }
+
+                    // Use Qwen 0.5B - Forcing the WebGPU Backend for extreme speed
                     generator = await pipeline('text-generation', 'Xenova/Qwen1.5-0.5B-Chat', {
-                        quantized: true, // Forces 8-bit mode to save RAM
+                        quantized: true, // Forces 8-bit mode to save VRAM
+                        device: 'webgpu', // <--- EXTREME SPEED HACK: Hardware Acceleration
                         progress_callback: (data) => {
                             self.postMessage({ action: 'progress', data });
                         }
                     });
                     
-                    self.postMessage({ action: 'ready', device: 'chromebook-optimized' });
+                    self.postMessage({ action: 'ready', device: 'webgpu' });
                 } catch (err) {
                     self.postMessage({ action: 'error', error: String(err) });
                 }
