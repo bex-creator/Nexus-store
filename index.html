@@ -1002,12 +1002,14 @@
 
                 let promptTokensCount = -1;
                 let finalStreamedText = "";
+                let generatedTokenCount = 0;
+                let lastUpdateTime = 0;
 
                 // Add a timeout safeguard to prevent infinite hanging
                 const output = await Promise.race([
                     generator(prompt, {
                         max_new_tokens: 60, // Extremely short to prevent OOM
-                        temperature: 0.6,
+                        do_sample: false, // SPEED HACK: Skips probability math to generate instantly
                         repetition_penalty: 1.1,
                         return_full_text: false,
                         callback_function: x => {
@@ -1018,18 +1020,25 @@
                                 promptTokensCount = ids.length - 1;
                             }
                             
-                            // Slice off the prompt tokens completely so they NEVER leak into the UI
-                            const newIds = ids.slice(promptTokensCount);
-                            let textSoFar = generator.tokenizer.decode(newIds, { skip_special_tokens: true });
+                            generatedTokenCount++;
+                            const now = Date.now();
                             
-                            // Clean up hallucinated prefixes
-                            textSoFar = textSoFar.trimStart();
-                            if (textSoFar.toLowerCase().startsWith('assistant:')) {
-                                textSoFar = textSoFar.substring(10).trimStart();
+                            // SPEED HACK: Throttle UI updates to every 3 tokens or 50ms to prevent Chromebook UI lag
+                            if (generatedTokenCount % 3 === 0 || now - lastUpdateTime > 50) {
+                                // Slice off the prompt tokens completely so they NEVER leak into the UI
+                                const newIds = ids.slice(promptTokensCount);
+                                let textSoFar = generator.tokenizer.decode(newIds, { skip_special_tokens: true });
+                                
+                                // Clean up hallucinated prefixes
+                                textSoFar = textSoFar.trimStart();
+                                if (textSoFar.toLowerCase().startsWith('assistant:')) {
+                                    textSoFar = textSoFar.substring(10).trimStart();
+                                }
+                                
+                                finalStreamedText = textSoFar;
+                                self.postMessage({ action: 'token', type: task.action, id: task.id, textSoFar: textSoFar });
+                                lastUpdateTime = now;
                             }
-                            
-                            finalStreamedText = textSoFar;
-                            self.postMessage({ action: 'token', type: task.action, id: task.id, textSoFar: textSoFar });
                         }
                     }),
                     new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout: The AI took too long to think.")), 60000))
