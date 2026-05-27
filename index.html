@@ -965,38 +965,49 @@
     const workerBlobCode = `
         import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
 
-        // CHROMEBOOK OPTIMIZATIONS (2-4GB RAM / Low-End CPU)
+        // EXTREME CHROMEBOOK OPTIMIZATIONS (2GB RAM / Celeron)
         env.allowLocalModels = false;
         env.backends.onnx.wasm.numThreads = 1; // Restrict to 1 thread to prevent UI freezing on Celeron chips
-        env.backends.onnx.wasm.proxy = true;
+        env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/';
 
         let generator = null;
         let isProcessing = false;
         let queue = [];
 
         async function processQueue() {
-            if (isProcessing || queue.length === 0 || !generator) return;
+            if (isProcessing || queue.length === 0) return;
             isProcessing = true;
             const task = queue.shift();
 
-            try {
-                // Format history into ChatML for Qwen
-                let prompt = "";
-                for (const msg of task.messages) {
-                    prompt += \`<|im_start|>\${msg.role}\\n\${msg.content}<|im_end|>\\n\`;
-                }
-                prompt += \`<|im_start|>assistant\\n\`;
+            if (!generator) {
+                self.postMessage({ action: 'error', type: task.action, id: task.id, error: "Model not loaded yet." });
+                isProcessing = false;
+                processQueue();
+                return;
+            }
 
-                // Run inference locally
-                const output = await generator(prompt, {
-                    max_new_tokens: 150, // Keep short to save memory/processing time
-                    temperature: 0.6,
-                    repetition_penalty: 1.1,
-                    // Disabled real-time token streaming to save CPU repaints on cheap Chromebooks
-                });
+            try {
+                // Formatting for Text2Text Generation
+                let prompt = "";
+                if (task.action === 'overview') {
+                    prompt = "Briefly summarize this app:\\n" + task.messages[1].content;
+                } else {
+                    const lastUserMsg = task.messages[task.messages.length - 1].content;
+                    prompt = "Answer this query briefly: " + lastUserMsg;
+                }
+
+                // Add a timeout safeguard to prevent infinite hanging
+                const output = await Promise.race([
+                    generator(prompt, {
+                        max_new_tokens: 60, // Extremely short to prevent OOM
+                        temperature: 0.3,
+                        repetition_penalty: 1.1,
+                    }),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout: The AI took too long to think.")), 60000))
+                ]);
 
                 // Clean the generated output
-                let answer = output[0].generated_text.replace(prompt, '').replace(/<\\|im_end\\|>/g, '').trim();
+                let answer = output[0].generated_text.trim();
 
                 self.postMessage({ action: 'complete', type: task.action, id: task.id, answer: answer });
             } catch (err) {
@@ -1011,10 +1022,11 @@
             const { action } = e.data;
             if (action === 'load') {
                 try {
-                    self.postMessage({ action: 'progress', data: { status: 'initiate', file: 'Downloading Tiny AI Model (~350MB)...' } });
+                    self.postMessage({ action: 'progress', data: { status: 'initiate', file: 'Downloading Ultra-Light AI (LaMini-77M)...' } });
                     
-                    // Xenova/Qwen1.5-0.5B-Chat is extremely lightweight, perfect for 2GB RAM
-                    generator = await pipeline('text-generation', 'Xenova/Qwen1.5-0.5B-Chat', {
+                    // Xenova/LaMini-Flan-T5-77M is only ~80MB, perfectly safe for 2GB RAM Chromebooks!
+                    // It uses text2text-generation instead of standard causal LM
+                    generator = await pipeline('text2text-generation', 'Xenova/LaMini-Flan-T5-77M', {
                         quantized: true, // Forces 8-bit mode to save RAM
                         progress_callback: (data) => {
                             self.postMessage({ action: 'progress', data });
@@ -1036,10 +1048,17 @@
     const aiBlob = new Blob([workerBlobCode], { type: 'application/javascript' });
     window.aiWorker = new Worker(URL.createObjectURL(aiBlob), { type: 'module' });
     window.aiReady = false;
+    window.aiFailSafeTimer = null;
 
     // Listen to messages sent back from the AI Thread to the main Thread
     window.aiWorker.onmessage = function(e) {
         const { action, data, token, type, id, answer, error } = e.data;
+
+        // Clear fail-safe timer if the worker responds in any way to a chat/overview
+        if ((action === 'complete' || action === 'error' || action === 'token') && window.aiFailSafeTimer) {
+            clearTimeout(window.aiFailSafeTimer);
+            window.aiFailSafeTimer = null;
+        }
 
         if (action === 'progress') {
             const progressContainer = document.getElementById('ai-progress-container');
@@ -2645,12 +2664,20 @@
 
       // Trigger the true AI overview generation if it hasn't been cached yet
       if (!app.trueAiOverview) {
-          const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
           const overviewMessages = [
               { role: "system", content: "You are an app reviewer for NexusStore. Write exactly ONE short paragraph summarizing this app based on its description. You MUST limit your response to a maximum of 2 sentences. Do not use line breaks, bullet points, or multiple paragraphs." },
               { role: "user", content: `App Name: ${app.title}\nCategory: ${app.category}\nDeveloper: ${app.developer}\nDescription: ${app.description}` }
           ];
           window.aiWorker.postMessage({ action: 'overview', id: app.id, messages: overviewMessages });
+          
+          // Failsafe for Overview
+          if (window.aiFailSafeTimer) clearTimeout(window.aiFailSafeTimer);
+          window.aiFailSafeTimer = setTimeout(() => {
+              const el = document.getElementById(`overview-text-${app.id}`);
+              if (el && el.innerHTML.includes('dot-flashing')) {
+                  el.innerHTML = '<span class="text-red-500 font-bold">⚠️ AI Overview failed. Chromebook ran out of memory.</span>';
+              }
+          }, 60000);
       }
     }
 
@@ -4703,6 +4730,19 @@
                     ...window.aiChatHistory
                 ]
             });
+            
+            // Set a 60-second fallback timeout in case the Chromebook's RAM kills the Web Worker silently
+            if (window.aiFailSafeTimer) clearTimeout(window.aiFailSafeTimer);
+            window.aiFailSafeTimer = setTimeout(() => {
+                const el = document.getElementById('typing-indicator');
+                if (el) {
+                    el.id = '';
+                    el.innerHTML = '<span class="text-red-500 font-bold">⚠️ Crash Detected: Your Chromebook ran out of RAM and killed the AI. Try closing other tabs.</span>';
+                    submitBtn.disabled = false;
+                    inputEl.disabled = false;
+                    window.currentTypingBubble = null;
+                }
+            }, 60000);
         }
       }
     });
