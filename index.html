@@ -963,53 +963,42 @@
   <script type="module">
     // Define the Web Worker code strictly as a blob so it runs on a separate thread locally
     const workerBlobCode = `
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+        // CHROMEBOOK OPTIMIZATIONS (2-4GB RAM / Low-End CPU)
+        env.allowLocalModels = false;
+        env.backends.onnx.wasm.numThreads = 1; // Restrict to 1 thread to prevent UI freezing on Celeron chips
+        env.backends.onnx.wasm.proxy = true;
+
+        let generator = null;
         let isProcessing = false;
         let queue = [];
 
         async function processQueue() {
-            if (isProcessing || queue.length === 0) return;
+            if (isProcessing || queue.length === 0 || !generator) return;
             isProcessing = true;
             const task = queue.shift();
 
             try {
-                // Convert message format to Gemini format
-                let systemInstruction = "";
-                let contents = [];
-                
+                // Format history into ChatML for Qwen
+                let prompt = "";
                 for (const msg of task.messages) {
-                    if (msg.role === 'system') {
-                        systemInstruction = msg.content;
-                    } else {
-                        contents.push({
-                            role: msg.role === 'assistant' ? 'model' : 'user',
-                            parts: [{ text: msg.content }]
-                        });
-                    }
+                    prompt += \`<|im_start|>\${msg.role}\\n\${msg.content}<|im_end|>\\n\`;
                 }
+                prompt += \`<|im_start|>assistant\\n\`;
 
-                const apiKey = task.apiKey || "";
-                const url = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=\${apiKey}\`;
-
-                const payload = { contents };
-                if (systemInstruction) {
-                    payload.systemInstruction = { parts: [{ text: systemInstruction }] };
-                }
-
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
+                // Run inference locally
+                const output = await generator(prompt, {
+                    max_new_tokens: 150, // Keep short to save memory/processing time
+                    temperature: 0.6,
+                    repetition_penalty: 1.1,
+                    // Disabled real-time token streaming to save CPU repaints on cheap Chromebooks
                 });
 
-                if (!response.ok) {
-                    const errText = await response.text();
-                    throw new Error(\`Gemini API Error (\${response.status}): \${errText}\`);
-                }
+                // Clean the generated output
+                let answer = output[0].generated_text.replace(prompt, '').replace(/<\\|im_end\\|>/g, '').trim();
 
-                const result = await response.json();
-                const answer = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-                self.postMessage({ action: 'complete', type: task.action, id: task.id, answer: answer.trim() });
+                self.postMessage({ action: 'complete', type: task.action, id: task.id, answer: answer });
             } catch (err) {
                 self.postMessage({ action: 'error', type: task.action, id: task.id, error: String(err) });
             }
@@ -1021,14 +1010,21 @@
         self.onmessage = async function(e) {
             const { action } = e.data;
             if (action === 'load') {
-                self.postMessage({ action: 'progress', data: { status: 'initiate', file: 'Connecting to Gemini API...' } });
-                self.postMessage({ action: 'progress', data: { status: 'progress', progress: 100 } });
-                self.postMessage({ action: 'progress', data: { status: 'done' } });
-                
-                setTimeout(() => {
-                    self.postMessage({ action: 'ready', device: 'gemini' });
-                    processQueue();
-                }, 500);
+                try {
+                    self.postMessage({ action: 'progress', data: { status: 'initiate', file: 'Downloading Tiny AI Model (~350MB)...' } });
+                    
+                    // Xenova/Qwen1.5-0.5B-Chat is extremely lightweight, perfect for 2GB RAM
+                    generator = await pipeline('text-generation', 'Xenova/Qwen1.5-0.5B-Chat', {
+                        quantized: true, // Forces 8-bit mode to save RAM
+                        progress_callback: (data) => {
+                            self.postMessage({ action: 'progress', data });
+                        }
+                    });
+                    
+                    self.postMessage({ action: 'ready', device: 'chromebook-optimized' });
+                } catch (err) {
+                    self.postMessage({ action: 'error', error: String(err) });
+                }
             } else if (action === 'chat' || action === 'overview') {
                 queue.push(e.data);
                 processQueue();
@@ -2650,15 +2646,11 @@
       // Trigger the true AI overview generation if it hasn't been cached yet
       if (!app.trueAiOverview) {
           const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
-          if (me && me.customApiKey) {
-              const overviewMessages = [
-                  { role: "system", content: "You are an app reviewer for NexusStore. Write exactly ONE short paragraph summarizing this app based on its description. You MUST limit your response to a maximum of 2 sentences. Do not use line breaks, bullet points, or multiple paragraphs." },
-                  { role: "user", content: `App Name: ${app.title}\nCategory: ${app.category}\nDeveloper: ${app.developer}\nDescription: ${app.description}` }
-              ];
-              window.aiWorker.postMessage({ action: 'overview', id: app.id, apiKey: me.customApiKey, messages: overviewMessages });
-          } else {
-              document.getElementById(`overview-text-${app.id}`).textContent = "No API key configured. Ask an admin to assign you an API key to view AI Analysis.";
-          }
+          const overviewMessages = [
+              { role: "system", content: "You are an app reviewer for NexusStore. Write exactly ONE short paragraph summarizing this app based on its description. You MUST limit your response to a maximum of 2 sentences. Do not use line breaks, bullet points, or multiple paragraphs." },
+              { role: "user", content: `App Name: ${app.title}\nCategory: ${app.category}\nDeveloper: ${app.developer}\nDescription: ${app.description}` }
+          ];
+          window.aiWorker.postMessage({ action: 'overview', id: app.id, messages: overviewMessages });
       }
     }
 
@@ -4659,19 +4651,6 @@
             }
 
             const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
-            const userApiKey = me?.customApiKey || null;
-
-            if (!userApiKey) {
-                hist.innerHTML += `
-                  <div class="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-2xl rounded-tl-none max-w-[85%] self-start font-medium leading-relaxed">
-                    No Gemini API key assigned! Please ask an admin to add an API key to your account.
-                  </div>
-                `;
-                hist.scrollTop = hist.scrollHeight;
-                submitBtn.disabled = false;
-                inputEl.disabled = false;
-                return;
-            }
 
             // --- QUOTA ENFORCEMENT ---
             const todayStr = new Date().toDateString();
@@ -4719,7 +4698,6 @@
             window.aiWorker.postMessage({
                 action: 'chat',
                 id: Date.now(),
-                apiKey: userApiKey,
                 messages: [
                     { role: "system", content: "You are the local Nexus Assistant. Your answers must be extremely short, direct, and factual. For simple questions or math, provide ONLY the final answer without any conversational filler, reasoning, or explanation. Never use emojis. Limit all answers to 1 or 2 sentences unless specifically asked for more." },
                     ...window.aiChatHistory
