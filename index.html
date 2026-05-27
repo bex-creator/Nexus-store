@@ -1021,8 +1021,7 @@
                 const output = await Promise.race([
                     generator(prompt, {
                         max_new_tokens: 60, // Keep responses short
-                        temperature: 0.5, // Lower temp = faster probability math
-                        top_k: 5, // FINAL SPEED HACK 2: Only calculate the top 5 possible next words instead of 40!
+                        do_sample: false, // SPEED HACK: Greedy decoding skips all probability math and generates instantly
                         repetition_penalty: 1.1,
                         return_full_text: false,
                         callback_function: x => {
@@ -1036,8 +1035,9 @@
                             generatedTokenCount++;
                             const now = Date.now();
                             
-                            // FINAL SPEED HACK 3: Throttle UI to every 10 tokens or 500ms. 
-                            if (generatedTokenCount % 10 === 0 || now - lastUpdateTime > 500) {
+                            // SMOOTH TYPING HACK: Update screen every 2 tokens or 50ms. 
+                            // This creates a smooth, continuous typewriter effect without freezing the browser.
+                            if (generatedTokenCount % 2 === 0 || now - lastUpdateTime > 50) {
                                 // Slice off the prompt tokens completely so they NEVER leak into the UI
                                 const newIds = ids.slice(promptTokensCount);
                                 let textSoFar = generator.tokenizer.decode(newIds, { skip_special_tokens: true });
