@@ -987,27 +987,30 @@
             }
 
             try {
-                // Formatting for Text2Text Generation
-                let prompt = "";
+                // Qwen1.5-0.5B ChatML Formatting
+                let prompt = "<|im_start|>system\\nYou are a friendly, conversational Nexus AI Assistant. Keep answers short, direct, and helpful.<|im_end|>\\n";
+                
                 if (task.action === 'overview') {
-                    prompt = "Briefly summarize this app:\\n" + task.messages[1].content;
+                    prompt += \`<|im_start|>user\\nWrite a 2-sentence summary of this app:\\n\${task.messages[1].content}<|im_end|>\\n<|im_start|>assistant\\n\`;
                 } else {
+                    // MEMORY TRICK: We ONLY pass the very last message. 
+                    // This prevents the context from growing infinitely and crashing the 2GB Chromebook RAM!
                     const lastUserMsg = task.messages[task.messages.length - 1].content;
-                    prompt = "Answer this query briefly: " + lastUserMsg;
+                    prompt += \`<|im_start|>user\\n\${lastUserMsg}<|im_end|>\\n<|im_start|>assistant\\n\`;
                 }
 
                 // Add a timeout safeguard to prevent infinite hanging
                 const output = await Promise.race([
                     generator(prompt, {
                         max_new_tokens: 60, // Extremely short to prevent OOM
-                        temperature: 0.3,
+                        temperature: 0.6,
                         repetition_penalty: 1.1,
                     }),
                     new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout: The AI took too long to think.")), 60000))
                 ]);
 
-                // Clean the generated output
-                let answer = output[0].generated_text.trim();
+                // Clean the generated output (remove the prompt and stop tokens)
+                let answer = output[0].generated_text.replace(prompt, '').replace(/<\\|im_end\\|>/g, '').trim();
 
                 self.postMessage({ action: 'complete', type: task.action, id: task.id, answer: answer });
             } catch (err) {
@@ -1022,11 +1025,10 @@
             const { action } = e.data;
             if (action === 'load') {
                 try {
-                    self.postMessage({ action: 'progress', data: { status: 'initiate', file: 'Downloading Ultra-Light AI (LaMini-77M)...' } });
+                    self.postMessage({ action: 'progress', data: { status: 'initiate', file: 'Downloading Chat AI (Qwen 0.5B)...' } });
                     
-                    // Xenova/LaMini-Flan-T5-77M is only ~80MB, perfectly safe for 2GB RAM Chromebooks!
-                    // It uses text2text-generation instead of standard causal LM
-                    generator = await pipeline('text2text-generation', 'Xenova/LaMini-Flan-T5-77M', {
+                    // Use Qwen 0.5B - True conversational model quantized for low-end hardware
+                    generator = await pipeline('text-generation', 'Xenova/Qwen1.5-0.5B-Chat', {
                         quantized: true, // Forces 8-bit mode to save RAM
                         progress_callback: (data) => {
                             self.postMessage({ action: 'progress', data });
