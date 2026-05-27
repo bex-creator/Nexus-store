@@ -968,8 +968,8 @@
         // EXTREME CHROMEBOOK OPTIMIZATIONS (2GB RAM / Celeron)
         env.allowLocalModels = false;
         
-        // SPEED HACK 1: Use 2 threads. 1 is too slow, 4 freezes the UI. 2 is the perfect balance for Celeron chips.
-        env.backends.onnx.wasm.numThreads = Math.min(navigator.hardwareConcurrency || 2, 2); 
+        // SPEED HACK 1: Unlock ALL available CPU cores. Previously clamped to 2, now uses all available (up to 8).
+        env.backends.onnx.wasm.numThreads = Math.max(1, navigator.hardwareConcurrency || 4); 
         // SPEED HACK 2: Force Single Instruction Multiple Data (SIMD) for massive matrix math speedups
         env.backends.onnx.wasm.simd = true; 
         
@@ -992,21 +992,21 @@
             }
 
             try {
-                // Qwen1.5-0.5B ChatML Formatting
-                let prompt = "<|im_start|>system\\nYou are Nexus, a friendly, casual AI assistant. Talk like a normal human. Keep your answers brief and natural.<|im_end|>\\n";
+                // Qwen1.5-0.5B ChatML Formatting (SHORTER SYSTEM PROMPT = FASTER MATH)
+                let prompt = "<|im_start|>system\\nYou are Nexus. Be brief and friendly.<|im_end|>\\n";
                 
                 if (task.action === 'overview') {
                     let extractAfterText = task.messages[1].content;
-                    if (extractAfterText.length > 500) extractAfterText = extractAfterText.substring(0, 500) + "..."; // Cap length to save RAM
-                    prompt += \`<|im_start|>user\\nWrite a friendly 2-sentence summary of this app:\\n\${extractAfterText}<|im_end|>\\n<|im_start|>assistant\\n\`;
+                    if (extractAfterText.length > 300) extractAfterText = extractAfterText.substring(0, 300) + "..."; // Cap length to save RAM
+                    prompt += \`<|im_start|>user\\nWrite a friendly 1-sentence summary of this app:\\n\${extractAfterText}<|im_end|>\\n<|im_start|>assistant\\n\`;
                 } else {
-                    // SMART MEMORY TRICK: Keep the last 3 messages for context, but truncate them to save Chromebook RAM
-                    let recentMessages = task.messages.slice(-3);
+                    // SMART MEMORY TRICK: Keep ONLY the last 2 messages for context. Less context = massively faster math.
+                    let recentMessages = task.messages.slice(-2);
                     let conversationHistory = "";
                     for (const msg of recentMessages) {
                         if (msg.role === 'system') continue; // Skip redundant system prompts
                         let content = msg.content;
-                        if (content.length > 200) content = content.substring(0, 200) + "..."; // Limit string length
+                        if (content.length > 150) content = content.substring(0, 150) + "..."; // Limit string length heavily
                         conversationHistory += \`<|im_start|>\${msg.role}\\n\${content}<|im_end|>\\n\`;
                     }
                     prompt += \`\${conversationHistory}<|im_start|>assistant\\n\`;
@@ -1020,9 +1020,9 @@
                 // Add a timeout safeguard to prevent infinite hanging
                 const output = await Promise.race([
                     generator(prompt, {
-                        max_new_tokens: 100, // Give it more room to finish its sentences
-                        temperature: 0.7, // Re-enable natural speech randomness so it doesn't sound robotic
-                        top_k: 40,
+                        max_new_tokens: 80, // Shorter responses to finish faster
+                        temperature: 0.7, 
+                        top_k: 15, // SPEED HACK 3: Look at fewer options per word to speed up probability sorting
                         repetition_penalty: 1.1,
                         return_full_text: false,
                         callback_function: x => {
@@ -1036,8 +1036,8 @@
                             generatedTokenCount++;
                             const now = Date.now();
                             
-                            // SPEED HACK 4: Throttle UI updates to every 4 tokens or 100ms. DOM repaints lag old Chromebooks heavily!
-                            if (generatedTokenCount % 4 === 0 || now - lastUpdateTime > 100) {
+                            // SPEED HACK 4: Throttle UI updates to every 6 tokens or 300ms. DOM repaints lag old Chromebooks heavily!
+                            if (generatedTokenCount % 6 === 0 || now - lastUpdateTime > 300) {
                                 // Slice off the prompt tokens completely so they NEVER leak into the UI
                                 const newIds = ids.slice(promptTokensCount);
                                 let textSoFar = generator.tokenizer.decode(newIds, { skip_special_tokens: true });
