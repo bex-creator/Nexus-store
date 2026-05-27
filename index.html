@@ -990,14 +990,18 @@
                 // Qwen1.5-0.5B ChatML Formatting
                 let prompt = "<|im_start|>system\\nYou are a friendly, conversational Nexus AI Assistant. Keep answers short, direct, and helpful.<|im_end|>\\n";
                 
+                let extractAfterText = "";
                 if (task.action === 'overview') {
-                    prompt += \`<|im_start|>user\\nWrite a 2-sentence summary of this app:\\n\${task.messages[1].content}<|im_end|>\\n<|im_start|>assistant\\n\`;
+                    extractAfterText = task.messages[1].content;
+                    prompt += \`<|im_start|>user\\nWrite a 2-sentence summary of this app:\\n\${extractAfterText}<|im_end|>\\n<|im_start|>assistant\\n\`;
                 } else {
-                    // MEMORY TRICK: We ONLY pass the very last message. 
-                    // This prevents the context from growing infinitely and crashing the 2GB Chromebook RAM!
-                    const lastUserMsg = task.messages[task.messages.length - 1].content;
-                    prompt += \`<|im_start|>user\\n\${lastUserMsg}<|im_end|>\\n<|im_start|>assistant\\n\`;
+                    // MEMORY TRICK: We ONLY pass the very last message to save Chromebook RAM
+                    extractAfterText = task.messages[task.messages.length - 1].content;
+                    prompt += \`<|im_start|>user\\n\${extractAfterText}<|im_end|>\\n<|im_start|>assistant\\n\`;
                 }
+
+                let promptTokensCount = -1;
+                let finalStreamedText = "";
 
                 // Add a timeout safeguard to prevent infinite hanging
                 const output = await Promise.race([
@@ -1005,45 +1009,36 @@
                         max_new_tokens: 60, // Extremely short to prevent OOM
                         temperature: 0.6,
                         repetition_penalty: 1.1,
-                        return_full_text: false, // FIX: Forces the engine to ONLY return the new answer
+                        return_full_text: false,
                         callback_function: x => {
-                            let textSoFar = generator.tokenizer.decode(x[0].output_token_ids, { skip_special_tokens: false });
+                            const ids = x[0].output_token_ids;
                             
-                            // Extract just the assistant's new response in real-time
-                            if (textSoFar.includes('<|im_start|>assistant\\n')) {
-                                textSoFar = textSoFar.split('<|im_start|>assistant\\n').pop();
-                            } else if (textSoFar.includes(prompt)) {
-                                textSoFar = textSoFar.replace(prompt, '');
+                            // On the first generated token, map the exact mathematical length of the prompt
+                            if (promptTokensCount === -1) {
+                                promptTokensCount = ids.length - 1;
                             }
                             
-                            // Strip tags and hallucinated prefixes on the fly
-                            textSoFar = textSoFar.replace(/<\\|im_start\\|>/g, '').replace(/<\\|im_end\\|>/g, '');
-                            if (textSoFar.toLowerCase().startsWith('assistant\\n') || textSoFar.toLowerCase().startsWith('assistant:')) {
-                                textSoFar = textSoFar.replace(/^assistant:?\\n?/i, '');
+                            // Slice off the prompt tokens completely so they NEVER leak into the UI
+                            const newIds = ids.slice(promptTokensCount);
+                            let textSoFar = generator.tokenizer.decode(newIds, { skip_special_tokens: true });
+                            
+                            // Clean up hallucinated prefixes
+                            textSoFar = textSoFar.trimStart();
+                            if (textSoFar.toLowerCase().startsWith('assistant:')) {
+                                textSoFar = textSoFar.substring(10).trimStart();
                             }
                             
+                            finalStreamedText = textSoFar;
                             self.postMessage({ action: 'token', type: task.action, id: task.id, textSoFar: textSoFar });
                         }
                     }),
                     new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout: The AI took too long to think.")), 60000))
                 ]);
 
-                // Clean the generated output safely
-                let answer = output[0].generated_text;
-                
-                // Fallback cleanup in case the prompt still leaks into the output
-                if (answer.includes('<|im_start|>assistant\\n')) {
-                    answer = answer.split('<|im_start|>assistant\\n').pop();
-                } else if (answer.includes(prompt)) {
-                    answer = answer.replace(prompt, '');
-                }
-
-                // Strip out remaining chat tokens
-                answer = answer.replace(/<\\|im_start\\|>/g, '').replace(/<\\|im_end\\|>/g, '').trim();
-                
-                // Fix for the model hallucinating "Assistant:" or "Assistant \n" at the start
-                if (answer.toLowerCase().startsWith('assistant\\n') || answer.toLowerCase().startsWith('assistant:')) {
-                    answer = answer.replace(/^assistant:?\\n?/i, '').trim();
+                // Fallback to our clean streamed text to ensure 100% safety
+                let answer = finalStreamedText || output[0].generated_text.trim();
+                if (answer.toLowerCase().startsWith('assistant:')) {
+                    answer = answer.substring(10).trim();
                 }
 
                 self.postMessage({ action: 'complete', type: task.action, id: task.id, answer: answer });
