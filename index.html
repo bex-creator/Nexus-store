@@ -967,7 +967,12 @@
 
         // EXTREME CHROMEBOOK OPTIMIZATIONS (2GB RAM / Celeron)
         env.allowLocalModels = false;
-        env.backends.onnx.wasm.numThreads = 1; // Restrict to 1 thread to prevent UI freezing on Celeron chips
+        
+        // SPEED HACK 1: Use 2 threads. 1 is too slow, 4 freezes the UI. 2 is the perfect balance for Celeron chips.
+        env.backends.onnx.wasm.numThreads = Math.min(navigator.hardwareConcurrency || 2, 2); 
+        // SPEED HACK 2: Force Single Instruction Multiple Data (SIMD) for massive matrix math speedups
+        env.backends.onnx.wasm.simd = true; 
+        
         env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/';
 
         let generator = null;
@@ -988,16 +993,23 @@
 
             try {
                 // Qwen1.5-0.5B ChatML Formatting
-                let prompt = "<|im_start|>system\\nYou are a friendly, conversational Nexus AI Assistant. Keep answers short, direct, and helpful.<|im_end|>\\n";
+                let prompt = "<|im_start|>system\\nYou are Nexus, a friendly, casual AI assistant. Talk like a normal human. Keep your answers brief and natural.<|im_end|>\\n";
                 
-                let extractAfterText = "";
                 if (task.action === 'overview') {
-                    extractAfterText = task.messages[1].content;
-                    prompt += \`<|im_start|>user\\nWrite a 2-sentence summary of this app:\\n\${extractAfterText}<|im_end|>\\n<|im_start|>assistant\\n\`;
+                    let extractAfterText = task.messages[1].content;
+                    if (extractAfterText.length > 500) extractAfterText = extractAfterText.substring(0, 500) + "..."; // Cap length to save RAM
+                    prompt += \`<|im_start|>user\\nWrite a friendly 2-sentence summary of this app:\\n\${extractAfterText}<|im_end|>\\n<|im_start|>assistant\\n\`;
                 } else {
-                    // MEMORY TRICK: We ONLY pass the very last message to save Chromebook RAM
-                    extractAfterText = task.messages[task.messages.length - 1].content;
-                    prompt += \`<|im_start|>user\\n\${extractAfterText}<|im_end|>\\n<|im_start|>assistant\\n\`;
+                    // SMART MEMORY TRICK: Keep the last 3 messages for context, but truncate them to save Chromebook RAM
+                    let recentMessages = task.messages.slice(-3);
+                    let conversationHistory = "";
+                    for (const msg of recentMessages) {
+                        if (msg.role === 'system') continue; // Skip redundant system prompts
+                        let content = msg.content;
+                        if (content.length > 200) content = content.substring(0, 200) + "..."; // Limit string length
+                        conversationHistory += \`<|im_start|>\${msg.role}\\n\${content}<|im_end|>\\n\`;
+                    }
+                    prompt += \`\${conversationHistory}<|im_start|>assistant\\n\`;
                 }
 
                 let promptTokensCount = -1;
@@ -1008,8 +1020,9 @@
                 // Add a timeout safeguard to prevent infinite hanging
                 const output = await Promise.race([
                     generator(prompt, {
-                        max_new_tokens: 60, // Extremely short to prevent OOM
-                        do_sample: false, // SPEED HACK: Skips probability math to generate instantly
+                        max_new_tokens: 100, // Give it more room to finish its sentences
+                        temperature: 0.7, // Re-enable natural speech randomness so it doesn't sound robotic
+                        top_k: 40,
                         repetition_penalty: 1.1,
                         return_full_text: false,
                         callback_function: x => {
@@ -1023,17 +1036,16 @@
                             generatedTokenCount++;
                             const now = Date.now();
                             
-                            // SPEED HACK: Throttle UI updates to every 3 tokens or 50ms to prevent Chromebook UI lag
-                            if (generatedTokenCount % 3 === 0 || now - lastUpdateTime > 50) {
+                            // SPEED HACK 4: Throttle UI updates to every 4 tokens or 100ms. DOM repaints lag old Chromebooks heavily!
+                            if (generatedTokenCount % 4 === 0 || now - lastUpdateTime > 100) {
                                 // Slice off the prompt tokens completely so they NEVER leak into the UI
                                 const newIds = ids.slice(promptTokensCount);
                                 let textSoFar = generator.tokenizer.decode(newIds, { skip_special_tokens: true });
                                 
                                 // Clean up hallucinated prefixes
                                 textSoFar = textSoFar.trimStart();
-                                if (textSoFar.toLowerCase().startsWith('assistant:')) {
-                                    textSoFar = textSoFar.substring(10).trimStart();
-                                }
+                                if (textSoFar.toLowerCase().startsWith('assistant:')) textSoFar = textSoFar.substring(10).trimStart();
+                                if (textSoFar.toLowerCase().startsWith('nexus:')) textSoFar = textSoFar.substring(6).trimStart();
                                 
                                 finalStreamedText = textSoFar;
                                 self.postMessage({ action: 'token', type: task.action, id: task.id, textSoFar: textSoFar });
@@ -1046,9 +1058,8 @@
 
                 // Fallback to our clean streamed text to ensure 100% safety
                 let answer = finalStreamedText || output[0].generated_text.trim();
-                if (answer.toLowerCase().startsWith('assistant:')) {
-                    answer = answer.substring(10).trim();
-                }
+                if (answer.toLowerCase().startsWith('assistant:')) answer = answer.substring(10).trim();
+                if (answer.toLowerCase().startsWith('nexus:')) answer = answer.substring(6).trim();
 
                 self.postMessage({ action: 'complete', type: task.action, id: task.id, answer: answer });
             } catch (err) {
