@@ -1006,6 +1006,24 @@
                         temperature: 0.6,
                         repetition_penalty: 1.1,
                         return_full_text: false, // FIX: Forces the engine to ONLY return the new answer
+                        callback_function: x => {
+                            let textSoFar = generator.tokenizer.decode(x[0].output_token_ids, { skip_special_tokens: false });
+                            
+                            // Extract just the assistant's new response in real-time
+                            if (textSoFar.includes('<|im_start|>assistant\\n')) {
+                                textSoFar = textSoFar.split('<|im_start|>assistant\\n').pop();
+                            } else if (textSoFar.includes(prompt)) {
+                                textSoFar = textSoFar.replace(prompt, '');
+                            }
+                            
+                            // Strip tags and hallucinated prefixes on the fly
+                            textSoFar = textSoFar.replace(/<\\|im_start\\|>/g, '').replace(/<\\|im_end\\|>/g, '');
+                            if (textSoFar.toLowerCase().startsWith('assistant\\n') || textSoFar.toLowerCase().startsWith('assistant:')) {
+                                textSoFar = textSoFar.replace(/^assistant:?\\n?/i, '');
+                            }
+                            
+                            self.postMessage({ action: 'token', type: task.action, id: task.id, textSoFar: textSoFar });
+                        }
                     }),
                     new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout: The AI took too long to think.")), 60000))
                 ]);
@@ -1152,7 +1170,11 @@
                     window.currentTypingBubble.textContent = ''; // Fix space stripping
                 }
                 if (window.currentTypingBubble) {
-                    window.currentTypingBubble.textContent += token; // Fix space stripping
+                    if (e.data.textSoFar !== undefined) {
+                        window.currentTypingBubble.textContent = e.data.textSoFar; // Write streamed chunks
+                    } else if (token) {
+                        window.currentTypingBubble.textContent += token; // Legacy fallback
+                    }
                     const hist = document.getElementById('ai-chat-history');
                     if(hist) hist.scrollTop = hist.scrollHeight;
                 }
@@ -1160,7 +1182,11 @@
                 const el = document.getElementById('overview-text-' + id);
                 if (el) {
                     if (el.innerHTML.includes('dot-flashing')) el.textContent = ''; // Fix space stripping
-                    el.textContent += token; // Fix space stripping
+                    if (e.data.textSoFar !== undefined) {
+                        el.textContent = e.data.textSoFar; // Write streamed chunks
+                    } else if (token) {
+                        el.textContent += token; // Legacy fallback
+                    }
                 }
             }
         } else if (action === 'complete') {
