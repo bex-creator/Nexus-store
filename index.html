@@ -1169,7 +1169,7 @@
                     aiStatusText.innerText = 'Status: Active • Gemini API ✨';
                     aiStatusText.className = 'text-xs font-mono text-emerald-500 mt-1';
                 } else if (e.data.device === 'cloud-keyless') {
-                    aiStatusText.innerText = 'Status: Active • Free Cloud Node ☁️ (may be busy sometimes, meaning it wont respond at those times)';
+                    aiStatusText.innerText = 'Status: Active • Free Cloud Node ☁️';
                     aiStatusText.className = 'text-xs font-mono text-emerald-500 mt-1';
                 } else if (e.data.device === 'webgpu') {
                     aiStatusText.innerText = 'Status: Active • WebGPU Accelerated 🚀';
@@ -2274,7 +2274,15 @@
           sponsoredSidebar.classList.add('hidden');
       }
 
-      const todaysPicks = filtered.slice(0, 1);
+      let todaysPicks = [];
+      if (filtered.length > 0) {
+          // Create a deterministic index based on the current date so it changes exactly at midnight!
+          const today = new Date();
+          const daySeed = today.getFullYear() * 10000 + today.getMonth() * 100 + today.getDate();
+          const pickIndex = daySeed % filtered.length;
+          todaysPicks = [filtered[pickIndex]];
+      }
+
       if (!searchQuery && todaysPicks.length > 0 && picksSection) {
         picksSection.classList.remove('hidden');
         const picksHtml = todaysPicks.map((app, idx) => `
@@ -2683,14 +2691,16 @@
                     if (appRevs.length === 0) return `<div class="text-slate-500 font-medium italic">No reviews yet. Be the first!</div>`;
                     return appRevs.map(r => {
                       const canDelete = isAuthorizedAdmin || (currentUser && currentUser.uid === r.uid);
+                      const isDeveloper = r.uid === app.authorId; // Check if the reviewer is the app creator
                       return `
-                      <div class="p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                      <div class="p-6 rounded-[2rem] border ${isDeveloper ? 'border-indigo-200 dark:border-indigo-800/50 bg-indigo-50/30 dark:bg-indigo-900/10' : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900'} shadow-sm">
                         <div class="flex items-center justify-between mb-3">
                           <div class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-500 flex items-center justify-center text-xs">
-                              <i class="ph-fill ph-user"></i>
+                            <div class="w-8 h-8 rounded-full ${isDeveloper ? 'bg-indigo-500 text-white' : 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-500'} flex items-center justify-center text-xs">
+                              <i class="${isDeveloper ? 'ph-fill ph-code' : 'ph-fill ph-user'}"></i>
                             </div>
                             ${r.author}
+                            ${isDeveloper ? '<span class="bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ml-1">Developer</span>' : ''}
                           </div>
                           <div class="flex items-center gap-3">
                             <div class="text-xs font-bold text-slate-400 uppercase tracking-widest">${new Date(r.timestamp).toLocaleDateString()}</div>
@@ -4480,19 +4490,7 @@
       else if (action === 'replyToMessage') window.replyToMessage(arg1, arg2);
       else if (action === 'showEditProfile') window.showEditProfile();
       else if (action === 'closeProfileModal') window.closeProfileModal();
-      else if (action === 'closeModal') {
-          const el = document.getElementById(arg1);
-          if (el) {
-              // FIX: Hide permanent UI modals instead of permanently deleting them from the DOM
-              if (['ai-modal', 'theme-modal', 'create-ad-modal'].includes(arg1)) {
-                  el.classList.add('hidden');
-                  el.classList.remove('flex');
-              } else {
-                  // Safe to permanently delete popup alerts/prompts
-                  el.remove();
-              }
-          }
-      }
+      else if (action === 'closeModal') document.getElementById(arg1)?.remove();
       else if (action === 'profileLink') {
         if (window.currentUser && window.currentUser.customDisplayName) window.navigate('profile', window.currentUser.customDisplayName);
       }
