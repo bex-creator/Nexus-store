@@ -930,7 +930,7 @@
                <div>
                  <h3 class="font-bold text-lg mb-4 text-slate-900 dark:text-white">Approved Developers</h3>
                  <form data-submit="adminAddDevUid" class="flex gap-2 mb-4">
-                   <input type="text" id="admin-new-dev-uid" required placeholder="Enter User ID..." class="flex-1 border-2 rounded-xl px-4 py-2 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
+                   <input type="text" id="admin-new-dev-uid" required placeholder="Enter User Email or ID..." class="flex-1 border-2 rounded-xl px-4 py-2 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-md">Add</button>
                  </form>
                  <div id="admin-allowed-devs" class="space-y-3">
@@ -2008,6 +2008,7 @@
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', currentUser.uid), {
                        uid: currentUser.uid,
                        username: currentUser.customDisplayName || currentUser.displayName || 'Unknown',
+                       email: currentUser.email || 'No email',
                        timestamp: Date.now(),
                        status: 'pending',
                        type: 'standard'
@@ -3233,6 +3234,7 @@
                         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', currentUser.uid + '_paid'), {
                            uid: currentUser.uid,
                            username: currentUser.customDisplayName || currentUser.displayName || 'Unknown',
+                           email: currentUser.email || 'No email',
                            timestamp: Date.now(),
                            status: 'pending',
                            type: 'paid_upgrade'
@@ -4041,14 +4043,14 @@
           const isPaidReq = req.type === 'paid_upgrade';
           return `
           <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20 flex items-center justify-between transition-colors hover:border-indigo-300 dark:hover:border-indigo-800">
-            <div>
-              <div class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <div class="min-w-0 pr-4">
+              <div class="font-bold text-slate-900 dark:text-white flex items-center gap-2 truncate">
                  ${req.username} 
-                 ${isPaidReq ? `<span class="bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider font-bold"><i class="ph-fill ph-coin"></i> Paid App Access</span>` : ''}
+                 ${isPaidReq ? `<span class="bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider font-bold flex-shrink-0"><i class="ph-fill ph-coin"></i> Paid App Access</span>` : ''}
               </div>
-              <div class="text-[10px] font-mono text-slate-500">${req.uid}</div>
+              <div class="text-[10px] font-mono text-slate-500 truncate">${req.email || req.uid}</div>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-shrink-0">
               <button data-click="${isPaidReq ? 'adminApprovePaidDev' : 'adminApproveDev'}" data-arg="${req.id}" data-arg2="${req.uid}" class="bg-emerald-100 text-emerald-600 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 p-2 rounded-lg transition-colors" title="Approve Request"><i class="ph-bold ph-check"></i></button>
               <button data-click="adminRejectDev" data-arg="${req.id}" class="bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 p-2 rounded-lg transition-colors" title="Reject Request"><i class="ph-bold ph-x"></i></button>
             </div>
@@ -4061,15 +4063,22 @@
       if (allowedDevs.length === 0) {
         allowedContainer.innerHTML = `<div class="text-slate-500 text-sm border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20">No explicitly allowed user IDs.</div>`;
       } else {
-        allowedContainer.innerHTML = allowedDevs.map(dev => `
+        allowedContainer.innerHTML = allowedDevs.map(dev => {
+          const u = systemUsers.find(user => user.uid === dev.id);
+          const displayName = u ? (u.customDisplayName || u.displayName || 'Unknown') : 'Unknown User';
+          const displayEmail = u && u.email ? u.email : dev.id;
+          
+          return `
           <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-3 bg-white dark:bg-slate-900 flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <div class="text-sm font-medium font-mono text-slate-700 dark:text-slate-300">${dev.id}</div>
-              ${dev.canPublishPaid ? `<i class="ph-fill ph-coin text-yellow-500" title="Can Publish Paid Apps"></i>` : ''}
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="truncate">
+                <div class="font-bold text-slate-900 dark:text-white text-sm">${displayName} ${dev.canPublishPaid ? `<i class="ph-fill ph-coin text-yellow-500 inline-block ml-1" title="Can Publish Paid Apps"></i>` : ''}</div>
+                <div class="text-[10px] font-mono text-slate-500 truncate">${displayEmail}</div>
+              </div>
             </div>
-            <button data-click="adminRemoveDevUid" data-arg="${dev.id}" class="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 p-1 transition-colors opacity-0 group-hover:opacity-100" title="Revoke Access"><i class="ph-bold ph-trash"></i></button>
+            <button data-click="adminRemoveDevUid" data-arg="${dev.id}" class="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 p-2 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Revoke Access"><i class="ph-bold ph-trash"></i></button>
           </div>
-        `).join('');
+        `}).join('');
       }
     };
 
@@ -4101,13 +4110,29 @@
     window.adminAddDevUid = async (e) => {
       e.preventDefault();
       const input = document.getElementById('admin-new-dev-uid');
-      const uidVal = input.value.trim();
-      if (!uidVal) return;
+      const inputVal = input.value.trim();
+      if (!inputVal) return;
+      
+      let targetUid = inputVal;
+      let targetName = inputVal;
+
+      // Check if input looks like an email and fetch corresponding user
+      if (inputVal.includes('@')) {
+         const foundUser = systemUsers.find(u => u.email && u.email.toLowerCase() === inputVal.toLowerCase());
+         if (foundUser) {
+            targetUid = foundUser.uid;
+            targetName = foundUser.customDisplayName || foundUser.displayName || foundUser.email;
+         } else {
+            showModal('User Not Found', `Could not find a registered account with the email: ${inputVal}`);
+            return;
+         }
+      }
+
       try {
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', uidVal), { canPublishPaid: true, addedAt: Date.now() });
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'allowed_devs', targetUid), { canPublishPaid: true, addedAt: Date.now() });
         input.value = '';
-        showToast('Added', `User ${uidVal} added to allowed developers (with Paid access).`, 'ph-check-circle', 'emerald');
-        logActivity('MODERATION', 'Developer Added', `Manually added dev ${uidVal}`);
+        showToast('Developer Added', `${targetName} can now publish apps.`, 'ph-check-circle', 'emerald');
+        logActivity('MODERATION', 'Developer Added', `Manually added dev ${targetName} (${targetUid})`);
       } catch(err) { console.error(err); }
     };
 
