@@ -160,6 +160,11 @@
     </div>
   </div>
 
+  <!-- AR Recenter Button -->
+  <button id="ar-recenter-btn" data-click="recenterAR" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] bg-black/40 backdrop-blur-xl text-white border border-white/20 px-8 py-4 rounded-full font-black shadow-[0_10px_40px_rgba(0,0,0,0.5)] items-center gap-2 transition-all hover:bg-black/60 active:scale-95">
+    <i class="ph-bold ph-crosshair text-xl animate-pulse"></i> Recenter Screen
+  </button>
+
   <!-- News Bookmark -->
   <button data-click="toggleNewsPanel" class="fixed top-1/3 right-0 z-50 bg-indigo-600 hover:bg-indigo-50 text-white p-3 rounded-l-2xl shadow-xl hover:-translate-x-1 transition-transform group flex flex-col items-center gap-2 border border-r-0 border-indigo-400/30">
     <div class="relative">
@@ -4804,6 +4809,7 @@
       else if (action === 'setThemeAccent') window.setThemeAccent(arg1);
       else if (action === 'setThemeMode') window.setThemeMode(arg1);
       else if (action === 'toggleARMode') window.toggleARMode();
+      else if (action === 'recenterAR') window.recenterAR();
       else if (action === 'toggleAuthMode') window.toggleAuthMode();
       else if (action === 'handleSignOut') window.handleSignOut();
       else if (action === 'adminResetAllUsers') window.adminResetAllUsers();
@@ -5444,19 +5450,17 @@
     // NEXUS AR ENGINE (Apple Vision Pro Spatial Computing Upgrade)
     window.isARMode = false;
     let arStream = null;
-    let initialHeading = null;
     
-    // Spatial Smoothing Variables
+    // HUD Lazy-Follow Variables
+    let lastSensor = { alpha: null, beta: null, gamma: null };
     let targetRot = { x: 0, y: 0, z: 0 };
     let currentRot = { x: 0, y: 0, z: 0 };
     let arAnimationId = null;
 
-    // Helper: Calculate shortest distance between two 360-degree angles to prevent violent flipping
-    const getShortestAngle = (start, end) => {
-        let diff = (end - start) % 360;
-        if (diff < -180) diff += 360;
-        if (diff > 180) diff -= 360;
-        return diff;
+    window.recenterAR = () => {
+        // No longer needed for HUD mode, but kept for compatibility
+        currentRot = { x: 0, y: 0, z: 0 };
+        targetRot = { x: 0, y: 0, z: 0 };
     };
 
     window.handleOrientation = (event) => {
@@ -5467,37 +5471,48 @@
         
         if (alpha === null || beta === null || gamma === null) return;
         
-        // Lock the screen in the air exactly where you are looking when you activate it
-        if (initialHeading === null) {
-            initialHeading = { alpha, beta, gamma };
+        if (lastSensor.alpha !== null) {
+            let dAlpha = alpha - lastSensor.alpha;
+            let dBeta = beta - lastSensor.beta;
+            let dGamma = gamma - lastSensor.gamma;
+            
+            // Normalize 360 wrapping
+            if (dAlpha > 180) dAlpha -= 360;
+            if (dAlpha < -180) dAlpha += 360;
+
+            // Apply inverted delta to make the screen "lag" behind your movement
+            targetRot.y += dAlpha * 1.5; 
+            targetRot.x += dBeta * 1.5;
+            targetRot.z += dGamma * 1.5;
+
+            // Clamp max rotation so it never leaves the screen entirely
+            targetRot.x = Math.max(-35, Math.min(35, targetRot.x));
+            targetRot.y = Math.max(-35, Math.min(35, targetRot.y));
+            targetRot.z = Math.max(-20, Math.min(20, targetRot.z));
         }
         
-        let dAlpha = alpha - initialHeading.alpha;
-        let dBeta = beta - initialHeading.beta;
-        let dGamma = gamma - initialHeading.gamma;
-        
-        // Map phone rotation to CSS 3D Space targets
-        targetRot = {
-            y: dAlpha, 
-            x: -dBeta, 
-            z: -dGamma 
-        };
+        lastSensor = { alpha, beta, gamma };
     };
 
     // 60FPS Spatial Rendering Loop
     const renderARFrame = () => {
         if (!window.isARMode) return;
 
-        // Apply Heavy LERP (Linear Interpolation) for that "buttery smooth" Vision Pro feel
-        const smoothingFactor = 0.08; 
-        currentRot.x += getShortestAngle(currentRot.x, targetRot.x) * smoothingFactor;
-        currentRot.y += getShortestAngle(currentRot.y, targetRot.y) * smoothingFactor;
-        currentRot.z += getShortestAngle(currentRot.z, targetRot.z) * smoothingFactor;
+        // Spring Physics: Target constantly pulls back to center (0)
+        targetRot.x *= 0.90; 
+        targetRot.y *= 0.90;
+        targetRot.z *= 0.90;
+
+        // Screen smoothly glides towards the target
+        currentRot.x += (targetRot.x - currentRot.x) * 0.15;
+        currentRot.y += (targetRot.y - currentRot.y) * 0.15;
+        currentRot.z += (targetRot.z - currentRot.z) * 0.15;
 
         const root = document.getElementById('app-root');
         if (root) {
-            // Massive perspective depth pushed far into the background
-            root.style.transform = `perspective(2500px) rotateY(${currentRot.y}deg) rotateX(${currentRot.x}deg) rotateZ(${currentRot.z}deg) translate3d(0px, -15vh, -1200px) scale(0.95)`;
+            // Pushed far away (-400px) and always pulls back to the center of vision
+            root.style.transform = `perspective(1200px) rotateY(${currentRot.y}deg) rotateX(${currentRot.x}deg) rotateZ(${currentRot.z}deg) translateZ(-400px) scale(0.95)`;
+            root.style.transformOrigin = 'center center';
             root.style.transformStyle = 'preserve-3d';
         }
 
@@ -5508,6 +5523,7 @@
         const videoEl = document.getElementById('ar-bg-video');
         const mainContent = document.getElementById('app-root');
         const btn = document.getElementById('ar-toggle-btn');
+        const recenterBtn = document.getElementById('ar-recenter-btn');
         
         if (window.isARMode) {
             window.isARMode = false;
@@ -5517,6 +5533,8 @@
                 arStream = null;
             }
             videoEl.classList.add('hidden');
+            recenterBtn.classList.add('hidden');
+            recenterBtn.classList.remove('flex');
             
             // Reset Spatial CSS
             mainContent.style.transform = 'none';
@@ -5525,7 +5543,7 @@
             mainContent.style.border = 'none';
             mainContent.style.overflow = 'visible';
             
-            initialHeading = null;
+            lastSensor = { alpha: null, beta: null, gamma: null };
             currentRot = { x: 0, y: 0, z: 0 };
             targetRot = { x: 0, y: 0, z: 0 };
             
@@ -5542,6 +5560,11 @@
                 arStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 videoEl.srcObject = arStream;
                 videoEl.classList.remove('hidden');
+                
+                // Recenter button is no longer strictly needed but kept hidden for clean UI
+                recenterBtn.classList.add('hidden');
+                recenterBtn.classList.remove('flex');
+                
                 window.isARMode = true;
                 
                 if (btn) btn.innerHTML = '<i class="ph-bold ph-x text-2xl"></i> Disable Nexus AR';
@@ -5553,13 +5576,13 @@
                     const permissionState = await DeviceOrientationEvent.requestPermission();
                     if (permissionState === 'granted') {
                         window.addEventListener('deviceorientation', window.handleOrientation);
-                        renderARFrame(); // Start smoothing loop
+                        renderARFrame(); 
                     } else {
                         showToast('Motion Blocked', 'Cannot anchor screen without motion permissions.', 'ph-warning', 'amber');
                     }
                 } else {
                     window.addEventListener('deviceorientation', window.handleOrientation);
-                    renderARFrame(); // Start smoothing loop
+                    renderARFrame(); 
                 }
                 
                 window.applyTheme();
@@ -5570,7 +5593,7 @@
                 mainContent.style.border = '2px solid rgba(255,255,255,0.1)';
                 mainContent.style.overflow = 'hidden';
 
-                showToast('Nexus AR Active', 'Turn your phone to look around the floating store.', 'ph-eyeglasses', 'indigo');
+                showToast('Nexus AR Active', 'HUD Mode engaged. Tap your phone screen to interact with the UI.', 'ph-eyeglasses', 'indigo');
                 document.getElementById('theme-modal').classList.add('hidden');
                 document.getElementById('theme-modal').classList.remove('flex');
             } catch (err) {
