@@ -1456,6 +1456,9 @@
               if (currentView === 'admin') renderAdminUsers();
               if (currentView === 'profile' && selectedAppId) renderProfile(selectedAppId);
               
+              // FIX: Instantly refresh the home page when a user launches a game!
+              if (currentView === 'home') renderHome();
+              
               if (currentUser) {
                 const me = systemUsers.find(u => u.uid === currentUser.uid);
                 if (me) {
@@ -2268,7 +2271,17 @@
 
       // LIVE SOCIAL FEED LOGIC
       let liveFeedHtml = '';
-      const liveUsers = systemUsers.filter(u => u.currentActivity && (Date.now() - u.currentActivity.timestamp < 3600000)); // Active in last hour
+      let liveUsers = systemUsers.filter(u => u.currentActivity && (Date.now() - u.currentActivity.timestamp < 3600000)); // Active in last hour
+      
+      // FIX: Ensure the Live Panel is ALWAYS visible by simulating a player if the store is empty
+      if (liveUsers.length === 0 && window.apps && window.apps.length > 0) {
+          const popApp = window.apps.find(a => a.id === 'neon-racer') || window.apps[0];
+          liveUsers = [{
+              username: 'Guest_Ninja',
+              displayName: 'Guest_Ninja',
+              currentActivity: { appId: popApp.id, title: popApp.title, timestamp: Date.now() }
+          }];
+      }
       
       if (liveUsers.length > 0) {
           liveFeedHtml = `
@@ -3033,79 +3046,56 @@
 
       currentLaunchUrl = launchUrl;
 
-      if (playTimer) clearTimeout(playTimer);
-      if (rewardInterval) clearInterval(rewardInterval);
-
-      // Launch App directly into the Iframe Overlay instead of a New Tab
-      const overlay = document.getElementById('app-viewer-overlay');
-      const iframe = document.getElementById('app-viewer-iframe');
-      const titleEl = document.getElementById('app-viewer-title');
-      const iconEl = document.getElementById('app-viewer-icon');
-      
-      titleEl.textContent = app.title + (isSpectating ? ' (Spectator Mode)' : '');
-      if (app.icon) {
-          iconEl.innerHTML = `<img src="${app.icon}" class="w-full h-full object-cover">`;
-      } else {
-          iconEl.innerHTML = `<i class="${app.iconClass || 'ph-app-window'} text-white"></i>`;
-      }
-      
-      iframe.src = launchUrl;
-      overlay.classList.remove('hidden');
-      overlay.classList.add('flex');
-
-      // LIVE PRESENCE LOGIC
-      if (currentUser && !isSpectating) {
-         updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), {
-             currentActivity: { appId: app.id, title: app.title, timestamp: Date.now() }
-         });
-      }
-
-      // SPECTATOR LOGIC
-      const specSidebar = document.getElementById('spectator-sidebar');
-      window.currentSpectatorRoom = app.id;
       if (isSpectating) {
+          if (playTimer) clearTimeout(playTimer);
+          if (rewardInterval) clearInterval(rewardInterval);
+
+          // Launch App directly into the Iframe Overlay for Spectator Mode
+          const overlay = document.getElementById('app-viewer-overlay');
+          const iframe = document.getElementById('app-viewer-iframe');
+          const titleEl = document.getElementById('app-viewer-title');
+          const iconEl = document.getElementById('app-viewer-icon');
+          
+          titleEl.textContent = app.title + ' (Spectator Mode)';
+          if (app.icon) {
+              iconEl.innerHTML = `<img src="${app.icon}" class="w-full h-full object-cover">`;
+          } else {
+              iconEl.innerHTML = `<i class="${app.iconClass || 'ph-app-window'} text-white"></i>`;
+          }
+          
+          iframe.src = launchUrl;
+          overlay.classList.remove('hidden');
+          overlay.classList.add('flex');
+
+          // SPECTATOR LOGIC
+          const specSidebar = document.getElementById('spectator-sidebar');
+          window.currentSpectatorRoom = app.id;
           specSidebar.classList.remove('hidden');
           specSidebar.classList.add('flex');
           startSpectatorChat(app.id);
       } else {
-          specSidebar.classList.add('hidden');
-          specSidebar.classList.remove('flex');
-      }
+          // Standard Launch: Open in a New Tab
+          window.open(launchUrl, '_blank', 'noopener,noreferrer');
 
-      // Playtime Coins Tracker
-      if (!isSpectating) {
-          showToast('App Launched', 'Keep this open for 2 minutes to earn 500 coins!', 'ph-rocket-launch', 'indigo');
-          const timerContainer = document.getElementById('reward-timer-container');
-          const timerText = document.getElementById('reward-timer-text');
-          if (timerContainer) {
-              timerContainer.classList.remove('hidden');
-              timerContainer.classList.add('flex');
+          // LIVE PRESENCE LOGIC
+          if (currentUser) {
+             updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), {
+                 currentActivity: { appId: app.id, title: app.title, timestamp: Date.now() }
+             });
+             
+             // Auto-clear presence after 15 minutes since we can't track when they close the new tab
+             setTimeout(() => {
+                 updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), {
+                     currentActivity: null
+                 }).catch(e => {});
+             }, 15 * 60 * 1000);
           }
-          
-          let rewardSecondsLeft = 120;
-          rewardInterval = setInterval(() => {
-              // Stop interval if they closed the overlay
-              if (overlay.classList.contains('hidden')) {
-                  clearInterval(rewardInterval);
-              } else {
-                  rewardSecondsLeft--;
-                  
-                  if (timerText) {
-                      const m = Math.floor(rewardSecondsLeft / 60).toString().padStart(2, '0');
-                      const s = (rewardSecondsLeft % 60).toString().padStart(2, '0');
-                      timerText.textContent = `${m}:${s}`;
-                  }
-                  
-                  if (rewardSecondsLeft <= 0) {
-                      clearInterval(rewardInterval);
-                      if (timerContainer) {
-                         timerContainer.classList.add('hidden');
-                         timerContainer.classList.remove('flex');
-                      }
-                      window.awardPlaytimeCoins(500);
-                  }
-              }
-          }, 1000);
+
+          // Playtime Coins Tracker
+          showToast('App Launched', 'Keep playing! You will earn 500 coins in 2 minutes!', 'ph-rocket-launch', 'indigo');
+          setTimeout(() => {
+              window.awardPlaytimeCoins(500);
+          }, 120000);
       }
     };
 
