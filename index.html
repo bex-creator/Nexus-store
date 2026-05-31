@@ -1150,10 +1150,11 @@
                                             
                                             let displayAnswer = answer;
                                             
-                                            // FIX: Intercept and delete Pollinations Sponsorship Ads in real-time
-                                            if (displayAnswer.includes('--- **Support Pollinations')) displayAnswer = displayAnswer.split('--- **Support Pollinations')[0];
-                                            if (displayAnswer.includes('🌸 **Ad** 🌸')) displayAnswer = displayAnswer.split('🌸 **Ad** 🌸')[0];
-                                            if (displayAnswer.includes('Powered by Pollinations')) displayAnswer = displayAnswer.split('Powered by Pollinations')[0];
+                                            // FIX: Intercept and delete Pollinations Sponsorship Ads in real-time using Regex to catch newlines
+                                            displayAnswer = displayAnswer.replace(/---\s*\**Support Pollinations[\s\S]*/i, '');
+                                            displayAnswer = displayAnswer.replace(/🌸\s*\**Ad\**\s*🌸[\s\S]*/i, '');
+                                            displayAnswer = displayAnswer.replace(/\**Support Pollinations[\s\S]*/i, '');
+                                            displayAnswer = displayAnswer.replace(/Powered by Pollinations[\s\S]*/i, '');
                                             
                                             if (displayAnswer.toLowerCase().startsWith('nexus:')) displayAnswer = displayAnswer.substring(6).trimStart();
                                             if (displayAnswer.toLowerCase().startsWith('assistant:')) displayAnswer = displayAnswer.substring(10).trimStart();
@@ -1180,9 +1181,10 @@
                 if (!success) throw new Error("Cloud Node Congested: " + lastErr);
 
                 // Final aggressive cleanup just in case
-                if (answer.includes('--- **Support Pollinations')) answer = answer.split('--- **Support Pollinations')[0];
-                if (answer.includes('🌸 **Ad** 🌸')) answer = answer.split('🌸 **Ad** 🌸')[0];
-                if (answer.includes('Powered by Pollinations')) answer = answer.split('Powered by Pollinations')[0];
+                answer = answer.replace(/---\s*\**Support Pollinations[\s\S]*/i, '');
+                answer = answer.replace(/🌸\s*\**Ad\**\s*🌸[\s\S]*/i, '');
+                answer = answer.replace(/\**Support Pollinations[\s\S]*/i, '');
+                answer = answer.replace(/Powered by Pollinations[\s\S]*/i, '');
 
                 answer = answer.trim();
                 if (answer.toLowerCase().startsWith('nexus:')) answer = answer.substring(6).trim();
