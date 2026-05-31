@@ -5474,6 +5474,42 @@
           root.style.setProperty('--theme-bg-950', '2 6 23');
         }
       }
+
+      // --- DYNAMIC THEMED CURSORS ---
+      const fillRgb = `rgb(${colors[500].split(' ').join(',')})`;
+      const strokeHex = currentMode === 'light' ? '#ffffff' : '#0f172a';
+      
+      // Default Mode: Sleek Modern Colored Cursors
+      let svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><polygon points="2,2 20,8 11,11 8,20" fill="${fillRgb}" stroke="${strokeHex}" stroke-width="1.5"/></svg>`;
+      let svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="${fillRgb}" opacity="0.3"/><circle cx="12" cy="12" r="4" fill="${fillRgb}" stroke="${strokeHex}" stroke-width="1.5"/></svg>`;
+      let hotDefault = '2 2';
+      let hotPointer = '12 12';
+
+      // Space Mode: Spaceship & Crosshair
+      if (currentMode === 'space') {
+          svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><path d="M4,4 C8,4 16,8 18,12 L22,14 L18,16 L16,18 L14,22 L12,18 C8,16 4,8 4,4 Z" fill="${fillRgb}" stroke="#ffffff" stroke-width="1.5"/><circle cx="10" cy="10" r="2" fill="#ffffff"/></svg>`;
+          svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="10" fill="none" stroke="${fillRgb}" stroke-width="2"/><circle cx="14" cy="14" r="2" fill="#ffffff"/><line x1="14" y1="0" x2="14" y2="8" stroke="${fillRgb}" stroke-width="2"/><line x1="14" y1="20" x2="14" y2="28" stroke="${fillRgb}" stroke-width="2"/><line x1="0" y1="14" x2="8" y2="14" stroke="${fillRgb}" stroke-width="2"/><line x1="20" y1="14" x2="28" y2="14" stroke="${fillRgb}" stroke-width="2"/></svg>`;
+          hotDefault = '4 4';
+          hotPointer = '14 14';
+      }
+
+      const curDefaultUrl = `url("data:image/svg+xml;utf8,${encodeURIComponent(svgDefault)}") ${hotDefault}, auto`;
+      const curPointerUrl = `url("data:image/svg+xml;utf8,${encodeURIComponent(svgPointer)}") ${hotPointer}, pointer`;
+
+      let cursorStyleEl = document.getElementById('nexus-dynamic-cursors');
+      if (!cursorStyleEl) {
+          cursorStyleEl = document.createElement('style');
+          cursorStyleEl.id = 'nexus-dynamic-cursors';
+          document.head.appendChild(cursorStyleEl);
+      }
+      
+      // Inject cursor tracking directly into the CSS DOM
+      cursorStyleEl.innerHTML = `
+        body, html, .view-section { cursor: ${curDefaultUrl}; }
+        a, button, [data-click], [data-submit], select, label, .cursor-pointer { cursor: ${curPointerUrl} !important; }
+        input[type="text"], input[type="password"], input[type="email"], input[type="url"], input[type="number"], textarea { cursor: text !important; }
+        iframe { cursor: auto; }
+      `;
     };
 
     window.showThemeModal = () => {
