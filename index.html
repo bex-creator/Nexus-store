@@ -5466,9 +5466,9 @@
             if (dAlpha > 180) dAlpha -= 360;
             if (dAlpha < -180) dAlpha += 360;
             
-            // Apply inverse 3D rotation to keep screen fixed in space
+            // Apply inverse 3D rotation to keep screen fixed in space, high up and far away
             const root = document.getElementById('app-root');
-            root.style.transform = `perspective(1000px) rotateY(${dAlpha}deg) rotateX(${-dBeta}deg) rotateZ(${-dGamma}deg) translateZ(-50px)`;
+            root.style.transform = `perspective(1500px) rotateY(${dAlpha}deg) rotateX(${-dBeta}deg) rotateZ(${-dGamma}deg) translate3d(0px, -25vh, -900px) scale(0.85)`;
             root.style.transformStyle = 'preserve-3d';
         }
     };
@@ -5486,6 +5486,10 @@
             }
             videoEl.classList.add('hidden');
             mainContent.style.transform = 'none';
+            mainContent.style.borderRadius = '0';
+            mainContent.style.boxShadow = 'none';
+            mainContent.style.border = 'none';
+            mainContent.style.overflow = 'visible';
             initialHeading = null;
             window.removeEventListener('deviceorientation', window.handleOrientation);
             
@@ -5519,6 +5523,13 @@
                 }
                 
                 window.applyTheme();
+                
+                // Add spatial computing glass window styling
+                mainContent.style.borderRadius = '3rem';
+                mainContent.style.boxShadow = '0 0 100px rgba(99, 102, 241, 0.4), inset 0 0 40px rgba(99, 102, 241, 0.2)';
+                mainContent.style.border = '1px solid rgba(255,255,255,0.1)';
+                mainContent.style.overflow = 'hidden';
+
                 showToast('Nexus AR Active', 'Turn your phone to look around the floating store.', 'ph-eyeglasses', 'indigo');
                 document.getElementById('theme-modal').classList.add('hidden');
                 document.getElementById('theme-modal').classList.remove('flex');
