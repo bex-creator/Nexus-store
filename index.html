@@ -103,12 +103,6 @@
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 transition-colors duration-300 min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
 
-  <!-- AR Background Video -->
-  <video id="ar-bg-video" autoplay playsinline muted class="fixed inset-0 w-full h-full object-cover z-[-1] hidden pointer-events-none"></video>
-  
-  <!-- AR Hand Cursor -->
-  <div id="ar-cursor" class="fixed w-8 h-8 rounded-full bg-white/50 border-2 border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.8)] z-[10000] pointer-events-none hidden transition-all duration-75 backdrop-blur-md -translate-x-1/2 -translate-y-1/2"></div>
-
   <!-- APP ROOT -->
   <div id="app-root" class="transition-transform duration-75">
 
@@ -162,11 +156,6 @@
       <p class="text-slate-400 text-lg font-medium">Your access to NexusStore has been permanently revoked by an administrator.</p>
     </div>
   </div>
-
-  <!-- AR Recenter Button -->
-  <button id="ar-recenter-btn" data-click="recenterAR" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] bg-black/40 backdrop-blur-xl text-white border border-white/20 px-8 py-4 rounded-full font-black shadow-[0_10px_40px_rgba(0,0,0,0.5)] items-center gap-2 transition-all hover:bg-black/60 active:scale-95">
-    <i class="ph-bold ph-crosshair text-xl animate-pulse"></i> Recenter Screen
-  </button>
 
   <!-- News Bookmark -->
   <button data-click="toggleNewsPanel" class="fixed top-1/3 right-0 z-50 bg-indigo-600 hover:bg-indigo-50 text-white p-3 rounded-l-2xl shadow-xl hover:-translate-x-1 transition-transform group flex flex-col items-center gap-2 border border-r-0 border-indigo-400/30">
@@ -402,12 +391,6 @@
           <button data-click="setThemeMode" data-arg="oled" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">OLED</button>
           <button data-click="setThemeMode" data-arg="space" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-[inset_0_0_10px_rgba(255,255,255,0.1)] bg-[url('https://t4.ftcdn.net/jpg/13/80/07/97/360_F_1380079720_ezzVCiKuoGr5vObzznpje5gdkaIIKMsI.jpg')] bg-cover bg-center !text-white border-indigo-500/50">Space</button>
         </div>
-        
-        <label class="block text-sm font-bold mb-4 uppercase tracking-wide text-slate-700 dark:text-slate-400">Experimental Features</label>
-        <button data-click="toggleARMode" id="ar-toggle-btn" class="w-full p-4 rounded-2xl border-2 border-indigo-500/30 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-bold transition-all flex items-center justify-center gap-3 hover:bg-indigo-100 dark:hover:bg-indigo-900/40">
-           <i class="ph-bold ph-eyeglasses text-2xl"></i> Enable Nexus AR (Mobile)
-        </button>
-        <p class="text-[10px] text-slate-500 mt-3 font-medium text-center leading-relaxed">AR Mode anchors the store as a floating 3D screen in your real-world room using your phone's camera and gyroscope.</p>
       </div>
     </div>
   </div>
@@ -793,10 +776,18 @@
 
             <!-- NEXUS CREATOR STUDIO IDE -->
             <div id="payload-code-container" class="bg-slate-950 rounded-[2rem] p-2 shadow-2xl overflow-hidden ring-1 ring-white/10 focus-within:ring-2 focus-within:ring-indigo-500 transition-all animate-fade-in block">
-              <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-slate-900/50">
                 <div class="text-slate-400 font-mono text-xs uppercase tracking-wider font-bold flex items-center gap-2">
                   <i class="ph ph-terminal-window text-lg"></i> Nexus Creator Studio <span class="bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded text-[10px] ml-2">LIVE IDE</span>
                 </div>
+              </div>
+              <!-- AI ZERO-CODE FORGE -->
+              <div class="flex items-center gap-3 p-3 border-b border-white/5 bg-indigo-900/20">
+                 <div class="bg-indigo-500/20 text-indigo-400 p-1.5 rounded-lg"><i class="ph-fill ph-sparkle text-lg block"></i></div>
+                 <input type="text" id="ai-forge-input" placeholder="AI Zero-Code: Describe an app (e.g. 'A neon snake game with a score counter')..." class="flex-1 bg-transparent border-none outline-none text-indigo-100 placeholder-indigo-400/50 text-sm font-medium">
+                 <button type="button" id="ai-forge-btn" data-click="generateAiApp" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-sm font-bold transition-all shadow-md flex items-center gap-2 whitespace-nowrap">
+                   Generate Code
+                 </button>
               </div>
               <div class="flex flex-col lg:flex-row h-[500px]">
                 <div class="w-full lg:w-1/2 border-b lg:border-b-0 lg:border-r border-white/10 relative">
@@ -1077,6 +1068,12 @@
                 if (task.action === 'overview') {
                     apiMessages.push({ role: "system", content: "You are an app reviewer for NexusStore. Write exactly ONE short paragraph summarizing this app based on its description. You MUST limit your response to a maximum of 2 sentences." });
                     apiMessages.push({ role: "user", content: "Write a friendly 1-sentence summary of this app: " + task.messages[1].content });
+                } else if (task.action === 'generate_app') {
+                    apiMessages.push({ 
+                        role: "system", 
+                        content: "You are an elite Game Developer and UI/UX Designer. The user will give you a prompt. You must output a single, complete, fully-functional HTML file containing HTML5, CSS (using TailwindCSS via <script src=\"https://cdn.tailwindcss.com\"><\/script>), and JavaScript. The app must look incredible, be bug-free, have a polished UI, and feature smooth animations or gameplay loops. CRITICAL: Output ONLY raw HTML code. Do NOT wrap the code in markdown blocks (do NOT use ```html). Start your response exactly with <!DOCTYPE html>." 
+                    });
+                    apiMessages.push({ role: "user", content: task.prompt });
                 } else {
                     // FIX: Inject the live app catalog into the AI's memory so it knows what is in the store!
                     const catalogText = (window.apps || []).map(a => 
@@ -1192,7 +1189,7 @@
                 setTimeout(() => {
                     sendToUI({ action: 'ready', device: 'cloud-keyless' });
                 }, 100); 
-            } else if (action === 'chat' || action === 'overview') {
+            } else if (action === 'chat' || action === 'overview' || action === 'generate_app') {
                 this.queue.push(data);
                 this.processQueue();
             }
@@ -1308,6 +1305,16 @@
                         el.textContent += token; // Legacy fallback
                     }
                 }
+            } else if (type === 'generate_app') {
+                const inputEl = document.getElementById('app-code');
+                if (inputEl) {
+                    let cleanedToken = e.data.textSoFar !== undefined ? e.data.textSoFar : inputEl.value + token;
+                    if (cleanedToken.startsWith('```html\n')) cleanedToken = cleanedToken.substring(8);
+                    if (cleanedToken.startsWith('```html')) cleanedToken = cleanedToken.substring(7);
+                    if (cleanedToken.startsWith('```\n')) cleanedToken = cleanedToken.substring(4);
+                    inputEl.value = cleanedToken;
+                    inputEl.scrollTop = inputEl.scrollHeight;
+                }
             }
         } else if (action === 'complete') {
             if (type === 'chat') {
@@ -1333,6 +1340,32 @@
                 if (app) app.trueAiOverview = answer; // Cache it so it doesn't recalculate on next visit
                 const el = document.getElementById('overview-text-' + id);
                 if (el) el.textContent = answer;
+            } else if (type === 'generate_app') {
+                const inputEl = document.getElementById('app-code');
+                const btn = document.getElementById('ai-forge-btn');
+                const frame = document.getElementById('ide-preview-frame');
+                const placeholder = document.getElementById('ide-preview-placeholder');
+                
+                if (inputEl) {
+                    let finalAnswer = answer;
+                    if (finalAnswer.startsWith('```html\n')) finalAnswer = finalAnswer.substring(8);
+                    if (finalAnswer.startsWith('```html')) finalAnswer = finalAnswer.substring(7);
+                    if (finalAnswer.startsWith('```\n')) finalAnswer = finalAnswer.substring(4);
+                    if (finalAnswer.endsWith('\n```')) finalAnswer = finalAnswer.substring(0, finalAnswer.length - 4);
+                    if (finalAnswer.endsWith('```')) finalAnswer = finalAnswer.substring(0, finalAnswer.length - 3);
+                    inputEl.value = finalAnswer;
+                    
+                    if (frame && placeholder) {
+                        placeholder.classList.add('hidden');
+                        placeholder.classList.remove('flex');
+                        placeholder.innerHTML = '<i class="ph-fill ph-code mb-2 text-4xl opacity-50"></i>Live Preview<span class="text-xs font-normal opacity-70 mt-1">Start typing code to render your app!</span>';
+                        frame.srcdoc = finalAnswer;
+                    }
+                }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Generate Code';
+                }
             }
         } else if (action === 'error') {
             console.error("AI Worker Error:", error);
@@ -1351,6 +1384,14 @@
             } else if (type === 'overview') {
                 const el = document.getElementById('overview-text-' + id);
                 if (el) el.innerHTML = `<span class="text-red-400">Failed to generate review. Engine error.</span>`;
+            } else if (type === 'generate_app') {
+                const btn = document.getElementById('ai-forge-btn');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Error - Try Again';
+                }
+                const inputEl = document.getElementById('app-code');
+                if (inputEl) inputEl.value = `<!-- AI Engine Error: ${error} -->`;
             } else {
                 const aiStatusText = document.getElementById('ai-modal-status');
                 if (aiStatusText) aiStatusText.innerText = `Model Loading Error: Check console`;
@@ -4718,6 +4759,31 @@
       }
     };
 
+    window.showCreateAdModal = (targetAppId) => {
+        const app = window.apps.find(a => a.id === targetAppId);
+        if (!app) return;
+        
+        document.getElementById('ad-target-app-id').value = targetAppId;
+        document.getElementById('create-ad-form').reset();
+        
+        currentAdImageBase64 = app.icon || null; 
+        const preview = document.getElementById('ad-image-preview');
+        const placeholder = document.getElementById('ad-image-placeholder');
+        
+        if (currentAdImageBase64) {
+           preview.src = currentAdImageBase64;
+           preview.classList.remove('hidden');
+           placeholder.classList.add('hidden');
+        } else {
+           preview.classList.add('hidden');
+           placeholder.classList.remove('hidden');
+        }
+        
+        const modal = document.getElementById('create-ad-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    };
+
     // WAF Bypass: Global Event Delegation
     document.addEventListener('click', (e) => {
       const target = e.target.closest('[data-click]');
@@ -4763,18 +4829,15 @@
       else if (action === 'closeModal') {
           const el = document.getElementById(arg1);
           if (el) {
-              // FIX: Hide permanent UI modals instead of permanently deleting them from the DOM
               if (['ai-modal', 'theme-modal', 'create-ad-modal'].includes(arg1)) {
                   el.classList.add('hidden');
                   el.classList.remove('flex');
               } else {
-                  // Safe to permanently delete popup alerts/prompts
                   el.remove();
               }
           }
       }
       else if (action === 'profileLink') {
-        // FIX: Look in the correct memory scope for the currentUser variable
         if (currentUser && (currentUser.customDisplayName || currentUser.displayName)) {
             window.navigate('profile', currentUser.customDisplayName || currentUser.displayName);
         }
@@ -4811,14 +4874,13 @@
       else if (action === 'showThemeModal') window.showThemeModal();
       else if (action === 'setThemeAccent') window.setThemeAccent(arg1);
       else if (action === 'setThemeMode') window.setThemeMode(arg1);
-      else if (action === 'toggleARMode') window.toggleARMode();
-      else if (action === 'recenterAR') window.recenterAR();
       else if (action === 'toggleAuthMode') window.toggleAuthMode();
       else if (action === 'handleSignOut') window.handleSignOut();
       else if (action === 'adminResetAllUsers') window.adminResetAllUsers();
       else if (action === 'forgotPassword') window.forgotPassword();
       else if (action === 'claimDailyCoins') window.claimDailyCoins(arg1);
       else if (action === 'adminToggleVIP') window.adminToggleVIP(arg1);
+      else if (action === 'generateAiApp') window.generateAiApp();
     });
 
     document.addEventListener('submit', (e) => {
@@ -4839,10 +4901,6 @@
       else if (action === 'submitAuth') window.submitAuth(e);
       else if (action === 'submitSpectatorChat') {
          e.preventDefault();
-         if (!currentUser || !window.currentSpectatorRoom) {
-             showModal('Sign in Required', 'You must be signed in to use spectator chat.');
-             return;
-         }
          const input = document.getElementById('spectator-chat-input');
          const text = input.value.trim();
          if (!text) return;
@@ -5046,7 +5104,6 @@
         // Command: Follow Developer
         else if (userText.startsWith('follow ') || userText.startsWith('unfollow ')) {
            let devName = userText.replace('follow ', '').replace('unfollow ', '').trim();
-           // Try to find a matching dev in the app catalog to get correct casing
            let foundApp = window.apps.find(a => (a.developer || '').toLowerCase() === devName);
            let exactDevName = foundApp ? foundApp.developer : userTextRaw.replace(/follow /i, '').replace(/unfollow /i, '').trim();
            
@@ -5063,7 +5120,6 @@
                localResponse = `Sure! Filtering the store to show you <b>${foundCat}</b> apps. 🔎`;
                actionToTake = () => {
                    window.navigate('home');
-                   // Handle edge cases in formatting
                    if(foundCat === 'ai tool') foundCat = 'AI Tool';
                    else foundCat = foundCat.charAt(0).toUpperCase() + foundCat.slice(1);
                    selectedCategory = foundCat;
@@ -5073,7 +5129,7 @@
                };
            } else {
                let searchTerm = userText.replace('find', '').replace('search', '').replace('show me', '').replace('looking for', '').replace('a ', '').replace('an ', '').trim();
-               if(searchTerm.length > 15) searchTerm = searchTerm.substring(0, 15); // limit length
+               if(searchTerm.length > 15) searchTerm = searchTerm.substring(0, 15);
                localResponse = `Searching the store for "<b>${searchTerm}</b>"... 🔎`;
                actionToTake = () => {
                    window.navigate('home');
@@ -5144,7 +5200,6 @@
                     submitBtn.disabled = false;
                     inputEl.disabled = false;
                     inputEl.focus();
-                    // Close the modal if it's a navigation action
                     if(localResponse.includes('Opening') || localResponse.includes('Taking') || localResponse.includes('Searching') || localResponse.includes('Filtering') || localResponse.includes('Launching')) {
                         document.getElementById('ai-modal').classList.add('hidden');
                         document.getElementById('ai-modal').classList.remove('flex');
@@ -5229,77 +5284,60 @@
             let resolvedUserContext = 'Anonymous Guest';
             if (currentUser) {
                 const dispName = currentUser.customDisplayName || (me ? me.username || me.displayName : null) || 'Unknown';
-                const bal = me ? me.balance || 0 : 0;
-                const vip = (me && me.isVIP) ? 'Yes (gets 50% off apps)' : 'No';
-                resolvedUserContext = `Username: ${dispName}\nCoin Balance: ${bal} coins\nVIP Status: ${vip}`;
+                let bal = me?.balance;
+                if (isNaN(bal) || bal === undefined) bal = 0;
+                resolvedUserContext = `Name: ${dispName}\nRole: ${me?.role || 'user'}\nCoins/Balance: ${bal}\nStatus: ${me?.status || 'active'}\nIs VIP: ${me?.isVIP ? 'Yes' : 'No'}`;
             }
 
-            // Post to web worker
+            // Post to Worker
             window.aiWorker.postMessage({
                 action: 'chat',
-                id: Date.now(),
+                messages: window.aiChatHistory,
                 userContext: resolvedUserContext,
-                messages: [
-                    { role: "system", content: "You are the local Nexus Assistant. Your answers must be extremely short, direct, and factual. For simple questions or math, provide ONLY the final answer without any conversational filler, reasoning, or explanation. Never use emojis. Limit all answers to 1 or 2 sentences unless specifically asked for more." },
-                    ...window.aiChatHistory
-                ]
+                id: loadId
             });
-            
-            // Set a fallback timeout in case the cloud connection drops
-            if (window.aiFailSafeTimer) clearTimeout(window.aiFailSafeTimer);
-            window.aiFailSafeTimer = setTimeout(() => {
-                if (window.aiTimerInterval) clearInterval(window.aiTimerInterval);
-                if (window.currentTypingBubble) {
-                    const textNode = document.getElementById('text-' + window.currentTypingBubble.id);
-                    if (textNode) {
-                        textNode.innerHTML = '<span class="text-red-500 font-bold">⚠️ Connection Timeout: The Cloud AI took too long to respond.</span>';
-                    }
-                    submitBtn.disabled = false;
-                    inputEl.disabled = false;
-                    window.currentTypingBubble = null;
-                }
-            }, 45000); // FIX: Increased timeout from 15s to 45s for free APIs
         }
       }
     });
 
-    // Handle App Version Dropdowns globally
-    document.addEventListener('change', (e) => {
-      const target = e.target.closest('[data-change]');
-      if (!target) return;
-      const action = target.dataset.change;
-      const arg1 = target.dataset.arg;
-      if (action === 'changeAppVersion') {
-         window.selectedAppVersion = e.target.value;
-         renderDetails(arg1);
-      }
-    });
-
-    // Ad Creation Logic
-    window.showCreateAdModal = (targetAppId) => {
-        if (!currentUser) return;
-        const app = window.apps.find(a => a.id === targetAppId);
-        if (!app) return;
-        
-        document.getElementById('ad-target-app-id').value = targetAppId;
-        document.getElementById('create-ad-form').reset();
-        
-        currentAdImageBase64 = app.icon || null; 
-        const preview = document.getElementById('ad-image-preview');
-        const placeholder = document.getElementById('ad-image-placeholder');
-        
-        if (currentAdImageBase64) {
-           preview.src = currentAdImageBase64;
-           preview.classList.remove('hidden');
-           placeholder.classList.add('hidden');
-        } else {
-           preview.classList.add('hidden');
-           placeholder.classList.remove('hidden');
+    window.generateAiApp = () => {
+        if (!window.aiReady) {
+            showModal('AI Not Ready', 'The AI engine is still booting up. Please wait a moment.');
+            return;
         }
         
-        const modal = document.getElementById('create-ad-modal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        const inputEl = document.getElementById('ai-forge-input');
+        const btn = document.getElementById('ai-forge-btn');
+        const codeEditor = document.getElementById('app-code');
+        const prompt = inputEl.value.trim();
+        
+        if (!prompt) {
+            showModal('Empty Prompt', 'Please describe the app you want to generate first!');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Generating...';
+        
+        codeEditor.value = '<!-- AI is analyzing your prompt and writing code. This may take 10-30 seconds... -->\n';
+        
+        // Hide preview while generating
+        const frame = document.getElementById('ide-preview-frame');
+        const placeholder = document.getElementById('ide-preview-placeholder');
+        if (frame && placeholder) {
+            frame.srcdoc = '';
+            placeholder.classList.remove('hidden');
+            placeholder.classList.add('flex');
+            placeholder.innerHTML = '<i class="ph-fill ph-sparkle mb-2 text-4xl text-indigo-500 animate-pulse"></i><span class="text-indigo-400">AI Forge Building...</span><span class="text-xs font-normal opacity-70 mt-1">Generating your app</span>';
+        }
+
+        window.aiWorker.postMessage({
+            action: 'generate_app',
+            prompt: prompt,
+            id: Date.now()
+        });
+        
+        logActivity('UPLOAD', 'AI Forge', `Requested AI generation: ${prompt.substring(0, 30)}...`);
     };
 
     document.getElementById('ad-image-input').addEventListener('change', async (e) => {
@@ -5413,12 +5451,6 @@
           root.style.setProperty('--theme-bg-950', '2 6 23');
         }
       }
-
-      // Ensure transparency if AR is active
-      if (window.isARMode) {
-        document.body.classList.remove('bg-slate-50', 'dark:bg-slate-950');
-        document.body.classList.add('bg-transparent');
-      }
     };
 
     window.showThemeModal = () => {
@@ -5450,279 +5482,6 @@
       window.showThemeModal();
     };
 
-    // NEXUS AR ENGINE (Apple Vision Pro Spatial Computing Upgrade)
-    window.isARMode = false;
-    let arStream = null;
-    
-    // Magnetic Parallax Variables (Prevents screen from disappearing)
-    let initialHeading = { beta: null, gamma: null };
-    let targetRot = { x: 0, y: 0 };
-    let currentRot = { x: 0, y: 0 };
-    let arAnimationId = null;
-
-    window.recenterAR = () => {
-        initialHeading = { beta: null, gamma: null };
-        currentRot = { x: 0, y: 0 };
-        targetRot = { x: 0, y: 0 };
-        showToast('Recentered', 'Spatial window snapped to your current view.', 'ph-crosshair', 'indigo');
-    };
-
-    window.handleOrientation = (event) => {
-        if (!window.isARMode) return;
-        let beta = event.beta;   // X-axis [-180, 180)
-        let gamma = event.gamma; // Y-axis [-90, 90)
-        
-        if (beta === null || gamma === null) return;
-        
-        // Lock the initial holding angle
-        if (initialHeading.beta === null) {
-            initialHeading = { beta, gamma };
-        }
-        
-        let dBeta = beta - initialHeading.beta;
-        let dGamma = gamma - initialHeading.gamma;
-        
-        // FIX: Ignore the compass entirely! Use clamped Beta/Gamma to create a 3D Parallax
-        // This ensures the screen slightly tilts and floats like 3D glass, but NEVER leaves the center of your view.
-        targetRot = {
-            x: Math.max(-15, Math.min(15, -dBeta * 0.4)),
-            y: Math.max(-15, Math.min(15, dGamma * 0.4))
-        };
-    };
-
-    // 60FPS Spatial Rendering Loop
-    const renderARFrame = () => {
-        if (!window.isARMode) return;
-
-        // Buttery visionOS smoothing (LERP)
-        const smoothing = 0.1;
-        currentRot.x += (targetRot.x - currentRot.x) * smoothing;
-        currentRot.y += (targetRot.y - currentRot.y) * smoothing;
-
-        const root = document.getElementById('app-root');
-        if (root) {
-            // True Spatial Orbit: Pushed extremely far back (-1000px) and scaled up to act like a cinematic screen
-            // The screen stays dead center but physically tilts in 3D space as you move
-            root.style.transform = `perspective(1200px) translateZ(-1000px) rotateX(${currentRot.x}deg) rotateY(${currentRot.y}deg) scale(1.35)`;
-            root.style.transformOrigin = 'center center';
-            root.style.transformStyle = 'preserve-3d';
-        }
-
-        arAnimationId = requestAnimationFrame(renderARFrame);
-    };
-
-    // Hand Tracking Neural Network Logic
-    const loadScript = (src) => new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) return resolve();
-        const script = document.createElement('script');
-        script.src = src;
-        script.crossOrigin = 'anonymous';
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-    });
-
-    window.wasPinching = false;
-    window.pinchStartY = 0;
-
-    window.onHandResults = (results) => {
-        const cursor = document.getElementById('ar-cursor');
-        if (!window.isARMode) {
-            cursor.classList.add('hidden');
-            return;
-        }
-        
-        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-            cursor.classList.remove('hidden');
-            const landmarks = results.multiHandLandmarks[0];
-            const indexTip = landmarks[8];
-            const thumbTip = landmarks[4];
-            
-            // Map AI coordinates to physical screen pixels
-            let cx = indexTip.x * window.innerWidth;
-            let cy = indexTip.y * window.innerHeight;
-            
-            cursor.style.left = `${cx}px`;
-            cursor.style.top = `${cy}px`;
-            
-            // Calculate pinch distance between index and thumb
-            const dist = Math.hypot(indexTip.x - thumbTip.x, indexTip.y - thumbTip.y);
-            const isPinching = dist < 0.05; // Pinch threshold
-            
-            if (isPinching && !window.wasPinching) {
-                // PINCH START (Simulate Click)
-                cursor.style.transform = 'translate(-50%, -50%) scale(0.6)';
-                cursor.style.backgroundColor = 'rgba(16, 185, 129, 0.8)'; // Emerald Green
-                cursor.style.borderColor = '#34d399';
-                
-                const el = document.elementFromPoint(cx, cy);
-                if (el) {
-                    const clickEvent = new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: cx, clientY: cy });
-                    el.dispatchEvent(clickEvent);
-                    if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.focus();
-                }
-                
-                window.pinchStartY = cy;
-            } else if (isPinching && window.wasPinching) {
-                // PINCH DRAG (Simulate Scroll)
-                const deltaY = window.pinchStartY - cy;
-                const scrollContainer = document.getElementById('app-root');
-                if (scrollContainer && Math.abs(deltaY) > 2) {
-                    scrollContainer.scrollBy({top: deltaY * 2.5, behavior: 'auto'});
-                    window.pinchStartY = cy; // Reset origin for continuous dragging
-                }
-            } else if (!isPinching) {
-                // RELEASE PINCH
-                cursor.style.transform = 'translate(-50%, -50%) scale(1)';
-                cursor.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-                cursor.style.borderColor = '#6366f1';
-            }
-            window.wasPinching = isPinching;
-        } else {
-            cursor.classList.add('hidden');
-            window.wasPinching = false;
-        }
-    };
-
-    let arVideoFrameId = null;
-    const processVideo = async () => {
-        if (!window.isARMode || !window.handsTracker) return;
-        const videoEl = document.getElementById('ar-bg-video');
-        if (videoEl.readyState >= 2) {
-            await window.handsTracker.send({image: videoEl});
-        }
-        arVideoFrameId = requestAnimationFrame(processVideo);
-    };
-
-    window.toggleARMode = async () => {
-        const videoEl = document.getElementById('ar-bg-video');
-        const mainContent = document.getElementById('app-root');
-        const btn = document.getElementById('ar-toggle-btn');
-        const recenterBtn = document.getElementById('ar-recenter-btn');
-        const cursor = document.getElementById('ar-cursor');
-        
-        if (window.isARMode) {
-            window.isARMode = false;
-            if (arAnimationId) cancelAnimationFrame(arAnimationId);
-            if (arVideoFrameId) cancelAnimationFrame(arVideoFrameId);
-            if (arStream) {
-                arStream.getTracks().forEach(track => track.stop());
-                arStream = null;
-            }
-            videoEl.classList.add('hidden');
-            recenterBtn.classList.add('hidden');
-            recenterBtn.classList.remove('flex');
-            cursor.classList.add('hidden');
-            
-            // Reset Spatial CSS & Remove Box Constraints
-            document.body.style.overflow = '';
-            mainContent.style.position = '';
-            mainContent.style.top = '';
-            mainContent.style.left = '';
-            mainContent.style.width = '';
-            mainContent.style.height = '';
-            mainContent.style.margin = '';
-            mainContent.style.overflowY = '';
-            mainContent.classList.remove('custom-scrollbar', 'bg-white/40', 'dark:bg-slate-900/40', 'backdrop-blur-3xl');
-
-            mainContent.style.transform = 'none';
-            mainContent.style.borderRadius = '0';
-            mainContent.style.boxShadow = 'none';
-            mainContent.style.border = 'none';
-            
-            initialHeading = { beta: null, gamma: null };
-            currentRot = { x: 0, y: 0 };
-            targetRot = { x: 0, y: 0 };
-            
-            window.removeEventListener('deviceorientation', window.handleOrientation);
-            
-            if (btn) btn.innerHTML = '<i class="ph-bold ph-eyeglasses text-2xl"></i> Enable Nexus AR (Mobile)';
-            btn.classList.remove('bg-red-50', 'dark:bg-red-900/20', 'text-red-600', 'dark:text-red-400', 'border-red-500/30');
-            btn.classList.add('bg-indigo-50', 'dark:bg-indigo-900/20', 'text-indigo-600', 'dark:text-indigo-400', 'border-indigo-500/30');
-            
-            window.applyTheme();
-            showToast('AR Mode Disabled', 'Returned to standard view.', 'ph-camera-slash', 'slate');
-        } else {
-            try {
-                // Initialize Hand Tracking AI if not loaded yet
-                if (!window.handsTracker) {
-                    showToast('Initializing Core', 'Downloading Neural Hand-Tracking AI...', 'ph-brain', 'indigo');
-                    try {
-                        await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js');
-                        await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js');
-                        
-                        window.handsTracker = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-                        window.handsTracker.setOptions({
-                            maxNumHands: 1,
-                            modelComplexity: 1,
-                            minDetectionConfidence: 0.6,
-                            minTrackingConfidence: 0.6
-                        });
-                        window.handsTracker.onResults(window.onHandResults);
-                    } catch(e) {
-                        console.error(e);
-                        showModal('AI Error', 'Failed to boot the Hand Tracking AI network.');
-                        return;
-                    }
-                }
-
-                arStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                videoEl.srcObject = arStream;
-                videoEl.classList.remove('hidden');
-                
-                recenterBtn.classList.remove('hidden');
-                recenterBtn.classList.add('flex');
-                
-                window.isARMode = true;
-                
-                if (btn) btn.innerHTML = '<i class="ph-bold ph-x text-2xl"></i> Disable Nexus AR';
-                btn.classList.remove('bg-indigo-50', 'dark:bg-indigo-900/20', 'text-indigo-600', 'dark:text-indigo-400', 'border-indigo-500/30');
-                btn.classList.add('bg-red-50', 'dark:bg-red-900/20', 'text-red-600', 'dark:text-red-400', 'border-red-500/30');
-
-                // Request Orientation Permissions
-                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    const permissionState = await DeviceOrientationEvent.requestPermission();
-                    if (permissionState === 'granted') {
-                        window.addEventListener('deviceorientation', window.handleOrientation);
-                        renderARFrame(); 
-                        processVideo(); // Start Hand Tracking
-                    } else {
-                        showToast('Motion Blocked', 'Cannot anchor screen without motion permissions.', 'ph-warning', 'amber');
-                    }
-                } else {
-                    window.addEventListener('deviceorientation', window.handleOrientation);
-                    renderARFrame(); 
-                    processVideo(); // Start Hand Tracking
-                }
-                
-                window.applyTheme();
-                
-                // FORCE the website into a floating visionOS glass tablet to completely prevent stretching!
-                document.body.style.overflow = 'hidden';
-                mainContent.style.position = 'fixed';
-                mainContent.style.top = '7.5vh';
-                mainContent.style.left = '5vw';
-                mainContent.style.width = '90vw';
-                mainContent.style.height = '85vh';
-                mainContent.style.overflowY = 'auto'; // Allows you to scroll inside the box
-                mainContent.style.margin = '0';
-                
-                // Add visionOS volumetric glass window styling
-                mainContent.classList.add('custom-scrollbar', 'bg-white/40', 'dark:bg-slate-900/40', 'backdrop-blur-3xl');
-                mainContent.style.borderRadius = '3.5rem';
-                mainContent.style.boxShadow = '0 50px 150px -20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2), inset 0 0 80px rgba(255, 255, 255, 0.1)';
-                mainContent.style.border = '1px solid rgba(255,255,255,0.3)';
-
-                showToast('Nexus AR Active', 'Pinch your fingers together to click and scroll!', 'ph-eyeglasses', 'indigo');
-                document.getElementById('theme-modal').classList.add('hidden');
-                document.getElementById('theme-modal').classList.remove('flex');
-            } catch (err) {
-                console.error("AR Error: ", err);
-                showModal('Camera Access Denied', 'AR Mode requires camera permissions to map your physical environment.');
-            }
-        }
-    };
-
     // NEXUS CREATOR STUDIO IDE LOGIC
     let previewTimeout;
     document.getElementById('app-code').addEventListener('input', (e) => {
@@ -5735,6 +5494,7 @@
             frame.srcdoc = '';
             placeholder.classList.remove('hidden');
             placeholder.classList.add('flex');
+            placeholder.innerHTML = '<i class="ph-fill ph-code mb-2 text-4xl opacity-50"></i>Live Preview<span class="text-xs font-normal opacity-70 mt-1">Start typing code to render your app!</span>';
             return;
         }
 
