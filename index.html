@@ -5451,52 +5451,71 @@
     window.isARMode = false;
     let arStream = null;
     
-    // HUD Parallax Variables
-    let baseOrientation = { beta: null, gamma: null };
-    let targetRot = { x: 0, y: 0 };
-    let currentRot = { x: 0, y: 0 };
+    // True Spatial Orbit Variables
+    let initialHeading = { alpha: null, beta: null, gamma: null };
+    let targetRot = { x: 0, y: 0, z: 0 };
+    let currentRot = { x: 0, y: 0, z: 0 };
     let arAnimationId = null;
 
+    // Helper: Calculate shortest distance between two 360-degree angles to prevent violent flipping
+    const getShortestAngle = (start, end) => {
+        let diff = (end - start) % 360;
+        if (diff < -180) diff += 360;
+        if (diff > 180) diff -= 360;
+        return diff;
+    };
+
     window.recenterAR = () => {
-        baseOrientation = { beta: null, gamma: null };
-        currentRot = { x: 0, y: 0 };
-        targetRot = { x: 0, y: 0 };
-        showToast('Recentered', 'AR Window recalibrated to your holding angle.', 'ph-crosshair', 'indigo');
+        initialHeading = { alpha: null, beta: null, gamma: null };
+        currentRot = { x: 0, y: 0, z: 0 };
+        targetRot = { x: 0, y: 0, z: 0 };
+        showToast('Recentered', 'Spatial window snapped to your current view.', 'ph-crosshair', 'indigo');
     };
 
     window.handleOrientation = (event) => {
         if (!window.isARMode) return;
+        let alpha = event.alpha; // Z-axis [0, 360)
         let beta = event.beta;   // X-axis [-180, 180)
         let gamma = event.gamma; // Y-axis [-90, 90)
         
-        if (beta === null || gamma === null) return;
+        if (alpha === null || beta === null || gamma === null) return;
         
-        // Lock the neutral holding angle
-        if (baseOrientation.beta === null) {
-            baseOrientation = { beta, gamma };
+        // Lock the initial heading where the user is looking
+        if (initialHeading.alpha === null) {
+            initialHeading = { alpha, beta, gamma };
         }
         
-        // Calculate offset from the initial holding angle
-        let dBeta = beta - baseOrientation.beta;
-        let dGamma = gamma - baseOrientation.gamma;
+        let dAlpha = alpha - initialHeading.alpha;
+        let dBeta = beta - initialHeading.beta;
+        let dGamma = gamma - initialHeading.gamma;
+        
+        // Handle 360 wrap around
+        if (dAlpha > 180) dAlpha -= 360;
+        if (dAlpha < -180) dAlpha += 360;
 
-        // Apply a subtle multiplier for the 3D parallax tilt
-        targetRot.x = Math.max(-12, Math.min(12, -dBeta * 0.5));
-        targetRot.y = Math.max(-12, Math.min(12, dGamma * 0.5));
+        // Inverse mapping to anchor the window in physical space
+        targetRot = {
+            y: dAlpha, 
+            x: -dBeta, 
+            z: -dGamma 
+        };
     };
 
     // 60FPS Spatial Rendering Loop
     const renderARFrame = () => {
         if (!window.isARMode) return;
 
-        // Smooth LERP (Linear Interpolation) for buttery Vision Pro movement
-        currentRot.x += (targetRot.x - currentRot.x) * 0.12;
-        currentRot.y += (targetRot.y - currentRot.y) * 0.12;
+        // Buttery visionOS smoothing (LERP)
+        const smoothing = 0.08;
+        currentRot.x += getShortestAngle(currentRot.x, targetRot.x) * smoothing;
+        currentRot.y += getShortestAngle(currentRot.y, targetRot.y) * smoothing;
+        currentRot.z += getShortestAngle(currentRot.z, targetRot.z) * smoothing;
 
         const root = document.getElementById('app-root');
         if (root) {
-            // Box is always centered, using standard perspective without extreme Z translation stretching
-            root.style.transform = `perspective(1200px) rotateX(${currentRot.x}deg) rotateY(${currentRot.y}deg) scale(0.95)`;
+            // True Spatial Orbit: We rotate the perspective FIRST, then push the element away along that rotated axis.
+            // This anchors the window in physical space, so you can literally look away from it!
+            root.style.transform = `perspective(1200px) rotateY(${currentRot.y}deg) rotateX(${currentRot.x}deg) rotateZ(${currentRot.z}deg) translateZ(-400px)`;
             root.style.transformOrigin = 'center center';
             root.style.transformStyle = 'preserve-3d';
         }
@@ -5530,16 +5549,16 @@
             mainContent.style.height = '';
             mainContent.style.margin = '';
             mainContent.style.overflowY = '';
-            mainContent.classList.remove('custom-scrollbar');
+            mainContent.classList.remove('custom-scrollbar', 'bg-white/40', 'dark:bg-slate-900/40', 'backdrop-blur-3xl');
 
             mainContent.style.transform = 'none';
             mainContent.style.borderRadius = '0';
             mainContent.style.boxShadow = 'none';
             mainContent.style.border = 'none';
             
-            baseOrientation = { beta: null, gamma: null };
-            currentRot = { x: 0, y: 0 };
-            targetRot = { x: 0, y: 0 };
+            initialHeading = { alpha: null, beta: null, gamma: null };
+            currentRot = { x: 0, y: 0, z: 0 };
+            targetRot = { x: 0, y: 0, z: 0 };
             
             window.removeEventListener('deviceorientation', window.handleOrientation);
             
@@ -5580,23 +5599,23 @@
                 
                 window.applyTheme();
                 
-                // FIX: Force the website into a perfectly sized floating tablet box to prevent stretching!
+                // FORCE the website into a floating visionOS glass tablet to completely prevent stretching!
                 document.body.style.overflow = 'hidden';
                 mainContent.style.position = 'fixed';
-                mainContent.style.top = '5vh';
+                mainContent.style.top = '7.5vh';
                 mainContent.style.left = '5vw';
                 mainContent.style.width = '90vw';
-                mainContent.style.height = '90vh';
+                mainContent.style.height = '85vh';
                 mainContent.style.overflowY = 'auto'; // Allows you to scroll inside the box
                 mainContent.style.margin = '0';
-                mainContent.classList.add('custom-scrollbar');
-
+                
                 // Add visionOS volumetric glass window styling
+                mainContent.classList.add('custom-scrollbar', 'bg-white/40', 'dark:bg-slate-900/40', 'backdrop-blur-3xl');
                 mainContent.style.borderRadius = '3.5rem';
-                mainContent.style.boxShadow = '0 40px 150px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.05)';
-                mainContent.style.border = '2px solid rgba(255,255,255,0.1)';
+                mainContent.style.boxShadow = '0 50px 150px -20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2), inset 0 0 80px rgba(255, 255, 255, 0.1)';
+                mainContent.style.border = '1px solid rgba(255,255,255,0.3)';
 
-                showToast('Nexus AR Active', 'HUD Box engaged. Scroll inside the glass window.', 'ph-eyeglasses', 'indigo');
+                showToast('Nexus AR Active', 'VisionOS Mode engaged. Look around to see the floating window.', 'ph-eyeglasses', 'indigo');
                 document.getElementById('theme-modal').classList.add('hidden');
                 document.getElementById('theme-modal').classList.remove('flex');
             } catch (err) {
