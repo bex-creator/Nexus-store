@@ -4540,9 +4540,24 @@
       else if (action === 'replyToMessage') window.replyToMessage(arg1, arg2);
       else if (action === 'showEditProfile') window.showEditProfile();
       else if (action === 'closeProfileModal') window.closeProfileModal();
-      else if (action === 'closeModal') document.getElementById(arg1)?.remove();
+      else if (action === 'closeModal') {
+          const el = document.getElementById(arg1);
+          if (el) {
+              // FIX: Hide permanent UI modals instead of permanently deleting them from the DOM
+              if (['ai-modal', 'theme-modal', 'create-ad-modal'].includes(arg1)) {
+                  el.classList.add('hidden');
+                  el.classList.remove('flex');
+              } else {
+                  // Safe to permanently delete popup alerts/prompts
+                  el.remove();
+              }
+          }
+      }
       else if (action === 'profileLink') {
-        if (window.currentUser && window.currentUser.customDisplayName) window.navigate('profile', window.currentUser.customDisplayName);
+        // FIX: Look in the correct memory scope for the currentUser variable
+        if (currentUser && (currentUser.customDisplayName || currentUser.displayName)) {
+            window.navigate('profile', currentUser.customDisplayName || currentUser.displayName);
+        }
       }
       else if (action === 'navigateFromAdmin') {
         window.navigate(window.isFromAdmin ? 'admin' : 'home');
