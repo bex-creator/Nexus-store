@@ -364,7 +364,7 @@
 
   <!-- Theme Selection Modal -->
   <div id="theme-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
-    <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
       <div class="flex items-center justify-between mb-8">
         <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3"><i class="ph-fill ph-gear text-indigo-500"></i> Settings</h2>
         <button data-click="closeModal" data-arg="theme-modal" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-full transition-colors">
@@ -383,13 +383,24 @@
         </div>
       </div>
 
-      <div>
+      <div class="mb-8">
         <label class="block text-sm font-bold mb-4 uppercase tracking-wide text-slate-700 dark:text-slate-400">Mode</label>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <button data-click="setThemeMode" data-arg="light" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Light</button>
           <button data-click="setThemeMode" data-arg="dark" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Dark</button>
           <button data-click="setThemeMode" data-arg="oled" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">OLED</button>
           <button data-click="setThemeMode" data-arg="space" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-[inset_0_0_10px_rgba(255,255,255,0.1)] bg-[url('https://t4.ftcdn.net/jpg/13/80/07/97/360_F_1380079720_ezzVCiKuoGr5vObzznpje5gdkaIIKMsI.jpg')] bg-cover bg-center !text-white border-indigo-500/50">Space</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold mb-4 uppercase tracking-wide text-slate-700 dark:text-slate-400">Cursor Style</label>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <button data-click="setCursorStyle" data-arg="modern" class="cursor-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex flex-col items-center gap-2"><i class="ph-fill ph-cursor text-xl"></i> Modern</button>
+          <button data-click="setCursorStyle" data-arg="spaceship" class="cursor-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex flex-col items-center gap-2"><i class="ph-fill ph-rocket-launch text-xl"></i> Spaceship</button>
+          <button data-click="setCursorStyle" data-arg="minimal" class="cursor-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex flex-col items-center gap-2"><i class="ph-bold ph-target text-xl"></i> Minimal</button>
+          <button data-click="setCursorStyle" data-arg="retro" class="cursor-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex flex-col items-center gap-2"><i class="ph-fill ph-navigation-arrow text-xl"></i> Retro</button>
+          <button data-click="setCursorStyle" data-arg="magic" class="cursor-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex flex-col items-center gap-2"><i class="ph-fill ph-magic-wand text-xl"></i> Magic</button>
         </div>
       </div>
     </div>
@@ -4897,6 +4908,7 @@
       else if (action === 'showThemeModal') window.showThemeModal();
       else if (action === 'setThemeAccent') window.setThemeAccent(arg1);
       else if (action === 'setThemeMode') window.setThemeMode(arg1);
+      else if (action === 'setCursorStyle') window.setCursorStyle(arg1);
       else if (action === 'toggleAuthMode') window.toggleAuthMode();
       else if (action === 'handleSignOut') window.handleSignOut();
       else if (action === 'adminResetAllUsers') window.adminResetAllUsers();
@@ -5433,6 +5445,7 @@
     
     let currentAccent = localStorage.getItem('nexus_accent') || 'indigo';
     let currentMode = localStorage.getItem('nexus_mode') || 'dark';
+    let currentCursor = localStorage.getItem('nexus_cursor') || 'modern';
 
     window.applyTheme = () => {
       const root = document.documentElement;
@@ -5479,18 +5492,43 @@
       const fillRgb = `rgb(${colors[500].split(' ').join(',')})`;
       const strokeHex = currentMode === 'light' ? '#ffffff' : '#0f172a';
       
-      // Default Mode: Sleek Modern Colored Cursors
-      let svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><polygon points="2,2 20,8 11,11 8,20" fill="${fillRgb}" stroke="${strokeHex}" stroke-width="1.5"/></svg>`;
-      let svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="${fillRgb}" opacity="0.3"/><circle cx="12" cy="12" r="4" fill="${fillRgb}" stroke="${strokeHex}" stroke-width="1.5"/></svg>`;
+      let svgDefault = '';
+      let svgPointer = '';
       let hotDefault = '2 2';
       let hotPointer = '12 12';
 
-      // Space Mode: Spaceship & Crosshair
-      if (currentMode === 'space') {
-          svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><path d="M4,4 C8,4 16,8 18,12 L22,14 L18,16 L16,18 L14,22 L12,18 C8,16 4,8 4,4 Z" fill="${fillRgb}" stroke="#ffffff" stroke-width="1.5"/><circle cx="10" cy="10" r="2" fill="#ffffff"/></svg>`;
-          svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="10" fill="none" stroke="${fillRgb}" stroke-width="2"/><circle cx="14" cy="14" r="2" fill="#ffffff"/><line x1="14" y1="0" x2="14" y2="8" stroke="${fillRgb}" stroke-width="2"/><line x1="14" y1="20" x2="14" y2="28" stroke="${fillRgb}" stroke-width="2"/><line x1="0" y1="14" x2="8" y2="14" stroke="${fillRgb}" stroke-width="2"/><line x1="20" y1="14" x2="28" y2="14" stroke="${fillRgb}" stroke-width="2"/></svg>`;
-          hotDefault = '4 4';
-          hotPointer = '14 14';
+      switch(currentCursor) {
+          case 'spaceship':
+              svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><path d="M4,4 C8,4 16,8 18,12 L22,14 L18,16 L16,18 L14,22 L12,18 C8,16 4,8 4,4 Z" fill="${fillRgb}" stroke="#ffffff" stroke-width="1.5"/><circle cx="10" cy="10" r="2" fill="#ffffff"/></svg>`;
+              svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="10" fill="none" stroke="${fillRgb}" stroke-width="2"/><circle cx="14" cy="14" r="2" fill="#ffffff"/><line x1="14" y1="0" x2="14" y2="8" stroke="${fillRgb}" stroke-width="2"/><line x1="14" y1="20" x2="14" y2="28" stroke="${fillRgb}" stroke-width="2"/><line x1="0" y1="14" x2="8" y2="14" stroke="${fillRgb}" stroke-width="2"/><line x1="20" y1="14" x2="28" y2="14" stroke="${fillRgb}" stroke-width="2"/></svg>`;
+              hotDefault = '4 4';
+              hotPointer = '14 14';
+              break;
+          case 'minimal':
+              svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="none" stroke="${fillRgb}" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="${fillRgb}"/></svg>`;
+              svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="${fillRgb}" stroke-width="2" stroke-dasharray="4"/></svg>`;
+              hotDefault = '12 12';
+              hotPointer = '12 12';
+              break;
+          case 'retro':
+              svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M2,2 L2,20 L7,15 L11,23 L15,21 L11,13 L18,13 Z" fill="${fillRgb}" stroke="${strokeHex}" stroke-width="1.5"/></svg>`;
+              svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect x="10" y="2" width="4" height="20" fill="${fillRgb}"/><rect x="2" y="10" width="20" height="4" fill="${fillRgb}"/></svg>`;
+              hotDefault = '2 2';
+              hotPointer = '12 12';
+              break;
+          case 'magic':
+              svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M2,22 L22,2" stroke="${fillRgb}" stroke-width="3" stroke-linecap="round"/><circle cx="22" cy="2" r="4" fill="${strokeHex}" stroke="${fillRgb}" stroke-width="2"/></svg>`;
+              svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12,0 L14,10 L24,12 L14,14 L12,24 L10,14 L0,12 L10,10 Z" fill="${fillRgb}"/></svg>`;
+              hotDefault = '22 2';
+              hotPointer = '12 12';
+              break;
+          case 'modern':
+          default:
+              svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><polygon points="2,2 20,8 11,11 8,20" fill="${fillRgb}" stroke="${strokeHex}" stroke-width="1.5"/></svg>`;
+              svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="${fillRgb}" opacity="0.3"/><circle cx="12" cy="12" r="4" fill="${fillRgb}" stroke="${strokeHex}" stroke-width="1.5"/></svg>`;
+              hotDefault = '2 2';
+              hotPointer = '12 12';
+              break;
       }
 
       const curDefaultUrl = `url("data:image/svg+xml;utf8,${encodeURIComponent(svgDefault)}") ${hotDefault}, auto`;
@@ -5525,6 +5563,11 @@
            if(btn.dataset.arg === currentMode) btn.classList.add('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
            else btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
        });
+
+       document.querySelectorAll('.cursor-btn').forEach(btn => {
+           if(btn.dataset.arg === currentCursor) btn.classList.add('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
+           else btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
+       });
     };
 
     window.setThemeAccent = (color) => {
@@ -5537,6 +5580,13 @@
     window.setThemeMode = (mode) => {
       currentMode = mode;
       localStorage.setItem('nexus_mode', mode);
+      window.applyTheme();
+      window.showThemeModal();
+    };
+
+    window.setCursorStyle = (cursor) => {
+      currentCursor = cursor;
+      localStorage.setItem('nexus_cursor', cursor);
       window.applyTheme();
       window.showThemeModal();
     };
