@@ -105,6 +105,9 @@
 
   <!-- AR Background Video -->
   <video id="ar-bg-video" autoplay playsinline muted class="fixed inset-0 w-full h-full object-cover z-[-1] hidden pointer-events-none"></video>
+  
+  <!-- AR Hand Cursor -->
+  <div id="ar-cursor" class="fixed w-8 h-8 rounded-full bg-white/50 border-2 border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.8)] z-[10000] pointer-events-none hidden transition-all duration-75 backdrop-blur-md -translate-x-1/2 -translate-y-1/2"></div>
 
   <!-- APP ROOT -->
   <div id="app-root" class="transition-transform duration-75">
@@ -5513,9 +5516,8 @@
 
         const root = document.getElementById('app-root');
         if (root) {
-            // True Spatial Orbit: We rotate the perspective FIRST, then push the element away along that rotated axis.
-            // This anchors the window in physical space, so you can literally look away from it!
-            root.style.transform = `perspective(1200px) rotateY(${currentRot.y}deg) rotateX(${currentRot.x}deg) rotateZ(${currentRot.z}deg) translateZ(-400px)`;
+            // True Spatial Orbit: Pushed extremely far back (-1000px) and scaled up to act like a cinematic screen
+            root.style.transform = `perspective(1200px) rotateY(${currentRot.y}deg) rotateX(${currentRot.x}deg) rotateZ(${currentRot.z}deg) translateZ(-1000px) scale(1.35)`;
             root.style.transformOrigin = 'center center';
             root.style.transformStyle = 'preserve-3d';
         }
@@ -5523,15 +5525,100 @@
         arAnimationId = requestAnimationFrame(renderARFrame);
     };
 
+    // Hand Tracking Neural Network Logic
+    const loadScript = (src) => new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) return resolve();
+        const script = document.createElement('script');
+        script.src = src;
+        script.crossOrigin = 'anonymous';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+
+    window.wasPinching = false;
+    window.pinchStartY = 0;
+
+    window.onHandResults = (results) => {
+        const cursor = document.getElementById('ar-cursor');
+        if (!window.isARMode) {
+            cursor.classList.add('hidden');
+            return;
+        }
+        
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+            cursor.classList.remove('hidden');
+            const landmarks = results.multiHandLandmarks[0];
+            const indexTip = landmarks[8];
+            const thumbTip = landmarks[4];
+            
+            // Map AI coordinates to physical screen pixels
+            let cx = indexTip.x * window.innerWidth;
+            let cy = indexTip.y * window.innerHeight;
+            
+            cursor.style.left = `${cx}px`;
+            cursor.style.top = `${cy}px`;
+            
+            // Calculate pinch distance between index and thumb
+            const dist = Math.hypot(indexTip.x - thumbTip.x, indexTip.y - thumbTip.y);
+            const isPinching = dist < 0.05; // Pinch threshold
+            
+            if (isPinching && !window.wasPinching) {
+                // PINCH START (Simulate Click)
+                cursor.style.transform = 'translate(-50%, -50%) scale(0.6)';
+                cursor.style.backgroundColor = 'rgba(16, 185, 129, 0.8)'; // Emerald Green
+                cursor.style.borderColor = '#34d399';
+                
+                const el = document.elementFromPoint(cx, cy);
+                if (el) {
+                    const clickEvent = new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: cx, clientY: cy });
+                    el.dispatchEvent(clickEvent);
+                    if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.focus();
+                }
+                
+                window.pinchStartY = cy;
+            } else if (isPinching && window.wasPinching) {
+                // PINCH DRAG (Simulate Scroll)
+                const deltaY = window.pinchStartY - cy;
+                const scrollContainer = document.getElementById('app-root');
+                if (scrollContainer && Math.abs(deltaY) > 2) {
+                    scrollContainer.scrollBy({top: deltaY * 2.5, behavior: 'auto'});
+                    window.pinchStartY = cy; // Reset origin for continuous dragging
+                }
+            } else if (!isPinching) {
+                // RELEASE PINCH
+                cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+                cursor.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+                cursor.style.borderColor = '#6366f1';
+            }
+            window.wasPinching = isPinching;
+        } else {
+            cursor.classList.add('hidden');
+            window.wasPinching = false;
+        }
+    };
+
+    let arVideoFrameId = null;
+    const processVideo = async () => {
+        if (!window.isARMode || !window.handsTracker) return;
+        const videoEl = document.getElementById('ar-bg-video');
+        if (videoEl.readyState >= 2) {
+            await window.handsTracker.send({image: videoEl});
+        }
+        arVideoFrameId = requestAnimationFrame(processVideo);
+    };
+
     window.toggleARMode = async () => {
         const videoEl = document.getElementById('ar-bg-video');
         const mainContent = document.getElementById('app-root');
         const btn = document.getElementById('ar-toggle-btn');
         const recenterBtn = document.getElementById('ar-recenter-btn');
+        const cursor = document.getElementById('ar-cursor');
         
         if (window.isARMode) {
             window.isARMode = false;
             if (arAnimationId) cancelAnimationFrame(arAnimationId);
+            if (arVideoFrameId) cancelAnimationFrame(arVideoFrameId);
             if (arStream) {
                 arStream.getTracks().forEach(track => track.stop());
                 arStream = null;
@@ -5539,6 +5626,7 @@
             videoEl.classList.add('hidden');
             recenterBtn.classList.add('hidden');
             recenterBtn.classList.remove('flex');
+            cursor.classList.add('hidden');
             
             // Reset Spatial CSS & Remove Box Constraints
             document.body.style.overflow = '';
@@ -5570,6 +5658,28 @@
             showToast('AR Mode Disabled', 'Returned to standard view.', 'ph-camera-slash', 'slate');
         } else {
             try {
+                // Initialize Hand Tracking AI if not loaded yet
+                if (!window.handsTracker) {
+                    showToast('Initializing Core', 'Downloading Neural Hand-Tracking AI...', 'ph-brain', 'indigo');
+                    try {
+                        await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js');
+                        await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js');
+                        
+                        window.handsTracker = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+                        window.handsTracker.setOptions({
+                            maxNumHands: 1,
+                            modelComplexity: 1,
+                            minDetectionConfidence: 0.6,
+                            minTrackingConfidence: 0.6
+                        });
+                        window.handsTracker.onResults(window.onHandResults);
+                    } catch(e) {
+                        console.error(e);
+                        showModal('AI Error', 'Failed to boot the Hand Tracking AI network.');
+                        return;
+                    }
+                }
+
                 arStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 videoEl.srcObject = arStream;
                 videoEl.classList.remove('hidden');
@@ -5583,18 +5693,20 @@
                 btn.classList.remove('bg-indigo-50', 'dark:bg-indigo-900/20', 'text-indigo-600', 'dark:text-indigo-400', 'border-indigo-500/30');
                 btn.classList.add('bg-red-50', 'dark:bg-red-900/20', 'text-red-600', 'dark:text-red-400', 'border-red-500/30');
 
-                // Request Orientation Permissions (Required for modern iOS Safari)
+                // Request Orientation Permissions
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                     const permissionState = await DeviceOrientationEvent.requestPermission();
                     if (permissionState === 'granted') {
                         window.addEventListener('deviceorientation', window.handleOrientation);
                         renderARFrame(); 
+                        processVideo(); // Start Hand Tracking
                     } else {
                         showToast('Motion Blocked', 'Cannot anchor screen without motion permissions.', 'ph-warning', 'amber');
                     }
                 } else {
                     window.addEventListener('deviceorientation', window.handleOrientation);
                     renderARFrame(); 
+                    processVideo(); // Start Hand Tracking
                 }
                 
                 window.applyTheme();
@@ -5615,7 +5727,7 @@
                 mainContent.style.boxShadow = '0 50px 150px -20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2), inset 0 0 80px rgba(255, 255, 255, 0.1)';
                 mainContent.style.border = '1px solid rgba(255,255,255,0.3)';
 
-                showToast('Nexus AR Active', 'VisionOS Mode engaged. Look around to see the floating window.', 'ph-eyeglasses', 'indigo');
+                showToast('Nexus AR Active', 'Pinch your fingers together to click and scroll!', 'ph-eyeglasses', 'indigo');
                 document.getElementById('theme-modal').classList.add('hidden');
                 document.getElementById('theme-modal').classList.remove('flex');
             } catch (err) {
