@@ -5441,36 +5441,67 @@
       window.showThemeModal();
     };
 
-    // NEXUS AR ENGINE
+    // NEXUS AR ENGINE (Apple Vision Pro Spatial Computing Upgrade)
     window.isARMode = false;
     let arStream = null;
     let initialHeading = null;
+    
+    // Spatial Smoothing Variables
+    let targetRot = { x: 0, y: 0, z: 0 };
+    let currentRot = { x: 0, y: 0, z: 0 };
+    let arAnimationId = null;
+
+    // Helper: Calculate shortest distance between two 360-degree angles to prevent violent flipping
+    const getShortestAngle = (start, end) => {
+        let diff = (end - start) % 360;
+        if (diff < -180) diff += 360;
+        if (diff > 180) diff -= 360;
+        return diff;
+    };
 
     window.handleOrientation = (event) => {
         if (!window.isARMode) return;
-        let alpha = event.alpha; 
-        let beta = event.beta;   
-        let gamma = event.gamma; 
+        let alpha = event.alpha; // Z-axis [0, 360)
+        let beta = event.beta;   // X-axis [-180, 180)
+        let gamma = event.gamma; // Y-axis [-90, 90)
         
-        // Lock initial position
-        if (initialHeading === null && alpha !== null) {
+        if (alpha === null || beta === null || gamma === null) return;
+        
+        // Lock the screen in the air exactly where you are looking when you activate it
+        if (initialHeading === null) {
             initialHeading = { alpha, beta, gamma };
         }
         
-        if (alpha !== null && initialHeading !== null) {
-            let dAlpha = alpha - initialHeading.alpha;
-            let dBeta = beta - initialHeading.beta;
-            let dGamma = gamma - initialHeading.gamma;
-            
-            // Handle 360 rotation wrap around
-            if (dAlpha > 180) dAlpha -= 360;
-            if (dAlpha < -180) dAlpha += 360;
-            
-            // Apply inverse 3D rotation to keep screen fixed in space, high up and far away
-            const root = document.getElementById('app-root');
-            root.style.transform = `perspective(1500px) rotateY(${dAlpha}deg) rotateX(${-dBeta}deg) rotateZ(${-dGamma}deg) translate3d(0px, -25vh, -900px) scale(0.85)`;
+        let dAlpha = alpha - initialHeading.alpha;
+        let dBeta = beta - initialHeading.beta;
+        let dGamma = gamma - initialHeading.gamma;
+        
+        // Map phone rotation to CSS 3D Space targets
+        targetRot = {
+            y: dAlpha, 
+            x: -dBeta, 
+            z: -dGamma 
+        };
+    };
+
+    // 60FPS Spatial Rendering Loop
+    const renderARFrame = () => {
+        if (!window.isARMode) return;
+
+        // Apply Heavy LERP (Linear Interpolation) for that "buttery smooth" Vision Pro feel
+        const smoothingFactor = 0.08; 
+        currentRot.x += getShortestAngle(currentRot.x, targetRot.x) * smoothingFactor;
+        currentRot.y += getShortestAngle(currentRot.y, targetRot.y) * smoothingFactor;
+        currentRot.z += getShortestAngle(currentRot.z, targetRot.z) * smoothingFactor;
+
+        const root = document.getElementById('app-root');
+        if (root) {
+            // Massive perspective depth pushed far into the background
+            root.style.transform = `perspective(2500px) rotateY(${currentRot.y}deg) rotateX(${currentRot.x}deg) rotateZ(${currentRot.z}deg) translate3d(0px, -15vh, -1200px) scale(0.95)`;
             root.style.transformStyle = 'preserve-3d';
         }
+
+        arAnimationId = requestAnimationFrame(renderARFrame);
     };
 
     window.toggleARMode = async () => {
@@ -5480,17 +5511,24 @@
         
         if (window.isARMode) {
             window.isARMode = false;
+            if (arAnimationId) cancelAnimationFrame(arAnimationId);
             if (arStream) {
                 arStream.getTracks().forEach(track => track.stop());
                 arStream = null;
             }
             videoEl.classList.add('hidden');
+            
+            // Reset Spatial CSS
             mainContent.style.transform = 'none';
             mainContent.style.borderRadius = '0';
             mainContent.style.boxShadow = 'none';
             mainContent.style.border = 'none';
             mainContent.style.overflow = 'visible';
+            
             initialHeading = null;
+            currentRot = { x: 0, y: 0, z: 0 };
+            targetRot = { x: 0, y: 0, z: 0 };
+            
             window.removeEventListener('deviceorientation', window.handleOrientation);
             
             if (btn) btn.innerHTML = '<i class="ph-bold ph-eyeglasses text-2xl"></i> Enable Nexus AR (Mobile)';
@@ -5510,24 +5548,26 @@
                 btn.classList.remove('bg-indigo-50', 'dark:bg-indigo-900/20', 'text-indigo-600', 'dark:text-indigo-400', 'border-indigo-500/30');
                 btn.classList.add('bg-red-50', 'dark:bg-red-900/20', 'text-red-600', 'dark:text-red-400', 'border-red-500/30');
 
-                // Request Orientation Permissions (Required for modern iOS)
+                // Request Orientation Permissions (Required for modern iOS Safari)
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                     const permissionState = await DeviceOrientationEvent.requestPermission();
                     if (permissionState === 'granted') {
                         window.addEventListener('deviceorientation', window.handleOrientation);
+                        renderARFrame(); // Start smoothing loop
                     } else {
                         showToast('Motion Blocked', 'Cannot anchor screen without motion permissions.', 'ph-warning', 'amber');
                     }
                 } else {
                     window.addEventListener('deviceorientation', window.handleOrientation);
+                    renderARFrame(); // Start smoothing loop
                 }
                 
                 window.applyTheme();
                 
-                // Add spatial computing glass window styling
-                mainContent.style.borderRadius = '3rem';
-                mainContent.style.boxShadow = '0 0 100px rgba(99, 102, 241, 0.4), inset 0 0 40px rgba(99, 102, 241, 0.2)';
-                mainContent.style.border = '1px solid rgba(255,255,255,0.1)';
+                // Add visionOS volumetric glass window styling
+                mainContent.style.borderRadius = '3.5rem';
+                mainContent.style.boxShadow = '0 40px 150px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.05)';
+                mainContent.style.border = '2px solid rgba(255,255,255,0.1)';
                 mainContent.style.overflow = 'hidden';
 
                 showToast('Nexus AR Active', 'Turn your phone to look around the floating store.', 'ph-eyeglasses', 'indigo');
