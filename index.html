@@ -5481,9 +5481,8 @@
         let dGamma = gamma - baseOrientation.gamma;
 
         // Apply a subtle multiplier for the 3D parallax tilt
-        // Clamp to prevent the UI from tilting too far and becoming unreadable
-        targetRot.x = Math.max(-15, Math.min(15, -dBeta * 0.4));
-        targetRot.y = Math.max(-15, Math.min(15, dGamma * 0.4));
+        targetRot.x = Math.max(-12, Math.min(12, -dBeta * 0.5));
+        targetRot.y = Math.max(-12, Math.min(12, dGamma * 0.5));
     };
 
     // 60FPS Spatial Rendering Loop
@@ -5496,8 +5495,8 @@
 
         const root = document.getElementById('app-root');
         if (root) {
-            // Box is always centered, pushed back slightly, and tilts based on phone movement
-            root.style.transform = `perspective(1000px) translateZ(-150px) rotateX(${currentRot.x}deg) rotateY(${currentRot.y}deg) scale(0.90)`;
+            // Box is always centered, using standard perspective without extreme Z translation stretching
+            root.style.transform = `perspective(1200px) rotateX(${currentRot.x}deg) rotateY(${currentRot.y}deg) scale(0.95)`;
             root.style.transformOrigin = 'center center';
             root.style.transformStyle = 'preserve-3d';
         }
@@ -5522,12 +5521,21 @@
             recenterBtn.classList.add('hidden');
             recenterBtn.classList.remove('flex');
             
-            // Reset Spatial CSS
+            // Reset Spatial CSS & Remove Box Constraints
+            document.body.style.overflow = '';
+            mainContent.style.position = '';
+            mainContent.style.top = '';
+            mainContent.style.left = '';
+            mainContent.style.width = '';
+            mainContent.style.height = '';
+            mainContent.style.margin = '';
+            mainContent.style.overflowY = '';
+            mainContent.classList.remove('custom-scrollbar');
+
             mainContent.style.transform = 'none';
             mainContent.style.borderRadius = '0';
             mainContent.style.boxShadow = 'none';
             mainContent.style.border = 'none';
-            mainContent.style.overflow = 'visible';
             
             baseOrientation = { beta: null, gamma: null };
             currentRot = { x: 0, y: 0 };
@@ -5572,13 +5580,23 @@
                 
                 window.applyTheme();
                 
+                // FIX: Force the website into a perfectly sized floating tablet box to prevent stretching!
+                document.body.style.overflow = 'hidden';
+                mainContent.style.position = 'fixed';
+                mainContent.style.top = '5vh';
+                mainContent.style.left = '5vw';
+                mainContent.style.width = '90vw';
+                mainContent.style.height = '90vh';
+                mainContent.style.overflowY = 'auto'; // Allows you to scroll inside the box
+                mainContent.style.margin = '0';
+                mainContent.classList.add('custom-scrollbar');
+
                 // Add visionOS volumetric glass window styling
                 mainContent.style.borderRadius = '3.5rem';
                 mainContent.style.boxShadow = '0 40px 150px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.05)';
                 mainContent.style.border = '2px solid rgba(255,255,255,0.1)';
-                mainContent.style.overflow = 'hidden';
 
-                showToast('Nexus AR Active', 'HUD Mode engaged. Tap your phone screen to interact with the UI.', 'ph-eyeglasses', 'indigo');
+                showToast('Nexus AR Active', 'HUD Box engaged. Scroll inside the glass window.', 'ph-eyeglasses', 'indigo');
                 document.getElementById('theme-modal').classList.add('hidden');
                 document.getElementById('theme-modal').classList.remove('flex');
             } catch (err) {
