@@ -5451,67 +5451,53 @@
     window.isARMode = false;
     let arStream = null;
     
-    // HUD Lazy-Follow Variables
-    let lastSensor = { alpha: null, beta: null, gamma: null };
-    let targetRot = { x: 0, y: 0, z: 0 };
-    let currentRot = { x: 0, y: 0, z: 0 };
+    // HUD Parallax Variables
+    let baseOrientation = { beta: null, gamma: null };
+    let targetRot = { x: 0, y: 0 };
+    let currentRot = { x: 0, y: 0 };
     let arAnimationId = null;
 
     window.recenterAR = () => {
-        // No longer needed for HUD mode, but kept for compatibility
-        currentRot = { x: 0, y: 0, z: 0 };
-        targetRot = { x: 0, y: 0, z: 0 };
+        baseOrientation = { beta: null, gamma: null };
+        currentRot = { x: 0, y: 0 };
+        targetRot = { x: 0, y: 0 };
+        showToast('Recentered', 'AR Window recalibrated to your holding angle.', 'ph-crosshair', 'indigo');
     };
 
     window.handleOrientation = (event) => {
         if (!window.isARMode) return;
-        let alpha = event.alpha; // Z-axis [0, 360)
         let beta = event.beta;   // X-axis [-180, 180)
         let gamma = event.gamma; // Y-axis [-90, 90)
         
-        if (alpha === null || beta === null || gamma === null) return;
+        if (beta === null || gamma === null) return;
         
-        if (lastSensor.alpha !== null) {
-            let dAlpha = alpha - lastSensor.alpha;
-            let dBeta = beta - lastSensor.beta;
-            let dGamma = gamma - lastSensor.gamma;
-            
-            // Normalize 360 wrapping
-            if (dAlpha > 180) dAlpha -= 360;
-            if (dAlpha < -180) dAlpha += 360;
-
-            // Apply inverted delta to make the screen "lag" behind your movement
-            targetRot.y += dAlpha * 1.5; 
-            targetRot.x += dBeta * 1.5;
-            targetRot.z += dGamma * 1.5;
-
-            // Clamp max rotation so it never leaves the screen entirely
-            targetRot.x = Math.max(-35, Math.min(35, targetRot.x));
-            targetRot.y = Math.max(-35, Math.min(35, targetRot.y));
-            targetRot.z = Math.max(-20, Math.min(20, targetRot.z));
+        // Lock the neutral holding angle
+        if (baseOrientation.beta === null) {
+            baseOrientation = { beta, gamma };
         }
         
-        lastSensor = { alpha, beta, gamma };
+        // Calculate offset from the initial holding angle
+        let dBeta = beta - baseOrientation.beta;
+        let dGamma = gamma - baseOrientation.gamma;
+
+        // Apply a subtle multiplier for the 3D parallax tilt
+        // Clamp to prevent the UI from tilting too far and becoming unreadable
+        targetRot.x = Math.max(-15, Math.min(15, -dBeta * 0.4));
+        targetRot.y = Math.max(-15, Math.min(15, dGamma * 0.4));
     };
 
     // 60FPS Spatial Rendering Loop
     const renderARFrame = () => {
         if (!window.isARMode) return;
 
-        // Spring Physics: Target constantly pulls back to center (0)
-        targetRot.x *= 0.90; 
-        targetRot.y *= 0.90;
-        targetRot.z *= 0.90;
-
-        // Screen smoothly glides towards the target
-        currentRot.x += (targetRot.x - currentRot.x) * 0.15;
-        currentRot.y += (targetRot.y - currentRot.y) * 0.15;
-        currentRot.z += (targetRot.z - currentRot.z) * 0.15;
+        // Smooth LERP (Linear Interpolation) for buttery Vision Pro movement
+        currentRot.x += (targetRot.x - currentRot.x) * 0.12;
+        currentRot.y += (targetRot.y - currentRot.y) * 0.12;
 
         const root = document.getElementById('app-root');
         if (root) {
-            // Pushed far away (-400px) and always pulls back to the center of vision
-            root.style.transform = `perspective(1200px) rotateY(${currentRot.y}deg) rotateX(${currentRot.x}deg) rotateZ(${currentRot.z}deg) translateZ(-400px) scale(0.95)`;
+            // Box is always centered, pushed back slightly, and tilts based on phone movement
+            root.style.transform = `perspective(1000px) translateZ(-150px) rotateX(${currentRot.x}deg) rotateY(${currentRot.y}deg) scale(0.90)`;
             root.style.transformOrigin = 'center center';
             root.style.transformStyle = 'preserve-3d';
         }
@@ -5543,9 +5529,9 @@
             mainContent.style.border = 'none';
             mainContent.style.overflow = 'visible';
             
-            lastSensor = { alpha: null, beta: null, gamma: null };
-            currentRot = { x: 0, y: 0, z: 0 };
-            targetRot = { x: 0, y: 0, z: 0 };
+            baseOrientation = { beta: null, gamma: null };
+            currentRot = { x: 0, y: 0 };
+            targetRot = { x: 0, y: 0 };
             
             window.removeEventListener('deviceorientation', window.handleOrientation);
             
@@ -5561,9 +5547,8 @@
                 videoEl.srcObject = arStream;
                 videoEl.classList.remove('hidden');
                 
-                // Recenter button is no longer strictly needed but kept hidden for clean UI
-                recenterBtn.classList.add('hidden');
-                recenterBtn.classList.remove('flex');
+                recenterBtn.classList.remove('hidden');
+                recenterBtn.classList.add('flex');
                 
                 window.isARMode = true;
                 
