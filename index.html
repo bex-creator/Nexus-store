@@ -568,6 +568,41 @@
           </h2>
           <div id="favorites-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8"></div>
         </div>
+
+        <div id="analytics-section" class="hidden mt-16 border-t border-slate-100 dark:border-slate-800 pt-12">
+          <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-8 flex items-center gap-3">
+            <i class="ph-fill ph-trend-up text-emerald-500 text-3xl"></i>
+            Developer Analytics Dashboard
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+               <div class="text-slate-500 text-sm font-bold uppercase tracking-wider mb-2">Total Revenue</div>
+               <div class="text-3xl font-black text-yellow-500 flex items-center gap-2"><i class="ph-fill ph-coin"></i> <span id="stat-revenue">0</span></div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+               <div class="text-slate-500 text-sm font-bold uppercase tracking-wider mb-2">Total Installs</div>
+               <div class="text-3xl font-black text-indigo-500 flex items-center gap-2"><i class="ph-fill ph-download-simple"></i> <span id="stat-downloads">0</span></div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+               <div class="text-slate-500 text-sm font-bold uppercase tracking-wider mb-2">Avg Rating</div>
+               <div class="text-3xl font-black text-orange-500 flex items-center gap-2"><i class="ph-fill ph-star"></i> <span id="stat-rating">0.0</span></div>
+            </div>
+          </div>
+          <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800 overflow-x-auto">
+             <table class="w-full text-left border-collapse">
+                <thead>
+                   <tr class="text-slate-500 text-sm uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
+                      <th class="pb-4 font-bold p-4">App</th>
+                      <th class="pb-4 font-bold p-4">Price</th>
+                      <th class="pb-4 font-bold p-4">Installs</th>
+                      <th class="pb-4 font-bold p-4">Revenue</th>
+                   </tr>
+                </thead>
+                <tbody id="analytics-app-list" class="divide-y divide-slate-100 dark:divide-slate-800/50">
+                </tbody>
+             </table>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1627,7 +1662,7 @@
       { id: 'youtube', title: 'YouTube', developer: 'Google LLC', category: 'Video', description: "The world's largest video sharing platform.", rating: '4.9', reviews: '135M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://www.youtube.com/', icon: null, bgClass: 'bg-gradient-to-br from-red-500 to-red-700', iconClass: 'ph-fill ph-youtube-logo', screenshots: [] },
       { id: 'google-gemini', title: 'Google Gemini', developer: 'Google LLC', category: 'AI Tool', description: 'Next-generation AI for brainstorming, writing, and analysis.', rating: '4.8', reviews: '8M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://gemini.google.com/app', icon: null, bgClass: 'bg-gradient-to-br from-blue-500 to-blue-700', iconClass: 'ph-fill ph-sparkle', screenshots: [] },
       { id: 'focus-flow', title: 'Focus Flow', developer: 'Orean', category: 'Productivity', description: 'A minimal Pomodoro timer and task manager designed to keep you in the zone.', rating: '4.7', reviews: '142K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/focusflow/home', icon: null, bgClass: 'bg-gradient-to-br from-emerald-400 to-emerald-600', iconClass: 'ph-fill ph-timer', screenshots: [] },
-      { id: 'chat-space', title: 'Chat Space', developer: 'The dev', category: 'Social', description: 'Minimal social space to chat, hang out, and connect with your friends.', rating: '4.1', reviews: '890K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://bex-creator.github.io/chat/', icon: null, bgClass: 'bg-gradient-to-br from-blue-400 to-blue-600', iconClass: 'ph-fill ph-chat-circle', screenshots: [] },
+      { id: 'chat-space', title: 'Chat Space', developer: 'The dev', category: 'Social', description: 'Minimal social space to chat, hang out, and connect with your friends.', rating: '4.1', reviews: '890K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://chatspace1.w3spaces.com', icon: null, bgClass: 'bg-gradient-to-br from-blue-400 to-blue-600', iconClass: 'ph-fill ph-chat-circle', screenshots: [] },
       { id: 'shape-shooters', title: 'Shape Shooters', developer: 'Orean', category: 'Arcade', description: 'Fast-paced arcade action. Dodge, shoot, and survive the geometric onslaught.', rating: '4.6', reviews: '25K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://shape-shooters.w3spaces.com/saved-from-Tryit-2025-12-02.html', icon: null, bgClass: 'bg-gradient-to-br from-purple-500 to-purple-700', iconClass: 'ph-fill ph-target', screenshots: [] },
       { id: 'neon-defense', title: 'Neon Defense', developer: 'Orean', category: 'Strategy', description: 'Strategic tower defense with a beautiful neon cyberpunk aesthetic.', rating: '4.3', reviews: '12K', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/ugrughrogygrhreleoh/home', icon: null, bgClass: 'bg-gradient-to-br from-lime-400 to-lime-600', iconClass: 'ph-fill ph-shield-check', screenshots: [] },
       { id: 'doodle-jump', title: 'Doodle Jump', developer: 'ya jet', category: 'Game', description: 'Endless platformer fun. Jump as high as you can on the notebook paper!', rating: '4.7', reviews: '2.4M', size: 'Link', price: 0, payloadType: 'url', appUrl: 'https://sites.google.com/students.cumberlandschools.org/doodlejump/home', icon: null, bgClass: 'bg-gradient-to-br from-green-500 to-green-700', iconClass: 'ph-fill ph-arrow-fat-up', screenshots: [] },
@@ -1986,41 +2021,7 @@
     // --- APP LOGIC ---
     window.handlePublishClick = async () => {
       if (!currentUser) return;
-
-      const myDevRecord = allowedDevs.find(d => d.id === currentUser.uid);
-      // Check if user is allowed
-      if (myDevRecord || window.isAuthorizedAdmin) {
-         window.navigate('upload');
-      } else {
-         const existingReq = devRequests.find(r => r.uid === currentUser.uid);
-         if (existingReq) {
-            showModal('Request Pending', 'Your request to become a developer is currently under review by administrators. Please check back later.');
-         } else {
-            showPromptModal(
-              'Developer Access Restricted',
-              `Publishing is restricted to verified developers. Would you like to submit a request for your account?`,
-              null, // No input needed
-              'Submit Request',
-              'bg-indigo-600 hover:bg-indigo-500',
-              async (_, modalId) => {
-                 document.getElementById(modalId).remove();
-                 try {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', currentUser.uid), {
-                       uid: currentUser.uid,
-                       username: currentUser.customDisplayName || currentUser.displayName || 'Unknown',
-                       email: currentUser.email || 'No email',
-                       timestamp: Date.now(),
-                       status: 'pending',
-                       type: 'standard'
-                    });
-                    showToast('Request Sent', 'Administrators will review your developer request shortly.', 'ph-paper-plane-tilt', 'indigo');
-                 } catch(err) {
-                    showModal('Error', 'Failed to send your request.');
-                 }
-              }
-            );
-         }
-      }
+      window.navigate('upload');
     };
 
     window.navigate = function(viewName, targetData = null) {
@@ -2420,6 +2421,46 @@
       } else {
         favSection.classList.add('hidden');
       }
+
+      const analyticsSection = document.getElementById('analytics-section');
+      if (myName === developerName && currentUser && devApps.length > 0) {
+          analyticsSection.classList.remove('hidden');
+          let totalRev = 0;
+          let totalDl = 0;
+          let totalStars = 0;
+          let totalRatingsCount = 0;
+
+          document.getElementById('analytics-app-list').innerHTML = devApps.map(a => {
+              const rev = a.revenue || 0;
+              const dl = a.downloads || 0;
+              totalRev += rev;
+              totalDl += dl;
+
+              const r = appReviews.filter(review => review.targetAppId === a.id);
+              if (r.length > 0) {
+                  totalStars += r.reduce((acc, rv) => acc + rv.rating, 0);
+                  totalRatingsCount += r.length;
+              }
+
+              return `
+                  <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
+                      <td class="p-4 font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                          ${a.icon ? `<img src="${a.icon}" class="w-8 h-8 rounded-lg object-cover shadow-sm">` : `<div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-500 flex items-center justify-center"><i class="${a.iconClass||'ph-app-window'}"></i></div>`}
+                          ${a.title}
+                      </td>
+                      <td class="p-4 text-slate-600 dark:text-slate-300 font-medium"><i class="ph-fill ph-coin text-yellow-500"></i> ${a.price || 0}</td>
+                      <td class="p-4 text-slate-600 dark:text-slate-300 font-medium">${dl}</td>
+                      <td class="p-4 text-emerald-600 dark:text-emerald-400 font-bold"><i class="ph-fill ph-coin text-emerald-500"></i> ${rev}</td>
+                  </tr>
+              `;
+          }).join('');
+
+          document.getElementById('stat-revenue').textContent = totalRev;
+          document.getElementById('stat-downloads').textContent = totalDl;
+          document.getElementById('stat-rating').textContent = totalRatingsCount > 0 ? (totalStars / totalRatingsCount).toFixed(1) : '0.0';
+      } else {
+          analyticsSection.classList.add('hidden');
+      }
     }
 
     window.buyApp = async (targetAppId) => {
@@ -2449,10 +2490,10 @@
                 purchasedApps: arrayUnion(app.id)
             });
 
-            // Payout to Developer
+            // FIX: Bulletproof Payout to Developer using setDoc merge so it never fails
             if (app.authorId && finalPrice > 0) {
                 const devRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', app.authorId);
-                await updateDoc(devRef, { balance: increment(finalPrice) });
+                await setDoc(devRef, { balance: increment(finalPrice) }, { merge: true });
                 
                 // Notify Dev of sale
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'user_messages'), {
@@ -2464,6 +2505,12 @@
                         senderId: null
                     });
             }
+
+            // Record Analytics on App Data
+            try {
+                const appRef = doc(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps', app.id);
+                await setDoc(appRef, { revenue: increment(finalPrice), downloads: increment(1) }, { merge: true });
+            } catch (e) { /* Ignore default apps */ }
             
             // Automatically keep it installed forever locally
             installedApps.add(targetAppId);
@@ -2811,7 +2858,7 @@
       document.body.removeChild(textArea);
     };
 
-    window.installApp = (targetAppId) => {
+    window.installApp = async (targetAppId) => {
       const app = window.apps.find(a => a.id === targetAppId);
       if (app && app.isBroken) {
          showModal('Install Disabled', 'This app has been flagged and cannot be installed.');
@@ -2819,7 +2866,16 @@
       }
       installedApps.add(targetAppId);
       localStorage.setItem('nexus_installed', JSON.stringify([...installedApps]));
-      if(app) logActivity('INSTALL', app.title, 'App installed to local browser session.');
+      
+      // Record Analytics for Free Downloads
+      if (app) {
+          try {
+              const appRef = doc(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps', app.id);
+              await setDoc(appRef, { downloads: increment(1) }, { merge: true });
+          } catch(e) { /* Ignore default apps */ }
+          logActivity('INSTALL', app.title, 'App installed to local browser session.');
+      }
+      
       renderDetails(targetAppId);
     };
 
@@ -3217,37 +3273,6 @@
       const changelogVal = document.getElementById('app-changelog').value.trim() || 'Initial Release';
       const priceVal = parseInt(document.getElementById('app-price').value) || 0;
       const devNameVal = document.getElementById('app-developer').value;
-
-      // Paid App Authorization check
-      if (priceVal > 0 && !window.isAuthorizedAdmin) {
-          const myDevRecord = allowedDevs.find(d => d.id === currentUser.uid);
-          if (!myDevRecord || !myDevRecord.canPublishPaid) {
-              showPromptModal(
-                 "Monetization Access Required",
-                 "You are not currently approved to publish paid apps on NexusStore.",
-                 null, // no input needed
-                 "Submit Paid Access Request",
-                 "bg-yellow-500 text-slate-900 hover:bg-yellow-400 shadow-yellow-500/30",
-                 async (_, modalId) => {
-                    document.getElementById(modalId).remove();
-                    try {
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'developer_requests', currentUser.uid + '_paid'), {
-                           uid: currentUser.uid,
-                           username: currentUser.customDisplayName || currentUser.displayName || 'Unknown',
-                           email: currentUser.email || 'No email',
-                           timestamp: Date.now(),
-                           status: 'pending',
-                           type: 'paid_upgrade'
-                        });
-                        showToast('Request Sent', 'Administrators will review your paid app access request.', 'ph-paper-plane-tilt', 'yellow');
-                    } catch(err) {
-                        showModal('Error', 'Failed to send your request.');
-                    }
-                 }
-              );
-              return; // Stop upload
-          }
-      }
 
       submitBtn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Publishing...';
       submitBtn.disabled = true;
