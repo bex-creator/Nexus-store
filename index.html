@@ -430,8 +430,8 @@
           <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1" class="w-9 h-9 rounded-full object-cover border-2 border-indigo-500 shadow-sm" />
           <span id="user-name" class="font-bold text-sm text-slate-700 dark:text-slate-200 hidden sm:block">Loading...</span>
         </div>
-        <button data-click="showThemeModal" class="p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-indigo-400 dark:hover:bg-slate-700 dark:border-transparent" title="Appearance Settings">
-          <i class="ph-fill ph-palette text-xl"></i>
+        <button data-click="showThemeModal" class="p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-indigo-400 dark:hover:bg-slate-700 dark:border-transparent" title="Settings">
+          <i class="ph-fill ph-gear text-xl"></i>
         </button>
         <button data-click="handleSignOut" class="p-2.5 rounded-xl transition-colors bg-white text-red-500 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-slate-700 dark:border-transparent" title="Sign Out">
           <i class="ph-bold ph-sign-out text-xl"></i>
@@ -1976,29 +1976,25 @@
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'activity_logs'), {
           uid: currentUser.uid,
           displayName: currentUser.customDisplayName || currentUser.displayName || 'Anonymous User',
-          action: action, 
+          action: action,
           targetName: targetName,
           details: details,
           timestamp: Date.now()
         });
-      } catch (err) {
-        console.warn("Could not log activity:", err);
+      } catch (e) {
+        console.error("Activity logging failed", e);
       }
     };
 
-    // --- HELPER: SHOW INPUT PROMPT MODAL ---
+    // --- HELPER: SHOW PROMPT MODAL ---
     const showPromptModal = (title, message, placeholder, confirmText, confirmClass, onConfirm) => {
       const modalId = `modal-${Date.now()}`;
-      const inputHtml = placeholder !== null 
-        ? `<input type="text" id="prompt-input-${modalId}" placeholder="${placeholder}" class="w-full border-2 rounded-xl px-4 py-3 mb-6 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white">`
-        : `<div class="mb-6"></div>`;
-
       const modalHtml = `
         <div id="${modalId}" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4">
-          <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
+          <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in text-center">
             <h3 class="text-2xl font-black mb-2 text-slate-900 dark:text-white">${title}</h3>
-            <p class="text-slate-500 font-medium ${placeholder !== null ? 'mb-6' : 'mb-2'}">${message}</p>
-            ${inputHtml}
+            <p class="text-slate-500 mb-6 font-medium">${message}</p>
+            ${placeholder !== null ? `<input type="text" id="prompt-input-${modalId}" placeholder="${placeholder}" class="w-full border-2 rounded-2xl px-5 py-4 mb-6 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg text-center bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500">` : ''}
             <div class="flex gap-4">
               <button data-click="closeModal" data-arg="${modalId}" class="flex-1 px-4 py-3 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white transition-colors">Cancel</button>
               <button id="confirm-btn-${modalId}" class="flex-1 px-4 py-3 rounded-xl font-bold ${confirmClass} text-white shadow-lg transition-all">${confirmText}</button>
@@ -3070,6 +3066,70 @@
           specSidebar.classList.remove('hidden');
           specSidebar.classList.add('flex');
           startSpectatorChat(app.id);
+      } else if (window.liveModeEnabled) {
+          if (playTimer) clearTimeout(playTimer);
+          if (rewardInterval) clearInterval(rewardInterval);
+
+          // Launch App directly into the Iframe Overlay for LIVE MODE
+          const overlay = document.getElementById('app-viewer-overlay');
+          const iframe = document.getElementById('app-viewer-iframe');
+          const titleEl = document.getElementById('app-viewer-title');
+          const iconEl = document.getElementById('app-viewer-icon');
+          
+          titleEl.textContent = app.title;
+          if (app.icon) {
+              iconEl.innerHTML = `<img src="${app.icon}" class="w-full h-full object-cover">`;
+          } else {
+              iconEl.innerHTML = `<i class="${app.iconClass || 'ph-app-window'} text-white"></i>`;
+          }
+          
+          iframe.src = launchUrl;
+          overlay.classList.remove('hidden');
+          overlay.classList.add('flex');
+
+          // Ensure Spectator Sidebar is hidden since we are playing, not watching
+          const specSidebar = document.getElementById('spectator-sidebar');
+          specSidebar.classList.add('hidden');
+          specSidebar.classList.remove('flex');
+          window.currentSpectatorRoom = null;
+
+          // LIVE PRESENCE LOGIC
+          if (currentUser) {
+             updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), {
+                 currentActivity: { appId: app.id, title: app.title, timestamp: Date.now() }
+             });
+          }
+
+          // Playtime Coins Tracker
+          showToast('Live Mode Active', 'Keep this open for 2 minutes to earn 500 coins!', 'ph-broadcast', 'red');
+          const timerContainer = document.getElementById('reward-timer-container');
+          const timerText = document.getElementById('reward-timer-text');
+          if (timerContainer) {
+              timerContainer.classList.remove('hidden');
+              timerContainer.classList.add('flex');
+          }
+          
+          let rewardSecondsLeft = 120;
+          rewardInterval = setInterval(() => {
+              if (overlay.classList.contains('hidden')) {
+                  clearInterval(rewardInterval);
+              } else {
+                  rewardSecondsLeft--;
+                  if (timerText) {
+                      const m = Math.floor(rewardSecondsLeft / 60).toString().padStart(2, '0');
+                      const s = (rewardSecondsLeft % 60).toString().padStart(2, '0');
+                      timerText.textContent = `${m}:${s}`;
+                  }
+                  if (rewardSecondsLeft <= 0) {
+                      clearInterval(rewardInterval);
+                      if (timerContainer) {
+                         timerContainer.classList.add('hidden');
+                         timerContainer.classList.remove('flex');
+                      }
+                      window.awardPlaytimeCoins(500);
+                  }
+              }
+          }, 1000);
       } else {
           // Standard Launch: Open in a New Tab
           window.open(launchUrl, '_blank', 'noopener,noreferrer');
@@ -4755,6 +4815,7 @@
           const input = document.getElementById('ai-chat-input');
           if(input) input.focus();
       }
+      else if (action === 'setLiveMode') window.setLiveMode(arg1 === 'true');
       else if (action === 'showThemeModal') window.showThemeModal();
       else if (action === 'setThemeAccent') window.setThemeAccent(arg1);
       else if (action === 'setThemeMode') window.setThemeMode(arg1);
@@ -5317,6 +5378,7 @@
     
     let currentAccent = localStorage.getItem('nexus_accent') || 'indigo';
     let currentMode = localStorage.getItem('nexus_mode') || 'dark';
+    window.liveModeEnabled = localStorage.getItem('nexus_live_mode') === 'true';
 
     window.applyTheme = () => {
       const root = document.documentElement;
@@ -5357,6 +5419,17 @@
            if(btn.dataset.arg === currentMode) btn.classList.add('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
            else btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
        });
+
+       document.querySelectorAll('.live-mode-btn').forEach(btn => {
+           if(btn.dataset.arg === String(window.liveModeEnabled)) btn.classList.add('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
+           else btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
+       });
+    };
+
+    window.setLiveMode = (enabled) => {
+        window.liveModeEnabled = enabled;
+        localStorage.setItem('nexus_live_mode', enabled);
+        window.showThemeModal();
     };
 
     window.setThemeAccent = (color) => {
