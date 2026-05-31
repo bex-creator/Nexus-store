@@ -99,12 +99,51 @@
         0% { background-color: #818cf8; }
         50%, 100% { background-color: rgba(129, 140, 248, 0.2); }
     }
+
+    /* Glass UI for AR and Galaxy Themes */
+    body.glass-theme {
+        background-color: transparent !important;
+    }
+    body.glass-theme main,
+    body.glass-theme header,
+    body.glass-theme .bg-white,
+    body.glass-theme .bg-slate-50,
+    body.glass-theme .bg-slate-900,
+    body.glass-theme .bg-slate-950 {
+        background-color: rgba(15, 23, 42, 0.6) !important;
+        backdrop-filter: blur(12px) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+    }
+    body.glass-theme .text-slate-900,
+    body.glass-theme .text-slate-800,
+    body.glass-theme .text-slate-700,
+    body.glass-theme .text-slate-600,
+    body.glass-theme .text-slate-500 {
+        color: rgba(255, 255, 255, 0.9) !important;
+    }
   </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 transition-colors duration-300 min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
 
   <!-- APP ROOT -->
   <div id="app-root">
+
+  <!-- AR Camera Feed & Overlays -->
+  <video id="ar-camera-feed" autoplay playsinline muted class="fixed inset-0 w-full h-full object-cover z-[-1] hidden pointer-events-none opacity-0 transition-opacity duration-1000"></video>
+  
+  <div id="ar-hand-cursor" class="fixed z-[9999] w-14 h-14 bg-indigo-500/20 border-2 border-indigo-400 rounded-full shadow-[0_0_20px_rgba(99,102,241,0.6)] backdrop-blur-sm pointer-events-none hidden items-center justify-center transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-75">
+     <div class="w-2 h-2 bg-white rounded-full animate-ping"></div>
+  </div>
+  
+  <div id="ar-ui-overlay" class="fixed inset-0 pointer-events-none z-[9998] hidden flex-col items-center justify-between py-24 px-8">
+     <div class="bg-black/50 backdrop-blur-md text-white px-5 py-2.5 rounded-full font-mono text-xs border border-white/20 flex items-center gap-2 shadow-2xl mt-4">
+        <div class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,1)]"></div> Nexus AR Spatial Tracking Active
+     </div>
+     <div class="text-white/70 font-mono text-xs text-center bg-black/40 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10 mb-4">
+        Hold hands in front of camera to scroll & interact<br>Use <span class="text-purple-400 font-bold">Gamepad Controller</span> to play AR Store Apps
+     </div>
+  </div>
 
   <!-- App Viewer Overlay -->
   <div id="app-viewer-overlay" class="fixed inset-0 z-[9999] hidden bg-black animate-zoom-in flex-row">
@@ -373,23 +412,17 @@
       </div>
 
       <div class="mb-8">
-        <label class="block text-sm font-bold mb-4 uppercase tracking-wide text-slate-700 dark:text-slate-400">Accent Color</label>
-        <div class="flex gap-4">
-          <button data-click="setThemeAccent" data-arg="indigo" class="accent-btn w-10 h-10 rounded-full bg-[#6366f1] ring-[#6366f1] hover:scale-110 transition-all"></button>
-          <button data-click="setThemeAccent" data-arg="rose" class="accent-btn w-10 h-10 rounded-full bg-[#f43f5e] ring-[#f43f5e] hover:scale-110 transition-all"></button>
-          <button data-click="setThemeAccent" data-arg="emerald" class="accent-btn w-10 h-10 rounded-full bg-[#10b981] ring-[#10b981] hover:scale-110 transition-all"></button>
-          <button data-click="setThemeAccent" data-arg="amber" class="accent-btn w-10 h-10 rounded-full bg-[#f59e0b] ring-[#f59e0b] hover:scale-110 transition-all"></button>
-          <button data-click="setThemeAccent" data-arg="cyan" class="accent-btn w-10 h-10 rounded-full bg-[#06b6d4] ring-[#06b6d4] hover:scale-110 transition-all"></button>
-        </div>
-      </div>
-
-      <div>
         <label class="block text-sm font-bold mb-4 uppercase tracking-wide text-slate-700 dark:text-slate-400">Mode</label>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           <button data-click="setThemeMode" data-arg="light" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Light</button>
           <button data-click="setThemeMode" data-arg="dark" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Dark</button>
           <button data-click="setThemeMode" data-arg="oled" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">OLED</button>
+          <button data-click="setThemeMode" data-arg="galaxy" class="mode-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm hover:opacity-90 transition-all bg-cover bg-center text-white text-shadow-sm" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://t4.ftcdn.net/jpg/13/80/07/97/360_F_1380079720_ezzVCiKuoGr5vObzznpje5gdkaIIKMsI.jpg');">Galaxy</button>
         </div>
+        
+        <button data-click="toggleARMode" id="ar-mode-btn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white px-4 py-4 rounded-xl font-black text-sm transition-all shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 hover:-translate-y-1">
+          <i class="ph-bold ph-camera text-xl"></i> Enable Nexus AR (Camera)
+        </button>
       </div>
     </div>
   </div>
@@ -420,6 +453,11 @@
 
       <div class="flex items-center gap-4">
         
+        <!-- Gamepad Indicator -->
+        <div id="gamepad-indicator" class="hidden items-center gap-1.5 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl font-bold text-sm border border-purple-200 dark:border-purple-700/50 shadow-sm transition-colors" title="Controller Connected">
+          <i class="ph-fill ph-game-controller text-lg animate-pulse"></i>
+        </div>
+
         <!-- Virtual Currency Balance -->
         <button id="coin-balance-container" data-click="showCoinRequestModal" class="hidden items-center gap-1.5 px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 rounded-xl font-bold text-sm border border-yellow-200 dark:border-yellow-700/50 shadow-sm cursor-pointer transition-colors" title="Request Nexus Coins">
           <i class="ph-fill ph-coin text-lg"></i>
@@ -4793,6 +4831,7 @@
       else if (action === 'showThemeModal') window.showThemeModal();
       else if (action === 'setThemeAccent') window.setThemeAccent(arg1);
       else if (action === 'setThemeMode') window.setThemeMode(arg1);
+      else if (action === 'toggleARMode') window.toggleARMode();
       else if (action === 'toggleAuthMode') window.toggleAuthMode();
       else if (action === 'handleSignOut') window.handleSignOut();
       else if (action === 'adminResetAllUsers') window.adminResetAllUsers();
@@ -5352,15 +5391,22 @@
     
     let currentAccent = localStorage.getItem('nexus_accent') || 'indigo';
     let currentMode = localStorage.getItem('nexus_mode') || 'dark';
+    window.isARMode = false;
+    window.arStream = null;
 
     window.applyTheme = () => {
       const root = document.documentElement;
+      const body = document.body;
       
       const colors = accents[currentAccent] || accents.indigo;
       root.style.setProperty('--theme-accent-400', colors[400]);
       root.style.setProperty('--theme-accent-500', colors[500]);
       root.style.setProperty('--theme-accent-600', colors[600]);
       root.style.setProperty('--theme-bg-50', '244 244 246');
+
+      // Reset Image Backgrounds first
+      body.style.backgroundImage = "none";
+      body.classList.remove('glass-theme');
 
       if (currentMode === 'light') {
         root.classList.remove('dark');
@@ -5370,12 +5416,31 @@
           root.style.setProperty('--theme-bg-800', '17 17 17');
           root.style.setProperty('--theme-bg-900', '5 5 5');
           root.style.setProperty('--theme-bg-950', '0 0 0');
+        } else if (currentMode === 'galaxy') {
+          root.style.setProperty('--theme-bg-800', '15 23 42');
+          root.style.setProperty('--theme-bg-900', '10 15 30');
+          root.style.setProperty('--theme-bg-950', '5 10 20');
         } else {
           // Standard Dark
           root.style.setProperty('--theme-bg-800', '30 41 59');
           root.style.setProperty('--theme-bg-900', '15 23 42');
           root.style.setProperty('--theme-bg-950', '2 6 23');
         }
+      }
+
+      // Handle Galaxy Image Mode overlaying Tailwind
+      if (currentMode === 'galaxy') {
+         body.style.backgroundImage = "url('https://t4.ftcdn.net/jpg/13/80/07/97/360_F_1380079720_ezzVCiKuoGr5vObzznpje5gdkaIIKMsI.jpg')";
+         body.style.backgroundSize = "cover";
+         body.style.backgroundPosition = "center";
+         body.style.backgroundAttachment = "fixed";
+         body.classList.add('glass-theme');
+      }
+      
+      // Override for AR Camera
+      if (window.isARMode) {
+         body.style.backgroundImage = "none";
+         body.classList.add('glass-theme');
       }
     };
 
@@ -5402,11 +5467,105 @@
     };
 
     window.setThemeMode = (mode) => {
+      // If switching modes, ensure AR is off so backgrounds function
+      if (window.isARMode) window.toggleARMode();
+      
       currentMode = mode;
       localStorage.setItem('nexus_mode', mode);
       window.applyTheme();
       window.showThemeModal();
     };
+
+    // NEXUS AR & CONTROLLER LOGIC
+    window.toggleARMode = async () => {
+        window.isARMode = !window.isARMode;
+        const video = document.getElementById('ar-camera-feed');
+        const overlay = document.getElementById('ar-ui-overlay');
+        const btn = document.getElementById('ar-mode-btn');
+
+        if (window.isARMode) {
+            try {
+                // Request back-facing camera for true AR phone experience
+                window.arStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = window.arStream;
+                video.classList.remove('hidden');
+                setTimeout(() => video.classList.remove('opacity-0'), 50);
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+                
+                btn.innerHTML = '<i class="ph-bold ph-x text-xl"></i> Disable Nexus AR';
+                btn.classList.replace('from-emerald-500', 'from-red-500');
+                btn.classList.replace('to-teal-500', 'to-orange-500');
+                btn.classList.replace('shadow-emerald-500/30', 'shadow-red-500/30');
+
+                // Start simulated hand tracking cursor
+                window.addEventListener('mousemove', simulateHandTracking);
+                window.addEventListener('touchmove', simulateHandTracking);
+
+                window.applyTheme(); // Refresh theme to inject glass
+                showToast('Nexus AR Active', 'Spatial tracking simulated. Use Gamepad to play.', 'ph-camera', 'emerald');
+            } catch (err) {
+                console.error("AR Init Error", err);
+                showModal('Camera Error', 'Could not access the camera for AR mode. Please ensure permissions are granted.');
+                window.isARMode = false;
+            }
+        } else {
+            if (window.arStream) {
+                window.arStream.getTracks().forEach(t => t.stop());
+            }
+            video.classList.add('opacity-0');
+            setTimeout(() => video.classList.add('hidden'), 1000);
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+            
+            btn.innerHTML = '<i class="ph-bold ph-camera text-xl"></i> Enable Nexus AR (Camera)';
+            btn.classList.replace('from-red-500', 'from-emerald-500');
+            btn.classList.replace('to-orange-500', 'to-teal-500');
+            btn.classList.replace('shadow-red-500/30', 'shadow-emerald-500/30');
+
+            window.removeEventListener('mousemove', simulateHandTracking);
+            window.removeEventListener('touchmove', simulateHandTracking);
+            const cursor = document.getElementById('ar-hand-cursor');
+            if(cursor) cursor.classList.add('hidden');
+            
+            window.applyTheme(); // Restore solid background colors
+        }
+    };
+
+    function simulateHandTracking(e) {
+        const cursor = document.getElementById('ar-hand-cursor');
+        if (!cursor) return;
+        cursor.classList.remove('hidden');
+        cursor.classList.add('flex');
+        let x = e.clientX;
+        let y = e.clientY;
+        if (e.touches && e.touches.length > 0) {
+            x = e.touches[0].clientX;
+            y = e.touches[0].clientY;
+        }
+        // Smooth follow
+        cursor.style.left = x + 'px';
+        cursor.style.top = y + 'px';
+    }
+
+    // Gamepad API Listener
+    window.addEventListener("gamepadconnected", (e) => {
+        const indicator = document.getElementById('gamepad-indicator');
+        if (indicator) {
+            indicator.classList.remove('hidden');
+            indicator.classList.add('flex');
+        }
+        showToast('Controller Connected 🎮', `${e.gamepad.id} is ready to use in AR apps!`, 'ph-game-controller', 'purple');
+    });
+
+    window.addEventListener("gamepaddisconnected", (e) => {
+        const indicator = document.getElementById('gamepad-indicator');
+        if (indicator) {
+            indicator.classList.add('hidden');
+            indicator.classList.remove('flex');
+        }
+        showToast('Controller Disconnected', `Gamepad removed.`, 'ph-game-controller', 'slate');
+    });
 
     // NEXUS CREATOR STUDIO IDE LOGIC
     let previewTimeout;
