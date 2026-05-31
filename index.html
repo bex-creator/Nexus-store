@@ -107,22 +107,42 @@
   <div id="app-root">
 
   <!-- App Viewer Overlay -->
-  <div id="app-viewer-overlay" class="fixed inset-0 z-[9999] hidden flex-col bg-black animate-zoom-in">
-    <div class="flex items-center justify-between p-3 bg-slate-900 border-b border-slate-800 text-white shadow-md z-10">
-      <div class="flex items-center gap-3">
-        <div id="app-viewer-icon" class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center overflow-hidden"></div>
-        <h3 id="app-viewer-title" class="font-bold text-sm truncate max-w-[200px] sm:max-w-md"></h3>
-      </div>
-      <div class="flex items-center gap-2">
-        <div id="reward-timer-container" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-xs font-bold mr-2 transition-all">
-          <i class="ph-fill ph-timer animate-pulse"></i> <span id="reward-timer-text">02:00</span>
+  <div id="app-viewer-overlay" class="fixed inset-0 z-[9999] hidden bg-black animate-zoom-in flex-row">
+    <div class="flex flex-col flex-1 h-full min-w-0">
+      <div class="flex items-center justify-between p-3 bg-slate-900 border-b border-slate-800 text-white shadow-md z-10">
+        <div class="flex items-center gap-3">
+          <div id="app-viewer-icon" class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center overflow-hidden"></div>
+          <h3 id="app-viewer-title" class="font-bold text-sm truncate max-w-[200px] sm:max-w-md"></h3>
         </div>
-        <button data-click="openViewerInNewTab" class="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-300 hover:text-white" title="Open in New Tab"><i class="ph ph-arrow-square-out text-lg"></i></button>
-        <button data-click="closeAppViewer" class="p-2 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors text-slate-300"><i class="ph-bold ph-x text-lg"></i></button>
+        <div class="flex items-center gap-2">
+          <div id="reward-timer-container" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-xs font-bold mr-2 transition-all">
+            <i class="ph-fill ph-timer animate-pulse"></i> <span id="reward-timer-text">02:00</span>
+          </div>
+          <button data-click="openViewerInNewTab" class="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-300 hover:text-white" title="Open in New Tab"><i class="ph ph-arrow-square-out text-lg"></i></button>
+          <button data-click="closeAppViewer" class="p-2 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors text-slate-300"><i class="ph-bold ph-x text-lg"></i></button>
+        </div>
+      </div>
+      <div class="flex-1 w-full relative bg-white dark:bg-slate-950">
+         <iframe id="app-viewer-iframe" class="absolute inset-0 w-full h-full border-0 bg-white" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-downloads"></iframe>
       </div>
     </div>
-    <div class="flex-1 w-full relative bg-white dark:bg-slate-950">
-       <iframe id="app-viewer-iframe" class="absolute inset-0 w-full h-full border-0 bg-white" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-downloads"></iframe>
+    
+    <!-- Built-in Twitch Spectator Sidebar -->
+    <div id="spectator-sidebar" class="hidden w-80 bg-slate-900 border-l border-slate-800 flex-col h-full z-20 shadow-2xl flex-shrink-0">
+       <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+          <div class="flex items-center gap-2">
+             <div class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+             <span class="font-bold text-white uppercase tracking-widest text-xs">Live Spectator</span>
+          </div>
+          <div id="spectator-count" class="text-xs font-bold text-slate-400 flex items-center gap-1"></div>
+       </div>
+       <div id="spectator-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar text-sm flex flex-col">
+          <div class="text-slate-500 italic text-xs text-center mb-auto mt-auto">Welcome to the spectator chat! Connecting...</div>
+       </div>
+       <form data-submit="submitSpectatorChat" class="p-3 border-t border-slate-800 bg-slate-950 flex gap-2">
+          <input type="text" id="spectator-chat-input" autocomplete="off" placeholder="Cheer them on..." class="flex-1 bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-xl text-sm outline-none focus:border-indigo-500">
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white p-2 rounded-xl transition-colors"><i class="ph-bold ph-paper-plane-tilt"></i></button>
+       </form>
     </div>
   </div>
 
@@ -753,11 +773,26 @@
               </button>
             </div>
 
+            <!-- NEXUS CREATOR STUDIO IDE -->
             <div id="payload-code-container" class="bg-slate-950 rounded-[2rem] p-2 shadow-2xl overflow-hidden ring-1 ring-white/10 focus-within:ring-2 focus-within:ring-indigo-500 transition-all animate-fade-in block">
-              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/10 text-slate-400 font-mono text-xs uppercase tracking-wider font-bold">
-                <i class="ph ph-code"></i> index.html (Runs in Blob Tab)
+              <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                <div class="text-slate-400 font-mono text-xs uppercase tracking-wider font-bold flex items-center gap-2">
+                  <i class="ph ph-terminal-window text-lg"></i> Nexus Creator Studio <span class="bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded text-[10px] ml-2">LIVE IDE</span>
+                </div>
               </div>
-              <textarea id="app-code" class="w-full bg-slate-950 text-slate-300 font-mono text-sm p-6 outline-none resize-y min-h-[300px] leading-relaxed custom-scrollbar" spellcheck="false"></textarea>
+              <div class="flex flex-col lg:flex-row h-[500px]">
+                <div class="w-full lg:w-1/2 border-b lg:border-b-0 lg:border-r border-white/10 relative">
+                  <textarea id="app-code" class="absolute inset-0 w-full h-full bg-slate-950 text-emerald-400 font-mono text-sm p-6 outline-none resize-none custom-scrollbar" spellcheck="false" placeholder="Write your HTML, CSS, and JS here..."></textarea>
+                </div>
+                <div class="w-full lg:w-1/2 relative bg-white">
+                  <div class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 text-slate-400 font-bold" id="ide-preview-placeholder">
+                     <i class="ph-fill ph-code mb-2 text-4xl opacity-50"></i>
+                     Live Preview
+                     <span class="text-xs font-normal opacity-70 mt-1">Start typing code to render your app!</span>
+                  </div>
+                  <iframe id="ide-preview-frame" class="absolute inset-0 w-full h-full border-0 z-10 bg-white" sandbox="allow-scripts allow-same-origin"></iframe>
+                </div>
+              </div>
             </div>
 
             <div id="payload-url-container" class="p-8 rounded-[2rem] border-2 bg-blue-50/50 border-blue-100 dark:bg-blue-950/20 dark:border-blue-900/50 animate-fade-in hidden">
@@ -2231,46 +2266,96 @@
 
       if (window.adRotationInterval) clearInterval(window.adRotationInterval);
 
-      if (!searchQuery && promotedAds.length > 0 && sponsoredSidebar) {
+      // LIVE SOCIAL FEED LOGIC
+      let liveFeedHtml = '';
+      const liveUsers = systemUsers.filter(u => u.currentActivity && (Date.now() - u.currentActivity.timestamp < 3600000)); // Active in last hour
+      
+      if (liveUsers.length > 0) {
+          liveFeedHtml = `
+            <div id="home-live-feed" class="w-full mb-8">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.8)]"></div>
+                <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Live Now</h2>
+              </div>
+              <div class="flex flex-col gap-3">
+                ${liveUsers.map(u => `
+                  <div class="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl shadow-lg">
+                     <div class="flex items-center gap-3 min-w-0">
+                        <div class="relative">
+                           <img src="https://api.dicebear.com/7.x/initials/svg?seed=${escapeQuotes(u.username || u.displayName)}&backgroundColor=6366f1" class="w-10 h-10 rounded-full border-2 border-slate-800 object-cover">
+                           <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
+                        </div>
+                        <div class="truncate">
+                           <div class="text-white font-bold text-sm truncate">${u.username || u.displayName}</div>
+                           <div class="text-slate-400 text-xs truncate">Playing <span class="font-bold text-indigo-400">${u.currentActivity.title}</span></div>
+                        </div>
+                     </div>
+                     <button data-click="spectateApp" data-arg="${u.currentActivity.appId}" class="ml-3 bg-red-500/20 hover:bg-red-500/40 text-red-500 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex-shrink-0"><i class="ph-bold ph-video-camera"></i> Watch</button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+      }
+
+      if (!searchQuery && (promotedAds.length > 0 || liveFeedHtml) && sponsoredSidebar) {
           sponsoredSidebar.classList.remove('hidden');
           
-          const renderAd = (index) => {
-              const ad = promotedAds[index];
-              if (!ad) return;
-              const targetApp = window.apps.find(a => a.id === ad.appId);
-              if (!targetApp) return;
-              
-              document.getElementById('sponsored-container').innerHTML = `
-              <div data-click="navigate" data-arg="details" data-arg2="${targetApp.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col items-center gap-4 p-5 shadow-[0_10px_40px_rgba(0,0,0,0.05)] transition-all duration-300 animate-fade-in hover:-translate-y-1 hover:shadow-xl bg-white border border-yellow-200 dark:bg-slate-900 dark:border-yellow-900/30 h-full w-full">
-                <div class="absolute top-4 right-4 bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest z-20">Ad</div>
-                <div class="w-full aspect-[4/3] rounded-[1.2rem] overflow-hidden relative shadow-md border border-slate-100 dark:border-slate-800 flex-shrink-0">
-                  ${ad.imageUrl ? `<img src="${ad.imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />` : `<div class="w-full h-full bg-indigo-500 flex items-center justify-center text-white"><i class="ph-fill ph-app-window text-5xl"></i></div>`}
+          let sponsoredHtml = '';
+          if (promotedAds.length > 0) {
+              sponsoredHtml = `
+                <div class="flex items-center gap-3 mb-6">
+                  <i class="ph-fill ph-megaphone text-yellow-500 text-2xl font-bold"></i>
+                  <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Sponsored</h2>
                 </div>
-                <div class="w-full flex flex-col justify-center text-center flex-1">
-                  <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2 tracking-tight group-hover:text-indigo-500 transition-colors line-clamp-2">${escapeQuotes(ad.text)}</h3>
-                  <div class="flex items-center justify-center gap-2 mb-4 mt-auto">
-                    ${targetApp.icon ? `<img src="${targetApp.icon}" class="w-6 h-6 rounded-md object-cover shadow-sm border border-slate-100 dark:border-slate-800">` : `<div class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 flex items-center justify-center"><i class="${targetApp.iconClass || 'ph-app-window'} text-slate-500 text-xs"></i></div>`}
-                    <div class="font-bold text-sm text-slate-700 dark:text-slate-200 line-clamp-1">${targetApp.title}</div>
-                  </div>
-                  <button class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 py-2.5 rounded-xl font-black transition-all shadow-md text-sm flex items-center justify-center gap-2 mt-2">
-                    Check it out
-                  </button>
-                </div>
-              </div>
+                <div id="sponsored-container" class="flex flex-col gap-6 h-[calc(100%-3rem)]"></div>
               `;
-          };
+          }
 
-          // Render first ad
-          window.currentAdIndex = window.currentAdIndex || 0;
-          if (window.currentAdIndex >= promotedAds.length) window.currentAdIndex = 0;
-          renderAd(window.currentAdIndex);
+          sponsoredSidebar.innerHTML = liveFeedHtml + sponsoredHtml;
+          
+          if (promotedAds.length > 0) {
+              const renderAd = (index) => {
+                  const ad = promotedAds[index];
+                  if (!ad) return;
+                  const targetApp = window.apps.find(a => a.id === ad.appId);
+                  if (!targetApp) return;
+                  
+                  const adContainer = document.getElementById('sponsored-container');
+                  if(!adContainer) return;
+                  
+                  adContainer.innerHTML = `
+                  <div data-click="navigate" data-arg="details" data-arg2="${targetApp.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col items-center gap-4 p-5 shadow-[0_10px_40px_rgba(0,0,0,0.05)] transition-all duration-300 animate-fade-in hover:-translate-y-1 hover:shadow-xl bg-white border border-yellow-200 dark:bg-slate-900 dark:border-yellow-900/30 h-full w-full">
+                    <div class="absolute top-4 right-4 bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest z-20">Ad</div>
+                    <div class="w-full aspect-[4/3] rounded-[1.2rem] overflow-hidden relative shadow-md border border-slate-100 dark:border-slate-800 flex-shrink-0">
+                      ${ad.imageUrl ? `<img src="${ad.imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />` : `<div class="w-full h-full bg-indigo-500 flex items-center justify-center text-white"><i class="ph-fill ph-app-window text-5xl"></i></div>`}
+                    </div>
+                    <div class="w-full flex flex-col justify-center text-center flex-1">
+                      <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2 tracking-tight group-hover:text-indigo-500 transition-colors line-clamp-2">${escapeQuotes(ad.text)}</h3>
+                      <div class="flex items-center justify-center gap-2 mb-4 mt-auto">
+                        ${targetApp.icon ? `<img src="${targetApp.icon}" class="w-6 h-6 rounded-md object-cover shadow-sm border border-slate-100 dark:border-slate-800">` : `<div class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 flex items-center justify-center"><i class="${targetApp.iconClass || 'ph-app-window'} text-slate-500 text-xs"></i></div>`}
+                        <div class="font-bold text-sm text-slate-700 dark:text-slate-200 line-clamp-1">${targetApp.title}</div>
+                      </div>
+                      <button class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 py-2.5 rounded-xl font-black transition-all shadow-md text-sm flex items-center justify-center gap-2 mt-2">
+                        Check it out
+                      </button>
+                    </div>
+                  </div>
+                  `;
+              };
 
-          // Setup rotation every 10 seconds
-          if (promotedAds.length > 1) {
-              window.adRotationInterval = setInterval(() => {
-                  window.currentAdIndex = (window.currentAdIndex + 1) % promotedAds.length;
-                  renderAd(window.currentAdIndex);
-              }, 10000);
+              // Render first ad
+              window.currentAdIndex = window.currentAdIndex || 0;
+              if (window.currentAdIndex >= promotedAds.length) window.currentAdIndex = 0;
+              renderAd(window.currentAdIndex);
+
+              // Setup rotation every 10 seconds
+              if (promotedAds.length > 1) {
+                  window.adRotationInterval = setInterval(() => {
+                      window.currentAdIndex = (window.currentAdIndex + 1) % promotedAds.length;
+                      renderAd(window.currentAdIndex);
+                  }, 10000);
+              }
           }
       } else if (sponsoredSidebar) {
           sponsoredSidebar.classList.add('hidden');
@@ -2899,7 +2984,33 @@
         }
     };
 
-    window.runApp = (targetAppId) => {
+    window.startSpectatorChat = (roomId) => {
+        const chatContainer = document.getElementById('spectator-chat-messages');
+        chatContainer.innerHTML = '<div class="text-slate-500 italic text-xs text-center mb-auto mt-auto">Welcome to the spectator chat! Connecting...</div>';
+        
+        if (window.spectatorUnsub) window.spectatorUnsub();
+        
+        // Listen to live_chats collection for this specific app room
+        window.spectatorUnsub = onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', `live_chats_${roomId}`)), (snapshot) => {
+            const msgs = snapshot.docs.map(doc => doc.data()).sort((a,b) => a.timestamp - b.timestamp);
+            document.getElementById('spectator-count').innerHTML = `<i class="ph-fill ph-users"></i> ${Math.max(1, Math.floor(Math.random() * 5) + msgs.length)}`; // Fun simulated metrics
+            
+            if (msgs.length === 0) {
+                chatContainer.innerHTML = '<div class="text-slate-500 italic text-xs text-center mt-auto mb-2">No messages yet. Be the first to cheer!</div>';
+                return;
+            }
+            
+            chatContainer.innerHTML = msgs.map(m => `
+                <div class="animate-fade-in flex flex-col items-start gap-0.5">
+                   <span class="text-[10px] font-black uppercase text-indigo-400">${m.author}</span>
+                   <span class="text-slate-200 bg-slate-800 px-3 py-1.5 rounded-lg rounded-tl-none">${m.text}</span>
+                </div>
+            `).join('');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        });
+    };
+
+    window.runApp = (targetAppId, isSpectating = false) => {
       const app = window.apps.find(a => a.id === targetAppId);
       if (!app) return;
       if (app.isBroken) {
@@ -2917,30 +3028,84 @@
       } else if (activeVersionObj.payloadType === 'code' && activeVersionObj.code) {
         const blob = new Blob([activeVersionObj.code], { type: 'text/html' });
         launchUrl = URL.createObjectURL(blob);
+        isCurrentLaunchBlob = true;
       }
+
+      currentLaunchUrl = launchUrl;
 
       if (playTimer) clearTimeout(playTimer);
       if (rewardInterval) clearInterval(rewardInterval);
 
-      const newWin = window.open(launchUrl, '_blank');
-      if (newWin) {
-        showToast('App Launched', 'App opened in a new tab. Keep it open for 2 minutes to earn 500 coins!', 'ph-rocket-launch', 'indigo');
-        
-        let rewardSecondsLeft = 120;
-        rewardInterval = setInterval(() => {
-            if (newWin.closed) {
-                clearInterval(rewardInterval);
-                showToast('Playtime Cancelled', 'You closed the app before 2 minutes.', 'ph-warning-circle', 'amber');
-            } else {
-                rewardSecondsLeft--;
-                if (rewardSecondsLeft <= 0) {
-                    clearInterval(rewardInterval);
-                    window.awardPlaytimeCoins(500);
-                }
-            }
-        }, 1000);
+      // Launch App directly into the Iframe Overlay instead of a New Tab
+      const overlay = document.getElementById('app-viewer-overlay');
+      const iframe = document.getElementById('app-viewer-iframe');
+      const titleEl = document.getElementById('app-viewer-title');
+      const iconEl = document.getElementById('app-viewer-icon');
+      
+      titleEl.textContent = app.title + (isSpectating ? ' (Spectator Mode)' : '');
+      if (app.icon) {
+          iconEl.innerHTML = `<img src="${app.icon}" class="w-full h-full object-cover">`;
       } else {
-        showModal('Popup Blocked', 'Please allow popups for this site to open apps and earn coins.');
+          iconEl.innerHTML = `<i class="${app.iconClass || 'ph-app-window'} text-white"></i>`;
+      }
+      
+      iframe.src = launchUrl;
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+
+      // LIVE PRESENCE LOGIC
+      if (currentUser && !isSpectating) {
+         updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), {
+             currentActivity: { appId: app.id, title: app.title, timestamp: Date.now() }
+         });
+      }
+
+      // SPECTATOR LOGIC
+      const specSidebar = document.getElementById('spectator-sidebar');
+      window.currentSpectatorRoom = app.id;
+      if (isSpectating) {
+          specSidebar.classList.remove('hidden');
+          specSidebar.classList.add('flex');
+          startSpectatorChat(app.id);
+      } else {
+          specSidebar.classList.add('hidden');
+          specSidebar.classList.remove('flex');
+      }
+
+      // Playtime Coins Tracker
+      if (!isSpectating) {
+          showToast('App Launched', 'Keep this open for 2 minutes to earn 500 coins!', 'ph-rocket-launch', 'indigo');
+          const timerContainer = document.getElementById('reward-timer-container');
+          const timerText = document.getElementById('reward-timer-text');
+          if (timerContainer) {
+              timerContainer.classList.remove('hidden');
+              timerContainer.classList.add('flex');
+          }
+          
+          let rewardSecondsLeft = 120;
+          rewardInterval = setInterval(() => {
+              // Stop interval if they closed the overlay
+              if (overlay.classList.contains('hidden')) {
+                  clearInterval(rewardInterval);
+              } else {
+                  rewardSecondsLeft--;
+                  
+                  if (timerText) {
+                      const m = Math.floor(rewardSecondsLeft / 60).toString().padStart(2, '0');
+                      const s = (rewardSecondsLeft % 60).toString().padStart(2, '0');
+                      timerText.textContent = `${m}:${s}`;
+                  }
+                  
+                  if (rewardSecondsLeft <= 0) {
+                      clearInterval(rewardInterval);
+                      if (timerContainer) {
+                         timerContainer.classList.add('hidden');
+                         timerContainer.classList.remove('flex');
+                      }
+                      window.awardPlaytimeCoins(500);
+                  }
+              }
+          }, 1000);
       }
     };
 
@@ -2973,6 +3138,20 @@
       }
       currentLaunchUrl = null;
       isCurrentLaunchBlob = false;
+      
+      // Stop Spectator streams
+      if (window.spectatorUnsub) {
+          window.spectatorUnsub();
+          window.spectatorUnsub = null;
+      }
+      window.currentSpectatorRoom = null;
+
+      // Remove Live Presence
+      if (currentUser) {
+         updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), {
+             currentActivity: null
+         });
+      }
     };
 
     window.openViewerInNewTab = () => {
@@ -4522,6 +4701,7 @@
       else if (action === 'switchAdminTab') window.switchAdminTab(arg1);
       else if (action === 'installApp') window.installApp(arg1);
       else if (action === 'runApp') window.runApp(arg1);
+      else if (action === 'spectateApp') window.runApp(arg1, true);
       else if (action === 'downloadApp') window.downloadApp(arg1);
       else if (action === 'shareApp') window.shareApp(arg1);
       else if (action === 'toggleFavorite') window.toggleFavorite(arg1);
@@ -4615,6 +4795,23 @@
       else if (action === 'submitFeedback') window.submitFeedback(e);
       else if (action === 'adminAddDevUid') window.adminAddDevUid(e);
       else if (action === 'submitAuth') window.submitAuth(e);
+      else if (action === 'submitSpectatorChat') {
+         e.preventDefault();
+         if (!currentUser || !window.currentSpectatorRoom) {
+             showModal('Sign in Required', 'You must be signed in to use spectator chat.');
+             return;
+         }
+         const input = document.getElementById('spectator-chat-input');
+         const text = input.value.trim();
+         if (!text) return;
+         
+         input.value = '';
+         addDoc(collection(db, 'artifacts', appId, 'public', 'data', `live_chats_${window.currentSpectatorRoom}`), {
+             author: currentUser.customDisplayName || 'Anonymous',
+             text: text,
+             timestamp: Date.now()
+         }).catch(err => console.error(err));
+      }
       else if (action === 'submitAiChat') {
         e.preventDefault();
         const inputEl = document.getElementById('ai-chat-input');
@@ -5188,6 +5385,29 @@
       window.applyTheme();
       window.showThemeModal();
     };
+
+    // NEXUS CREATOR STUDIO IDE LOGIC
+    let previewTimeout;
+    document.getElementById('app-code').addEventListener('input', (e) => {
+        clearTimeout(previewTimeout);
+        
+        const frame = document.getElementById('ide-preview-frame');
+        const placeholder = document.getElementById('ide-preview-placeholder');
+        
+        if(e.target.value.trim() === '') {
+            frame.srcdoc = '';
+            placeholder.classList.remove('hidden');
+            placeholder.classList.add('flex');
+            return;
+        }
+
+        // Live compile every 1 second after typing stops
+        previewTimeout = setTimeout(() => {
+            placeholder.classList.add('hidden');
+            placeholder.classList.remove('flex');
+            frame.srcdoc = e.target.value;
+        }, 1000);
+    });
 
     // Apply themes on boot
     window.applyTheme();
