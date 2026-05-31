@@ -5454,53 +5454,39 @@
     window.isARMode = false;
     let arStream = null;
     
-    // True Spatial Orbit Variables
-    let initialHeading = { alpha: null, beta: null, gamma: null };
-    let targetRot = { x: 0, y: 0, z: 0 };
-    let currentRot = { x: 0, y: 0, z: 0 };
+    // Magnetic Parallax Variables (Prevents screen from disappearing)
+    let initialHeading = { beta: null, gamma: null };
+    let targetRot = { x: 0, y: 0 };
+    let currentRot = { x: 0, y: 0 };
     let arAnimationId = null;
 
-    // Helper: Calculate shortest distance between two 360-degree angles to prevent violent flipping
-    const getShortestAngle = (start, end) => {
-        let diff = (end - start) % 360;
-        if (diff < -180) diff += 360;
-        if (diff > 180) diff -= 360;
-        return diff;
-    };
-
     window.recenterAR = () => {
-        initialHeading = { alpha: null, beta: null, gamma: null };
-        currentRot = { x: 0, y: 0, z: 0 };
-        targetRot = { x: 0, y: 0, z: 0 };
+        initialHeading = { beta: null, gamma: null };
+        currentRot = { x: 0, y: 0 };
+        targetRot = { x: 0, y: 0 };
         showToast('Recentered', 'Spatial window snapped to your current view.', 'ph-crosshair', 'indigo');
     };
 
     window.handleOrientation = (event) => {
         if (!window.isARMode) return;
-        let alpha = event.alpha; // Z-axis [0, 360)
         let beta = event.beta;   // X-axis [-180, 180)
         let gamma = event.gamma; // Y-axis [-90, 90)
         
-        if (alpha === null || beta === null || gamma === null) return;
+        if (beta === null || gamma === null) return;
         
-        // Lock the initial heading where the user is looking
-        if (initialHeading.alpha === null) {
-            initialHeading = { alpha, beta, gamma };
+        // Lock the initial holding angle
+        if (initialHeading.beta === null) {
+            initialHeading = { beta, gamma };
         }
         
-        let dAlpha = alpha - initialHeading.alpha;
         let dBeta = beta - initialHeading.beta;
         let dGamma = gamma - initialHeading.gamma;
         
-        // Handle 360 wrap around
-        if (dAlpha > 180) dAlpha -= 360;
-        if (dAlpha < -180) dAlpha += 360;
-
-        // Inverse mapping to anchor the window in physical space
+        // FIX: Ignore the compass entirely! Use clamped Beta/Gamma to create a 3D Parallax
+        // This ensures the screen slightly tilts and floats like 3D glass, but NEVER leaves the center of your view.
         targetRot = {
-            y: dAlpha, 
-            x: -dBeta, 
-            z: -dGamma 
+            x: Math.max(-15, Math.min(15, -dBeta * 0.4)),
+            y: Math.max(-15, Math.min(15, dGamma * 0.4))
         };
     };
 
@@ -5509,15 +5495,15 @@
         if (!window.isARMode) return;
 
         // Buttery visionOS smoothing (LERP)
-        const smoothing = 0.08;
-        currentRot.x += getShortestAngle(currentRot.x, targetRot.x) * smoothing;
-        currentRot.y += getShortestAngle(currentRot.y, targetRot.y) * smoothing;
-        currentRot.z += getShortestAngle(currentRot.z, targetRot.z) * smoothing;
+        const smoothing = 0.1;
+        currentRot.x += (targetRot.x - currentRot.x) * smoothing;
+        currentRot.y += (targetRot.y - currentRot.y) * smoothing;
 
         const root = document.getElementById('app-root');
         if (root) {
             // True Spatial Orbit: Pushed extremely far back (-1000px) and scaled up to act like a cinematic screen
-            root.style.transform = `perspective(1200px) rotateY(${currentRot.y}deg) rotateX(${currentRot.x}deg) rotateZ(${currentRot.z}deg) translateZ(-1000px) scale(1.35)`;
+            // The screen stays dead center but physically tilts in 3D space as you move
+            root.style.transform = `perspective(1200px) translateZ(-1000px) rotateX(${currentRot.x}deg) rotateY(${currentRot.y}deg) scale(1.35)`;
             root.style.transformOrigin = 'center center';
             root.style.transformStyle = 'preserve-3d';
         }
@@ -5644,9 +5630,9 @@
             mainContent.style.boxShadow = 'none';
             mainContent.style.border = 'none';
             
-            initialHeading = { alpha: null, beta: null, gamma: null };
-            currentRot = { x: 0, y: 0, z: 0 };
-            targetRot = { x: 0, y: 0, z: 0 };
+            initialHeading = { beta: null, gamma: null };
+            currentRot = { x: 0, y: 0 };
+            targetRot = { x: 0, y: 0 };
             
             window.removeEventListener('deviceorientation', window.handleOrientation);
             
