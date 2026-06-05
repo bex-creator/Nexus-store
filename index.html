@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Security Enhancements: Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob: wss:; object-src 'self' https: data: blob:;">
   <title>NexusStore</title>
   
   <!-- Nexus Favicon -->
@@ -216,6 +218,22 @@
     </div>
   </div>
 
+  <!-- Monthly Feedback Modal -->
+  <div id="monthly-feedback-modal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
+    <div class="bg-white dark:bg-slate-900 rounded-[3rem] p-8 max-w-md w-full shadow-2xl animate-zoom-in text-center">
+        <div class="flex items-center justify-center w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-2xl mb-6 mx-auto shadow-sm">
+            <i class="ph-fill ph-chat-circle-text text-3xl"></i>
+        </div>
+        <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-2">Monthly Check-in</h2>
+        <p class="text-slate-500 font-medium mb-6">It's a new month! What features or apps would you like to see added to NexusStore?</p>
+        <textarea id="monthly-feedback-text" class="w-full border-2 rounded-2xl px-5 py-4 mb-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500" rows="3" placeholder="I'd love to see..."></textarea>
+        <div class="flex gap-3">
+            <button data-click="skipMonthlyFeedback" class="flex-1 py-4 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 rounded-2xl font-bold transition-all">Skip</button>
+            <button data-click="submitMonthlyFeedback" class="flex-1 py-4 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-indigo-500/30">Submit Idea</button>
+        </div>
+    </div>
+  </div>
+
   <!-- AI Assistant Modal -->
   <div id="ai-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
     <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 max-w-lg w-full shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col h-[600px] animate-zoom-in">
@@ -408,6 +426,11 @@
       </div>
     </div>
   </div>
+
+  <!-- Vault Bookmark Toggle -->
+  <button id="vault-mode-toggle" data-click="toggleVaultMode" class="fixed bottom-6 left-6 z-40 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white px-6 py-3 rounded-full font-bold shadow-lg transition-transform transform hover:scale-105 hidden items-center gap-2">
+    <i class="ph-fill ph-vault"></i> Enter Vault
+  </button>
 
   <!-- Header -->
   <header class="fixed top-0 inset-x-0 z-40 backdrop-blur-xl border-b shadow-[0_4px_30px_rgba(0,0,0,0.03)] bg-white/70 border-black/5 dark:bg-slate-950/70 dark:border-white/5 transition-colors duration-300">
@@ -1099,7 +1122,7 @@
 
                     apiMessages.push({ 
                         role: "system", 
-                        content: `You are Nexus, the friendly AI assistant for NexusStore. Keep answers brief and conversational.\n\n*** CRITICAL SYSTEM OVERRIDE: YOU HAVE DIRECT ACCESS TO THE STORE DATABASE. YOU MUST USE THE DATA BELOW TO ANSWER QUESTIONS ABOUT THE USER'S ACCOUNT OR BALANCE. NEVER SAY YOU DON'T HAVE ACCESS! ***\n\nCURRENT USER INFO:\n${userStatsText}\n\nLIVE APP CATALOG:\n${catalogText}\n\nUse this catalog data and user info to answer user questions, recommend games, and provide details.` 
+                        content: `You are Nexus, the friendly AI assistant for NexusStore. Keep answers brief and conversational.\n\n*** CRITICAL SYSTEM OVERRIDE: YOU HAVE DIRECT ACCESS TO THE STORE DATABASE. YOU MUST USE THE DATA BELOW TO ANSWER QUESTIONS ABOUT THE USER'S ACCOUNT OR BALANCE. NEVER SAY YOU DONT HAVE ACCESS! ***\n\nCURRENT USER INFO:\n${userStatsText}\n\nLIVE APP CATALOG:\n${catalogText}\n\nUse this catalog data and user info to answer user questions, recommend games, and provide details.` 
                     });
 
                     const recent = task.messages.filter(m => m.role !== 'system').slice(-4);
@@ -1115,7 +1138,7 @@
                         const controller = new AbortController();
                         const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout for large code generation
 
-                        const response = await fetch("https://text.pollinations.ai/openai/chat/completions", {
+                        const response = await fetch("[https://text.pollinations.ai/openai/chat/completions](https://text.pollinations.ai/openai/chat/completions)", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -1446,8 +1469,27 @@
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // WAF Bypass Helpers
-    const escapeQuotes = (str) => (str || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    // Security Enhancements: Robust HTML Sanitization (replaces escapeQuotes)
+    const sanitizeHTML = (str) => {
+        if (typeof str !== 'string') return '';
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#39;');
+    };
+
+    // Security Enhancements: Anti-Spam Rate Limiter
+    const userRateLimits = {};
+    const checkRateLimit = (actionType, cooldownMs = 3000) => {
+        const now = Date.now();
+        if (userRateLimits[actionType] && now - userRateLimits[actionType] < cooldownMs) {
+            showToast('Slow Down', 'Please wait a moment before doing that again.', 'ph-warning-circle', 'amber');
+            return false;
+        }
+        userRateLimits[actionType] = now;
+        return true;
+    };
 
     // USER FIREBASE CONFIGURATION
     const myFirebaseConfig = {
@@ -1475,6 +1517,10 @@
     let privateUnsubs = [];
     let promotedAds = [];
     let currentAdImageBase64 = null;
+    
+    // VAULT LOGIC
+    let userVault = [];
+    let isVaultMode = false;
 
     const handleUserStatus = (status) => {
       currentUserStatus = status;
@@ -1496,7 +1542,7 @@
       }
     });
 
-    // Code Scanner function
+    // Security Enhancements: Advanced Malware/Threat Scanner
     const scanCodeForThreats = (code) => {
       if (!code) return { isSus: false };
       const susPatterns = [
@@ -1504,8 +1550,12 @@
         { regex: /document\.cookie/i, name: 'Cookie manipulation' },
         { regex: /window\.opener/i, name: 'window.opener access' },
         { regex: /window\.parent/i, name: 'window.parent access' },
+        { regex: /window\.top/i, name: 'window.top access' },
         { regex: /document\.write\s*\(/i, name: 'document.write() usage' },
-        { regex: /<script[^>]*src=["']?(?!https:\/\/(cdn\.tailwindcss\.com|unpkg\.com|cdnjs\.cloudflare\.com))[^"'>]+["']?>/i, name: 'Untrusted external script URL' }
+        { regex: /localStorage\./i, name: 'localStorage tracking' },
+        { regex: /sessionStorage\./i, name: 'sessionStorage tracking' },
+        { regex: /javascript:/i, name: 'Inline javascript URIs' },
+        { regex: /<script[^>]*src=["']?(?!https:\/\/(cdn\.tailwindcss\.com|unpkg\.com|cdnjs\.cloudflare\.com|www\.gstatic\.com))[^"'>]+["']?>/i, name: 'Untrusted external script URL' }
       ];
       for (let pattern of susPatterns) {
         if (pattern.regex.test(code)) {
@@ -1672,10 +1722,12 @@
           currentUser = user;
           const balContainer = document.getElementById('coin-balance-container');
           const profileEl = document.getElementById('user-profile');
+          const vaultToggle = document.getElementById('vault-mode-toggle');
 
           if (!user) {
               if (balContainer) { balContainer.classList.add('hidden'); balContainer.classList.remove('flex'); }
               if (profileEl) { profileEl.classList.add('hidden'); profileEl.classList.remove('flex'); }
+              if (vaultToggle) { vaultToggle.classList.add('hidden'); vaultToggle.classList.remove('flex'); }
               
               window.isAuthorizedAdmin = false;
               
@@ -1686,6 +1738,7 @@
               privateUnsubs.forEach(unsub => unsub());
               privateUnsubs = [];
               myFavorites.clear();
+              userVault = [];
               userMessages = [];
               updateInboxBookmark();
 
@@ -1697,6 +1750,7 @@
 
           // User is Authenticated
           if (profileEl) { profileEl.classList.remove('hidden'); profileEl.classList.add('flex'); }
+          if (vaultToggle) { vaultToggle.classList.remove('hidden'); vaultToggle.classList.add('flex'); }
 
           if (localStorage.getItem('nexus_admin_verified') === 'true' && user && user.email === 'bexlebeau30@students.cumberlandschools.org') {
               window.isAuthorizedAdmin = true;
@@ -1778,6 +1832,36 @@
             if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
           }, (error) => console.warn("Firestore favorites error:", error));
           privateUnsubs.push(favsUnsub);
+          
+          // SETUP PREFERENCES (VAULT + MONTHLY FEEDBACK)
+          const userPrefsRef = doc(db, 'artifacts', appId, 'users', user.uid, 'preferences', 'general');
+          const prefsUnsub = onSnapshot(userPrefsRef, (docSnap) => {
+              if (docSnap.exists()) {
+                  userVault = docSnap.data().vault || [];
+                  if (currentView === 'home') renderHome();
+                  if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
+              }
+          });
+          privateUnsubs.push(prefsUnsub);
+
+          // MONTHLY FEEDBACK CHECK
+          try {
+              const currentMonth = new Date().toISOString().slice(0, 7); // e.g., "2023-10"
+              const prefSnap = await getDoc(userPrefsRef);
+              let lastFeedbackMonth = '';
+              if (prefSnap.exists()) {
+                  lastFeedbackMonth = prefSnap.data().lastFeedbackMonth || '';
+              }
+              
+              if (lastFeedbackMonth !== currentMonth) {
+                  const monthlyModal = document.getElementById('monthly-feedback-modal');
+                  if (monthlyModal) {
+                      monthlyModal.classList.remove('hidden');
+                      monthlyModal.classList.add('flex');
+                      window._currentFeedbackMonth = currentMonth;
+                  }
+              }
+          } catch(err) { console.error("Monthly feedback check failed", err); }
 
           // Trigger re-render of current view to update app visibility and user UI elements
           if (currentView === 'home') renderHome();
@@ -2052,7 +2136,7 @@
         
         const displayStr = user.customDisplayName || user.displayName || 'User';
         document.getElementById('user-name').textContent = displayStr;
-        document.getElementById('user-avatar').src = user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${displayStr}&backgroundColor=6366f1`;
+        document.getElementById('user-avatar').src = user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${sanitizeHTML(displayStr)}&backgroundColor=6366f1`;
       }
     };
 
@@ -2315,10 +2399,10 @@
             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300"></div>
           </div>
           <h3 class="font-bold text-lg line-clamp-1 w-full flex items-center gap-1 group-hover:text-indigo-500 transition-colors text-slate-900 dark:text-white">
-            ${app.title}
+            ${sanitizeHTML(app.title)}
             ${app.isVerified ? '<i class="ph-fill ph-shield-check text-emerald-500 flex-shrink-0 text-base" title="Verified Safe"></i>' : ''}
           </h3>
-          <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${escapeQuotes(app.developer)}" class="text-sm font-medium text-slate-500 hover:text-indigo-500 line-clamp-1 w-full mb-1 transition-colors">${app.developer}</p>
+          <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${sanitizeHTML(app.developer)}" class="text-sm font-medium text-slate-500 hover:text-indigo-500 line-clamp-1 w-full mb-1 transition-colors">${sanitizeHTML(app.developer)}</p>
           <div class="flex items-center gap-1 text-sm font-bold text-slate-500 dark:text-slate-300">
             <span>${stats.rating}</span>
             <i class="ph-fill ph-star text-yellow-400"></i>
@@ -2327,8 +2411,47 @@
       `}).join('');
     };
 
+    window.toggleVaultMode = () => {
+        isVaultMode = !isVaultMode;
+        
+        const vaultToggle = document.getElementById('vault-mode-toggle');
+        if (vaultToggle) {
+            vaultToggle.innerHTML = isVaultMode ? 
+                '<i class="ph-fill ph-vault"></i> Exit Vault' : 
+                '<i class="ph-fill ph-vault"></i> Enter Vault';
+            vaultToggle.className = isVaultMode ?
+                'fixed bottom-6 left-6 z-40 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-emerald-500/30 transition-transform transform hover:scale-105 flex items-center gap-2' :
+                'fixed bottom-6 left-6 z-40 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white px-6 py-3 rounded-full font-bold shadow-lg transition-transform transform hover:scale-105 flex items-center gap-2';
+        }
+        
+        if(currentView === 'home') {
+            renderHome();
+        }
+    };
+
+    window.toggleVault = async (targetAppId) => {
+        if (!currentUser) {
+            showModal('Not Logged In', 'You must create an account or sign in to use the Vault.');
+            return;
+        }
+        const userPrefsRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'preferences', 'general');
+        try {
+            if (userVault.includes(targetAppId)) {
+                await setDoc(userPrefsRef, { vault: arrayRemove(targetAppId) }, { merge: true });
+                showToast('Removed from Vault', 'App removed from your offline Vault.', 'ph-vault', 'slate');
+            } else {
+                await setDoc(userPrefsRef, { vault: arrayUnion(targetAppId) }, { merge: true });
+                showToast('Added to Vault', 'App saved to your Vault!', 'ph-vault', 'emerald');
+            }
+        } catch (err) {
+            console.error("Error toggling vault:", err);
+        }
+    };
+
     function renderHome() {
       const filtered = window.apps.filter(app => {
+        if (isVaultMode && !userVault.includes(app.id)) return false;
+        
         const titleMatch = (app.title || '').toLowerCase().includes(searchQuery.toLowerCase());
         const devMatch = (app.developer || '').toLowerCase().includes(searchQuery.toLowerCase());
         const catMatch = (app.category || '').toLowerCase().includes(searchQuery.toLowerCase());
@@ -2361,7 +2484,7 @@
 
       if (window.adRotationInterval) clearInterval(window.adRotationInterval);
 
-      if (!searchQuery && promotedAds.length > 0 && sponsoredSidebar) {
+      if (!searchQuery && !isVaultMode && promotedAds.length > 0 && sponsoredSidebar) {
           sponsoredSidebar.classList.remove('hidden');
           
           sponsoredSidebar.innerHTML = `
@@ -2389,10 +2512,10 @@
                       ${ad.imageUrl ? `<img src="${ad.imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />` : `<div class="w-full h-full bg-indigo-500 flex items-center justify-center text-white"><i class="ph-fill ph-app-window text-5xl"></i></div>`}
                     </div>
                     <div class="w-full flex flex-col justify-center text-center flex-1">
-                      <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2 tracking-tight group-hover:text-indigo-500 transition-colors line-clamp-2">${escapeQuotes(ad.text)}</h3>
+                      <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2 tracking-tight group-hover:text-indigo-500 transition-colors line-clamp-2">${sanitizeHTML(ad.text)}</h3>
                       <div class="flex items-center justify-center gap-2 mb-4 mt-auto">
                         ${targetApp.icon ? `<img src="${targetApp.icon}" class="w-6 h-6 rounded-md object-cover shadow-sm border border-slate-100 dark:border-slate-800">` : `<div class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 flex items-center justify-center"><i class="${targetApp.iconClass || 'ph-app-window'} text-slate-500 text-xs"></i></div>`}
-                        <div class="font-bold text-sm text-slate-700 dark:text-slate-200 line-clamp-1">${targetApp.title}</div>
+                        <div class="font-bold text-sm text-slate-700 dark:text-slate-200 line-clamp-1">${sanitizeHTML(targetApp.title)}</div>
                       </div>
                       <button class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 py-2.5 rounded-xl font-black transition-all shadow-md text-sm flex items-center justify-center gap-2 mt-2">
                         Check it out
@@ -2428,7 +2551,7 @@
           todaysPicks = [filtered[pickIndex]];
       }
 
-      if (!searchQuery && todaysPicks.length > 0 && picksSection) {
+      if (!searchQuery && !isVaultMode && todaysPicks.length > 0 && picksSection) {
         picksSection.classList.remove('hidden');
         const picksHtml = todaysPicks.map((app, idx) => `
           <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col justify-center min-h-[300px] shadow-lg transition-all duration-300 hover:-translate-y-1 bg-black dark:bg-slate-900 border border-slate-800 h-full">
@@ -2450,15 +2573,15 @@
                   </div>`
                 }
                 <div class="min-w-0">
-                  <h3 class="text-3xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg truncate">${app.title}</h3>
-                  <p class="text-indigo-200 font-medium text-lg sm:text-xl mt-1 truncate">${app.category}</p>
+                  <h3 class="text-3xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg truncate">${sanitizeHTML(app.title)}</h3>
+                  <p class="text-indigo-200 font-medium text-lg sm:text-xl mt-1 truncate">${sanitizeHTML(app.category)}</p>
                 </div>
               </div>
-              <p class="text-slate-200 text-base sm:text-lg line-clamp-2 leading-relaxed max-w-3xl mb-8">${app.description}</p>
+              <p class="text-slate-200 text-base sm:text-lg line-clamp-2 leading-relaxed max-w-3xl mb-8">${sanitizeHTML(app.description)}</p>
               
               <div class="flex flex-col sm:flex-row sm:items-center gap-6 mt-2">
                 <button class="bg-white/10 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 border border-white/20 px-10 py-4 rounded-2xl font-black transition-all duration-300 w-full sm:w-fit text-lg shadow-xl">View Details</button>
-                <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${escapeQuotes(app.developer)}" class="text-white/60 hover:text-white text-base font-bold transition-colors truncate relative z-30">By ${app.developer}</p>
+                <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${sanitizeHTML(app.developer)}" class="text-white/60 hover:text-white text-base font-bold transition-colors truncate relative z-30">By ${sanitizeHTML(app.developer)}</p>
               </div>
             </div>
           </div>
@@ -2468,7 +2591,12 @@
         picksSection.classList.add('hidden');
       }
 
-      document.getElementById('grid-title').textContent = searchQuery ? 'Search Results' : 'Trending Now';
+      if (isVaultMode) {
+          document.getElementById('grid-title').textContent = 'My Vault';
+      } else {
+          document.getElementById('grid-title').textContent = searchQuery ? 'Search Results' : 'Trending Now';
+      }
+      
       document.getElementById('grid-container').innerHTML = generateGridHtml(filtered);
     }
 
@@ -2508,12 +2636,12 @@
     function renderProfile(developerName) {
       const devApps = window.apps.filter(a => a.developer === developerName && (a.visibility !== 'private' || (currentUser && a.authorId === currentUser.uid)));
       
-      document.getElementById('profile-header-avatar').innerHTML = `<img src="https://api.dicebear.com/7.x/initials/svg?seed=${escapeQuotes(developerName)}&backgroundColor=6366f1,8b5cf6,ec4899" class="w-32 h-32 sm:w-40 sm:h-40 rounded-[2.5rem] shadow-2xl border-4 border-white dark:border-slate-800 object-cover" />`;
-      document.getElementById('profile-header-name').textContent = developerName;
+      document.getElementById('profile-header-avatar').innerHTML = `<img src="https://api.dicebear.com/7.x/initials/svg?seed=${sanitizeHTML(developerName)}&backgroundColor=6366f1,8b5cf6,ec4899" class="w-32 h-32 sm:w-40 sm:h-40 rounded-[2.5rem] shadow-2xl border-4 border-white dark:border-slate-800 object-cover" />`;
+      document.getElementById('profile-header-name').textContent = sanitizeHTML(developerName);
       document.getElementById('profile-header-stats').textContent = `${devApps.length} App${devApps.length !== 1 ? 's' : ''} Published`;
       
       const devUser = systemUsers.find(u => (u.username === developerName) || (u.displayName === developerName));
-      document.getElementById('profile-header-bio').textContent = devUser?.bio || "This developer prefers to keep an air of mystery and hasn't written a bio yet.";
+      document.getElementById('profile-header-bio').textContent = devUser?.bio ? sanitizeHTML(devUser.bio) : "This developer prefers to keep an air of mystery and hasn't written a bio yet.";
 
       const myName = currentUser?.customDisplayName || currentUser?.displayName;
       const editBtn = document.getElementById('edit-profile-btn');
@@ -2528,7 +2656,7 @@
             const me = systemUsers.find(u => u.uid === currentUser.uid);
             const isFollowing = (me?.following || []).includes(developerName);
             devActions.innerHTML = `
-                <button data-click="toggleFollow" data-arg="${escapeQuotes(developerName)}" class="px-6 py-2.5 rounded-2xl font-bold transition-all duration-300 shadow-sm flex items-center gap-2 ${isFollowing ? 'bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700' : 'bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-indigo-500/30'}">
+                <button data-click="toggleFollow" data-arg="${sanitizeHTML(developerName)}" class="px-6 py-2.5 rounded-2xl font-bold transition-all duration-300 shadow-sm flex items-center gap-2 ${isFollowing ? 'bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700' : 'bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-indigo-500/30'}">
                     ${isFollowing ? '<i class="ph-bold ph-check"></i> Following' : '<i class="ph-bold ph-plus"></i> Follow'}
                 </button>
             `;
@@ -2589,7 +2717,7 @@
                   <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
                       <td class="p-4 font-bold text-slate-900 dark:text-white flex items-center gap-3">
                           ${a.icon ? `<img src="${a.icon}" class="w-8 h-8 rounded-lg object-cover shadow-sm">` : `<div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-500 flex items-center justify-center"><i class="${a.iconClass||'ph-app-window'}"></i></div>`}
-                          ${a.title}
+                          ${sanitizeHTML(a.title)}
                       </td>
                       <td class="p-4 text-slate-600 dark:text-slate-300 font-medium"><i class="ph-fill ph-coin text-yellow-500"></i> ${a.price || 0}</td>
                       <td class="p-4 text-slate-600 dark:text-slate-300 font-medium">${dl}</td>
@@ -2676,6 +2804,7 @@
       if (!app) return;
 
       const isInstalled = installedApps.has(app.id);
+      const isInVault = userVault.includes(app.id);
       const stats = getAppStats(app);
       const isAuthorizedAdmin = window.isAuthorizedAdmin;
       
@@ -2727,7 +2856,7 @@
                    <div class="bg-amber-500 text-white p-2.5 rounded-xl mt-1 shadow-md"><i class="ph-bold ph-warning text-2xl"></i></div>
                    <div>
                       <h3 class="text-amber-800 dark:text-amber-400 font-black text-xl mb-1">App Under Maintenance</h3>
-                      <p class="text-amber-700 dark:text-amber-300 font-medium">${app.brokenReason || 'This app has been flagged by administrators and may not function properly at this time.'}</p>
+                      <p class="text-amber-700 dark:text-amber-300 font-medium">${sanitizeHTML(app.brokenReason) || 'This app has been flagged by administrators and may not function properly at this time.'}</p>
                    </div>
                 </div>
               ` : ''}
@@ -2742,13 +2871,13 @@
                 }
                 <div class="flex-1 w-full">
                   <h1 class="text-4xl sm:text-5xl font-black mb-2 tracking-tight text-slate-900 dark:text-white flex items-center gap-3 flex-wrap">
-                    ${app.title}
+                    ${sanitizeHTML(app.title)}
                     ${app.isVerified ? '<i class="ph-fill ph-shield-check text-emerald-500 text-3xl sm:text-4xl" title="Verified Safe"></i>' : ''}
                     ${app.visibility === 'private' ? '<i class="ph-fill ph-lock-key text-2xl sm:text-3xl text-slate-400" title="Private App"></i>' : ''}
                   </h1>
                   
-                  <button data-click="navigate" data-arg="profile" data-arg2="${escapeQuotes(app.developer)}" class="text-xl text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold mb-6 transition-colors inline-flex items-center gap-2">
-                    ${app.developer} <i class="ph-bold ph-arrow-up-right text-sm"></i>
+                  <button data-click="navigate" data-arg="profile" data-arg2="${sanitizeHTML(app.developer)}" class="text-xl text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold mb-6 transition-colors inline-flex items-center gap-2">
+                    ${sanitizeHTML(app.developer)} <i class="ph-bold ph-arrow-up-right text-sm"></i>
                   </button>
                   
                   <div class="flex flex-wrap gap-6 text-slate-600 mb-8">
@@ -2765,7 +2894,7 @@
                       <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">${stats.count} Ratings</span>
                     </div>
                     <div class="flex flex-col items-center justify-center rounded-2xl px-5 py-3 border min-w-[100px] bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-700">
-                      <span class="text-lg font-black text-slate-900 dark:text-white">v${activeVersionObj.version}</span>
+                      <span class="text-lg font-black text-slate-900 dark:text-white">v${sanitizeHTML(activeVersionObj.version)}</span>
                       <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Version</span>
                     </div>
                     <div class="flex flex-col items-center justify-center rounded-2xl px-5 py-3 border min-w-[100px] bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-700">
@@ -2808,7 +2937,12 @@
                           <i class="ph ph-code text-2xl"></i>
                         </button>
                       ` : ''}
-                      <button data-click="shareApp" data-arg="${escapeQuotes(app.title)}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Share App">
+                      
+                      <button data-click="toggleVault" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center ${isInVault ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40' : 'bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white'}" title="${isInVault ? 'Remove from Vault' : 'Add to Vault'}">
+                        <i class="${isInVault ? 'ph-fill' : 'ph'} ph-vault text-2xl"></i>
+                      </button>
+
+                      <button data-click="shareApp" data-arg="${sanitizeHTML(app.title)}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Share App">
                         <i class="ph ph-share-network text-2xl"></i>
                       </button>
                       <button data-click="toggleFavorite" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center ${myFavorites.has(app.id) ? 'bg-pink-50 text-pink-500 hover:bg-pink-100 dark:bg-pink-900/20 dark:hover:bg-pink-900/40' : 'bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white'}" title="${myFavorites.has(app.id) ? 'Remove from Favorites' : 'Add to Favorites'}">
@@ -2853,12 +2987,12 @@
                 <h3 class="text-lg font-black mb-2 tracking-tight text-indigo-900 dark:text-indigo-200 flex items-center gap-2">
                   <i class="ph-fill ph-sparkle text-indigo-500"></i> App Analysis
                 </h3>
-                <p id="overview-text-${app.id}" class="text-base leading-relaxed font-medium text-indigo-800/80 dark:text-indigo-200/80 whitespace-pre-wrap">${app.trueAiOverview ? escapeQuotes(app.trueAiOverview) : (window.aiReady ? '<div class="py-1"><div class="dot-flashing"></div></div>' : 'AI Engine is initializing...')}</p>
+                <p id="overview-text-${app.id}" class="text-base leading-relaxed font-medium text-indigo-800/80 dark:text-indigo-200/80 whitespace-pre-wrap">${app.trueAiOverview ? sanitizeHTML(app.trueAiOverview) : (window.aiReady ? '<div class="py-1"><div class="dot-flashing"></div></div>' : 'AI Engine is initializing...')}</p>
               </div>
 
               <div class="mb-10 max-w-3xl">
                 <h3 class="text-2xl font-black mb-4 tracking-tight text-slate-900 dark:text-white">About</h3>
-                <p class="text-lg leading-relaxed whitespace-pre-line font-medium text-slate-600 dark:text-slate-300">${app.description}</p>
+                <p class="text-lg leading-relaxed whitespace-pre-line font-medium text-slate-600 dark:text-slate-300">${sanitizeHTML(app.description)}</p>
               </div>
 
               <hr class="mb-10 border-slate-100 dark:border-slate-800" />
@@ -2893,7 +3027,7 @@
                             <div class="w-8 h-8 rounded-full ${isDeveloper ? 'bg-indigo-500 text-white' : 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-500'} flex items-center justify-center text-xs">
                               <i class="${isDeveloper ? 'ph-fill ph-code' : 'ph-fill ph-user'}"></i>
                             </div>
-                            ${r.author}
+                            ${sanitizeHTML(r.author)}
                             ${isDeveloper ? '<span class="bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ml-1">Developer</span>' : ''}
                           </div>
                           <div class="flex items-center gap-3">
@@ -2904,7 +3038,7 @@
                         <div class="flex items-center gap-1 mb-2">
                           ${[1,2,3,4,5].map(i => `<i class="${i <= r.rating ? 'ph-fill text-yellow-400' : 'ph text-slate-300 dark:text-slate-700'} ph-star text-lg"></i>`).join('')}
                         </div>
-                        <p class="text-slate-600 dark:text-slate-300 font-medium leading-relaxed">${r.text}</p>
+                        <p class="text-slate-600 dark:text-slate-300 font-medium leading-relaxed">${sanitizeHTML(r.text)}</p>
                       </div>
                       `;
                     }).join('');
@@ -3063,8 +3197,8 @@
             
             chatContainer.innerHTML = msgs.map(m => `
                 <div class="animate-fade-in flex flex-col items-start gap-0.5">
-                   <span class="text-[10px] font-black uppercase text-indigo-400">${m.author}</span>
-                   <span class="text-slate-200 bg-slate-800 px-3 py-1.5 rounded-lg rounded-tl-none">${m.text}</span>
+                   <span class="text-[10px] font-black uppercase text-indigo-400">${sanitizeHTML(m.author)}</span>
+                   <span class="text-slate-200 bg-slate-800 px-3 py-1.5 rounded-lg rounded-tl-none">${sanitizeHTML(m.text)}</span>
                 </div>
             `).join('');
             chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -3106,9 +3240,9 @@
           
           titleEl.textContent = app.title + ' (Spectator Mode)';
           if (app.icon) {
-              iconEl.innerHTML = `<img src="${app.icon}" class="w-full h-full object-cover">`;
+              iconEl.innerHTML = `<img src="${sanitizeHTML(app.icon)}" class="w-full h-full object-cover">`;
           } else {
-              iconEl.innerHTML = `<i class="${app.iconClass || 'ph-app-window'} text-white"></i>`;
+              iconEl.innerHTML = `<i class="${sanitizeHTML(app.iconClass) || 'ph-app-window'} text-white"></i>`;
           }
           
           iframe.src = launchUrl;
@@ -3261,7 +3395,7 @@
         const embedHtml = `<div style="border: 2px solid #e2e8f0; border-radius: 16px; overflow: hidden; width: 100%; max-width: 800px; font-family: system-ui, sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin: 20px auto;">
   <div style="background: #0f172a; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; color: white;">
     <div style="display: flex; align-items: center; gap: 8px;">
-       <span style="font-weight: 900; font-size: 16px;">${escapeQuotes(app.title)}</span>
+       <span style="font-weight: 900; font-size: 16px;">${sanitizeHTML(app.title)}</span>
        <span style="background: #4f46e5; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase;">Play Now</span>
     </div>
     <a href="https://nexus-store.com" target="_blank" style="color: #a5b4fc; text-decoration: none; font-size: 12px; font-weight: bold;">Powered by NexusStore</a>
@@ -3279,10 +3413,10 @@
                   <i class="ph-bold ph-x text-xl"></i>
                 </button>
               </div>
-              <p class="text-slate-500 font-medium mb-6">Copy and paste this HTML snippet to embed <b>${escapeQuotes(app.title)}</b> directly into your own website, blog, or portfolio!</p>
+              <p class="text-slate-500 font-medium mb-6">Copy and paste this HTML snippet to embed <b>${sanitizeHTML(app.title)}</b> directly into your own website, blog, or portfolio!</p>
               
               <div class="relative mb-6">
-                <textarea id="embed-code-textarea" readonly rows="6" class="w-full bg-slate-950 text-emerald-400 font-mono text-sm p-5 rounded-2xl outline-none resize-none custom-scrollbar shadow-inner border border-slate-800 focus:ring-2 focus:ring-indigo-500 transition-all">${escapeQuotes(embedHtml)}</textarea>
+                <textarea id="embed-code-textarea" readonly rows="6" class="w-full bg-slate-950 text-emerald-400 font-mono text-sm p-5 rounded-2xl outline-none resize-none custom-scrollbar shadow-inner border border-slate-800 focus:ring-2 focus:ring-indigo-500 transition-all">${sanitizeHTML(embedHtml)}</textarea>
                 <button id="copy-embed-btn" class="absolute top-4 right-4 bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-colors flex items-center gap-2">
                     <i class="ph-bold ph-copy"></i> Copy Code
                 </button>
@@ -3315,6 +3449,43 @@
         });
     };
 
+    window.submitMonthlyFeedback = async () => {
+        if (!currentUser || !window._currentFeedbackMonth) return;
+        const text = document.getElementById('monthly-feedback-text').value.trim();
+        if (!text) {
+            showModal('Wait!', 'Please write a quick suggestion or feedback before submitting!');
+            return;
+        }
+        
+        try {
+            // Add feedback
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'feedback'), {
+                uid: currentUser.uid,
+                author: currentUser.customDisplayName || 'User',
+                text: `[Monthly Check-in] ${text}`,
+                timestamp: Date.now()
+            });
+            
+            // Update preference so it doesn't show again this month
+            const userPrefsRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'preferences', 'general');
+            await setDoc(userPrefsRef, { lastFeedbackMonth: window._currentFeedbackMonth }, { merge: true });
+            
+            showToast('Thanks!', 'Your feedback has been sent directly to the admins.', 'ph-check-circle', 'indigo');
+            document.getElementById('monthly-feedback-modal').classList.add('hidden');
+            document.getElementById('monthly-feedback-modal').classList.remove('flex');
+        } catch(e) { console.error(e); }
+    };
+
+    window.skipMonthlyFeedback = async () => {
+        if (!currentUser || !window._currentFeedbackMonth) return;
+        try {
+            const userPrefsRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'preferences', 'general');
+            await setDoc(userPrefsRef, { lastFeedbackMonth: window._currentFeedbackMonth }, { merge: true });
+            document.getElementById('monthly-feedback-modal').classList.add('hidden');
+            document.getElementById('monthly-feedback-modal').classList.remove('flex');
+        } catch(e) { console.error(e); }
+    };
+
     window.setReviewRating = (rating) => {
       currentReviewRating = rating;
       for(let i=1; i<=5; i++) {
@@ -3343,6 +3514,10 @@
         showModal('Error', 'You must be active to leave a review.');
         return;
       }
+      
+      // Anti-Spam Check
+      if (!checkRateLimit('postReview', 5000)) return;
+
       const textInput = document.getElementById('review-text-input');
       const text = textInput.value.trim();
       if (!text) return;
@@ -3505,7 +3680,7 @@
                     dropdown.innerHTML = '<option value="">No apps published yet</option>';
                     dropdown.disabled = true;
                 } else {
-                    dropdown.innerHTML = myApps.map(a => `<option value="${a.id}">${escapeQuotes(a.title)}</option>`).join('');
+                    dropdown.innerHTML = myApps.map(a => `<option value="${a.id}">${sanitizeHTML(a.title)}</option>`).join('');
                     dropdown.disabled = false;
                 }
             }
@@ -3551,6 +3726,9 @@
         showModal('Error', 'You do not have permission to publish.');
         return;
       }
+      
+      // Anti-Spam check
+      if (!checkRateLimit('publishApp', 10000)) return;
 
       // Validate required media assets
       if (!iconPreviewBase64) {
@@ -3915,6 +4093,10 @@
     window.submitCoinRequest = async (amountStr, modalId, e) => {
        const amount = parseInt(amountStr);
        if (!amount || !currentUser) return;
+       
+       // Anti-Spam Check
+       if (!checkRateLimit('coinRequest', 15000)) return; // 15s cooldown
+
        const btn = e.currentTarget;
        const originalContent = btn.innerHTML;
        btn.innerHTML = '<i class="ph ph-spinner animate-spin text-3xl text-yellow-500"></i>';
@@ -3946,7 +4128,7 @@
           <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20 flex items-center justify-between transition-colors hover:border-yellow-300 dark:hover:border-yellow-800">
             <div>
               <div class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                 ${req.username} 
+                 ${sanitizeHTML(req.username)} 
                  <span class="bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs px-2 py-0.5 rounded font-black"><i class="ph-fill ph-coin"></i> ${req.amount}</span>
               </div>
               <div class="text-[10px] font-mono text-slate-500">${req.uid}</div>
@@ -3993,13 +4175,13 @@
           <td class="p-6 font-bold text-slate-900 dark:text-white flex items-center gap-4">
             ${app.icon ? `<img src="${app.icon}" class="w-10 h-10 rounded-xl object-cover shadow-sm">` : `<div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-500 flex items-center justify-center shadow-sm"><i class="${app.iconClass || 'ph-app-window'} text-xl"></i></div>`}
             <div>
-              <div class="line-clamp-1">${app.title}</div>
+              <div class="line-clamp-1">${sanitizeHTML(app.title)}</div>
               <div class="text-xs font-medium text-slate-400 font-mono">${app.id}</div>
             </div>
           </td>
-          <td class="p-6 text-slate-600 dark:text-slate-300 font-medium">${app.developer}</td>
+          <td class="p-6 text-slate-600 dark:text-slate-300 font-medium">${sanitizeHTML(app.developer)}</td>
           <td class="p-6 text-slate-600 dark:text-slate-300">
-            <span class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold uppercase tracking-wider">${app.payloadType || 'unknown'}</span>
+            <span class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold uppercase tracking-wider">${sanitizeHTML(app.payloadType) || 'unknown'}</span>
           </td>
           <td class="p-6 text-slate-600 dark:text-slate-300">
             ${app.visibility === 'private' ? '<span class="text-amber-500 flex items-center gap-1"><i class="ph-fill ph-lock-key"></i> Private</span>' : '<span class="text-emerald-500 flex items-center gap-1"><i class="ph-fill ph-globe"></i> Public</span>'}
@@ -4044,26 +4226,26 @@
         <tr class="hover:bg-slate-50 dark:bg-slate-800/20 transition-colors group">
           <td class="p-6">
             <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1">
-              ${u.username || u.displayName || '<span class="italic text-slate-400 font-normal">Pending Setup</span>'} 
+              ${sanitizeHTML(u.username || u.displayName) || '<span class="italic text-slate-400 font-normal">Pending Setup</span>'} 
               ${u.isVIP ? '<i class="ph-fill ph-star text-purple-500" title="VIP"></i>' : ''}
               ${u.isAnonymous ? '<span class="bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300 text-[10px] px-2 py-0.5 rounded font-black ml-2 uppercase tracking-wider">Guest</span>' : ''}
             </div>
             <div class="text-xs font-mono text-slate-400 mt-1">${u.uid}</div>
-            ${u.email ? `<div class="text-xs font-medium text-indigo-500 mt-1">${u.email}</div>` : (u.isAnonymous ? '<div class="text-xs font-medium text-slate-400 mt-1 italic">Guest Account</div>' : '<div class="text-xs font-medium text-slate-400 mt-1 italic">No Email</div>')}
+            ${u.email ? `<div class="text-xs font-medium text-indigo-500 mt-1">${sanitizeHTML(u.email)}</div>` : (u.isAnonymous ? '<div class="text-xs font-medium text-slate-400 mt-1 italic">Guest Account</div>' : '<div class="text-xs font-medium text-slate-400 mt-1 italic">No Email</div>')}
           </td>
           <td class="p-6">${statusBadge}</td>
           <td class="p-6 text-right">
              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button data-click="adminManageCoins" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Manage Nexus Coins"><i class="ph-fill ph-coin"></i> Coins</button>
-              <button data-click="adminSetApiKey" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Assign Custom API Key"><i class="ph-fill ph-key"></i> API</button>
+              <button data-click="adminManageCoins" data-arg="${u.uid}" data-arg2="${sanitizeHTML(u.username || u.displayName || 'User')}" class="text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Manage Nexus Coins"><i class="ph-fill ph-coin"></i> Coins</button>
+              <button data-click="adminSetApiKey" data-arg="${u.uid}" data-arg2="${sanitizeHTML(u.username || u.displayName || 'User')}" class="text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Assign Custom API Key"><i class="ph-fill ph-key"></i> API</button>
               <button data-click="adminToggleVIP" data-arg="${u.uid}" class="${u.isVIP ? 'text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/40' : 'text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20'} px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Toggle VIP Status"><i class="ph-fill ph-star"></i> VIP</button>
-              <button data-click="viewUserHistory" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-clock-counter-clockwise"></i> History</button>
-              <button data-click="adminMessageUser" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-paper-plane-tilt"></i> Msg</button>
+              <button data-click="viewUserHistory" data-arg="${u.uid}" data-arg2="${sanitizeHTML(u.username || u.displayName || 'User')}" class="text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-clock-counter-clockwise"></i> History</button>
+              <button data-click="adminMessageUser" data-arg="${u.uid}" data-arg2="${sanitizeHTML(u.username || u.displayName || 'User')}" class="text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-paper-plane-tilt"></i> Msg</button>
               ${u.status !== 'active' ? `<button data-click="adminSetUserStatus" data-arg="${u.uid}" data-arg2="active" class="text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all">Activate</button>` : ''}
               ${u.status !== 'suspended' ? `<button data-click="adminSetUserStatus" data-arg="${u.uid}" data-arg2="suspended" class="text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all">Suspend</button>` : ''}
               ${u.status !== 'banned' ? `<button data-click="adminSetUserStatus" data-arg="${u.uid}" data-arg2="banned" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all">Ban</button>` : ''}
-              <button data-click="adminDeleteUserReviews" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1 ml-2 border border-orange-200 dark:border-orange-900/50" title="Delete All Reviews by User"><i class="ph-fill ph-trash"></i> Revs</button>
-              <button data-click="adminDeleteUser" data-arg="${u.uid}" data-arg2="${escapeQuotes(u.username || u.displayName || 'User')}" class="text-red-600 hover:bg-red-100 dark:hover:bg-red-900/40 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1 ml-2 border border-red-200 dark:border-red-900/50"><i class="ph-fill ph-trash"></i> DB</button>
+              <button data-click="adminDeleteUserReviews" data-arg="${u.uid}" data-arg2="${sanitizeHTML(u.username || u.displayName || 'User')}" class="text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1 ml-2 border border-orange-200 dark:border-orange-900/50" title="Delete All Reviews by User"><i class="ph-fill ph-trash"></i> Revs</button>
+              <button data-click="adminDeleteUser" data-arg="${u.uid}" data-arg2="${sanitizeHTML(u.username || u.displayName || 'User')}" class="text-red-600 hover:bg-red-100 dark:hover:bg-red-900/40 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1 ml-2 border border-red-200 dark:border-red-900/50"><i class="ph-fill ph-trash"></i> DB</button>
              </div>
           </td>
         </tr>
@@ -4177,11 +4359,11 @@
           return `
             <div class="p-5 border-b border-slate-100 dark:border-slate-800 last:border-0 text-left hover:bg-white dark:hover:bg-slate-900 transition-colors">
               <div class="flex justify-between items-center mb-2">
-                <span class="font-bold text-[10px] uppercase tracking-widest px-2 py-1 rounded-md ${actionColor}">${log.action}</span>
+                <span class="font-bold text-[10px] uppercase tracking-widest px-2 py-1 rounded-md ${actionColor}">${sanitizeHTML(log.action)}</span>
                 <span class="text-xs font-bold text-slate-400">${date}</span>
               </div>
-              <div class="font-bold text-base text-slate-800 dark:text-slate-200 mb-1">${log.targetName}</div>
-              <div class="text-sm font-medium text-slate-500 dark:text-slate-400">${log.details}</div>
+              <div class="font-bold text-base text-slate-800 dark:text-slate-200 mb-1">${sanitizeHTML(log.targetName)}</div>
+              <div class="text-sm font-medium text-slate-500 dark:text-slate-400">${sanitizeHTML(log.details)}</div>
             </div>
           `;
         }).join('');
@@ -4341,15 +4523,15 @@
         <tr class="hover:bg-slate-50 dark:bg-slate-800/20 transition-colors">
           <td class="p-6 text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">${date}</td>
           <td class="p-6">
-            <div class="font-bold text-slate-900 dark:text-white text-sm">${log.displayName || 'Unknown'}</div>
+            <div class="font-bold text-slate-900 dark:text-white text-sm">${sanitizeHTML(log.displayName) || 'Unknown'}</div>
             <div class="text-[10px] font-mono text-slate-400">${log.uid || 'no-uid'}</div>
           </td>
           <td class="p-6">
-            <span class="font-bold text-xs uppercase tracking-wider ${actionColor}">${log.action}</span>
+            <span class="font-bold text-xs uppercase tracking-wider ${actionColor}">${sanitizeHTML(log.action)}</span>
           </td>
           <td class="p-6">
-            <div class="font-bold text-sm text-slate-700 dark:text-slate-200">${log.targetName}</div>
-            <div class="text-xs text-slate-500">${log.details}</div>
+            <div class="font-bold text-sm text-slate-700 dark:text-slate-200">${sanitizeHTML(log.targetName)}</div>
+            <div class="text-xs text-slate-500">${sanitizeHTML(log.details)}</div>
           </td>
         </tr>
       `}).join('');
@@ -4366,7 +4548,7 @@
           <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/20 flex items-center justify-between transition-colors hover:border-indigo-300 dark:hover:border-indigo-800">
             <div class="min-w-0 pr-4">
               <div class="font-bold text-slate-900 dark:text-white flex items-center gap-2 truncate">
-                 ${req.username} 
+                 ${sanitizeHTML(req.username)} 
                  ${isPaidReq ? `<span class="bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider font-bold flex-shrink-0"><i class="ph-fill ph-coin"></i> Paid App Access</span>` : ''}
               </div>
               <div class="text-[10px] font-mono text-slate-500 truncate">${req.email || req.uid}</div>
@@ -4393,8 +4575,8 @@
           <div class="border border-slate-200 dark:border-slate-800 rounded-xl p-3 bg-white dark:bg-slate-900 flex items-center justify-between group">
             <div class="flex items-center gap-3 min-w-0">
               <div class="truncate">
-                <div class="font-bold text-slate-900 dark:text-white text-sm">${displayName} ${dev.canPublishPaid ? `<i class="ph-fill ph-coin text-yellow-500 inline-block ml-1" title="Can Publish Paid Apps"></i>` : ''}</div>
-                <div class="text-[10px] font-mono text-slate-500 truncate">${displayEmail}</div>
+                <div class="font-bold text-slate-900 dark:text-white text-sm">${sanitizeHTML(displayName)} ${dev.canPublishPaid ? `<i class="ph-fill ph-coin text-yellow-500 inline-block ml-1" title="Can Publish Paid Apps"></i>` : ''}</div>
+                <div class="text-[10px] font-mono text-slate-500 truncate">${sanitizeHTML(displayEmail)}</div>
               </div>
             </div>
             <button data-click="adminRemoveDevUid" data-arg="${dev.id}" class="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 p-2 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Revoke Access"><i class="ph-bold ph-trash"></i></button>
@@ -4626,12 +4808,12 @@
              <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400">${new Date(m.timestamp).toLocaleDateString()}</div>
              ${!m.read ? `<button data-click="markMessageRead" data-arg="${m.id}" class="text-xs font-bold text-pink-500 hover:text-pink-600 bg-pink-50 hover:bg-pink-100 dark:bg-pink-900/20 dark:hover:bg-pink-900/40 px-2 py-1 rounded-md transition-colors">Mark Read</button>` : ''}
           </div>
-          <p class="text-slate-800 dark:text-slate-200 font-medium leading-relaxed">${m.text}</p>
+          <p class="text-slate-800 dark:text-slate-200 font-medium leading-relaxed">${sanitizeHTML(m.text)}</p>
           <div class="mt-4 pt-3 border-t border-slate-50 dark:border-slate-800/50 flex items-center justify-between">
             <span class="text-xs font-bold text-pink-500 flex items-center gap-1.5">
-              <i class="ph-fill ph-user-circle"></i> From: ${m.sender}
+              <i class="ph-fill ph-user-circle"></i> From: ${sanitizeHTML(m.sender)}
             </span>
-            ${m.senderId ? `<button data-click="replyToMessage" data-arg="${m.senderId}" data-arg2="${escapeQuotes(m.sender)}" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg transition-colors text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i class="ph ph-arrow-u-up-left"></i> Reply</button>` : ''}
+            ${m.senderId ? `<button data-click="replyToMessage" data-arg="${m.senderId}" data-arg2="${sanitizeHTML(m.sender)}" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg transition-colors text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i class="ph ph-arrow-u-up-left"></i> Reply</button>` : ''}
           </div>
         </div>
       `).join('');
@@ -4672,8 +4854,8 @@
       container.innerHTML = newsItems.map(n => `
         <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 dark:border-slate-800 relative hover:-translate-y-0.5 transition-transform">
           <div class="text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-2">${new Date(n.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-          <p class="text-slate-800 dark:text-slate-200 font-medium leading-relaxed">${n.text}</p>
-          ${n.author ? `<div class="mt-4 pt-3 border-t border-slate-50 dark:border-slate-800/50 text-xs font-bold text-slate-400 flex items-center gap-1.5"><i class="ph-fill ph-user-circle"></i> ${n.author}</div>` : ''}
+          <p class="text-slate-800 dark:text-slate-200 font-medium leading-relaxed">${sanitizeHTML(n.text)}</p>
+          ${n.author ? `<div class="mt-4 pt-3 border-t border-slate-50 dark:border-slate-800/50 text-xs font-bold text-slate-400 flex items-center gap-1.5"><i class="ph-fill ph-user-circle"></i> ${sanitizeHTML(n.author)}</div>` : ''}
         </div>
       `).join('');
     };
@@ -4715,7 +4897,7 @@
       list.innerHTML = newsItems.map(n => `
         <tr class="hover:bg-slate-50 dark:bg-slate-800/20 transition-colors group">
           <td class="p-6 font-bold text-slate-900 dark:text-white max-w-sm">
-            <div class="line-clamp-2">${n.text}</div>
+            <div class="line-clamp-2">${sanitizeHTML(n.text)}</div>
           </td>
           <td class="p-6 text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">${new Date(n.timestamp).toLocaleDateString()}</td>
           <td class="p-6 text-right">
@@ -4743,15 +4925,15 @@
       list.innerHTML = feedbackItems.map(f => `
         <tr class="hover:bg-slate-50 dark:bg-slate-800/20 transition-colors group">
           <td class="p-6 font-bold text-slate-900 dark:text-white whitespace-nowrap">
-            <div>${f.author}</div>
+            <div>${sanitizeHTML(f.author)}</div>
             <div class="text-[10px] font-mono text-slate-400 mt-1">${new Date(f.timestamp).toLocaleDateString()}</div>
           </td>
           <td class="p-6 text-sm text-slate-600 dark:text-slate-300 font-medium">
-            ${f.text}
+            ${sanitizeHTML(f.text)}
           </td>
           <td class="p-6 text-right">
             <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button data-click="adminMessageUser" data-arg="${f.uid}" data-arg2="${escapeQuotes(f.author)}" class="text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-3 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5"><i class="ph-fill ph-paper-plane-tilt"></i> Reply</button>
+              <button data-click="adminMessageUser" data-arg="${f.uid}" data-arg2="${sanitizeHTML(f.author)}" class="text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-3 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5"><i class="ph-fill ph-paper-plane-tilt"></i> Reply</button>
               <button data-click="adminDeleteFeedback" data-arg="${f.id}" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5"><i class="ph ph-trash"></i> Dismiss</button>
             </div>
           </td>
@@ -4768,6 +4950,9 @@
     window.submitFeedback = async (e) => {
       e.preventDefault();
       if (!currentUser || currentUserStatus !== 'active') return;
+
+      // Anti-spam check
+      if (!checkRateLimit('submitFeedback', 10000)) return; // 10 second cooldown
 
       const input = document.getElementById('feedback-input');
       const btn = document.getElementById('feedback-submit-btn');
@@ -4848,6 +5033,8 @@
       else if (action === 'downloadApp') window.downloadApp(arg1);
       else if (action === 'shareApp') window.shareApp(arg1);
       else if (action === 'toggleFavorite') window.toggleFavorite(arg1);
+      else if (action === 'toggleVault') window.toggleVault(arg1);
+      else if (action === 'toggleVaultMode') window.toggleVaultMode();
       else if (action === 'deleteApp') window.deleteApp(arg1);
       else if (action === 'setReviewRating') window.setReviewRating(parseInt(arg1));
       else if (action === 'adminToggleVerify') window.adminToggleVerify(arg1);
@@ -4866,7 +5053,7 @@
       else if (action === 'closeModal') {
           const el = document.getElementById(arg1);
           if (el) {
-              if (['ai-modal', 'theme-modal', 'create-ad-modal'].includes(arg1)) {
+              if (['ai-modal', 'theme-modal', 'create-ad-modal', 'monthly-feedback-modal'].includes(arg1)) {
                   el.classList.add('hidden');
                   el.classList.remove('flex');
               } else {
@@ -4899,6 +5086,8 @@
       else if (action === 'adminRejectCoinRequest') window.adminRejectCoinRequest(arg1);
       else if (action === 'closeAppViewer') window.closeAppViewer();
       else if (action === 'openViewerInNewTab') window.openViewerInNewTab();
+      else if (action === 'submitMonthlyFeedback') window.submitMonthlyFeedback();
+      else if (action === 'skipMonthlyFeedback') window.skipMonthlyFeedback();
       else if (action === 'openAiModal') {
           if (!window.aiReady) return;
           document.getElementById('ai-modal').classList.remove('hidden');
@@ -4939,6 +5128,8 @@
       else if (action === 'submitAuth') window.submitAuth(e);
       else if (action === 'submitSpectatorChat') {
          e.preventDefault();
+         if (!checkRateLimit('spectatorChat', 1000)) return; // 1 message per second
+         
          const input = document.getElementById('spectator-chat-input');
          const text = input.value.trim();
          if (!text) return;
@@ -4966,7 +5157,7 @@
         // Append user msg
         hist.innerHTML += `
           <div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-4 rounded-2xl rounded-tr-none max-w-[85%] self-end font-medium">
-            ${escapeQuotes(userTextRaw)}
+            ${sanitizeHTML(userTextRaw)}
           </div>
         `;
         inputEl.value = '';
