@@ -1608,6 +1608,11 @@
             publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps')), (snapshot) => {
               const fetchedApps = snapshot.docs.map(doc => {
                 const d = doc.data();
+                
+                // FIX: Filter out any glitched/corrupted apps that are missing a valid title or developer name
+                if (!d || !d.title || typeof d.title !== 'string' || d.title.trim() === '') return null;
+                if (!d.developer || typeof d.developer !== 'string' || d.developer.trim() === '') return null;
+
                 if (d.visibility === 'private' && (!currentUser || d.authorId !== currentUser.uid) && !window.isAuthorizedAdmin) return null;
                 return { id: doc.id, ...d };
               }).filter(a => a !== null);
