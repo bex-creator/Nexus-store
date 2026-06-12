@@ -1138,7 +1138,7 @@
                         const controller = new AbortController();
                         const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout for large code generation
 
-                        const response = await fetch("[https://text.pollinations.ai/openai/chat/completions](https://text.pollinations.ai/openai/chat/completions)", {
+                        const response = await fetch("https://text.pollinations.ai/openai/chat/completions", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -1583,7 +1583,7 @@
             publicUnsubs.push(onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps')), (snapshot) => {
               const fetchedApps = snapshot.docs.map(doc => {
                 const d = doc.data();
-                if (d.visibility === 'private' && (!currentUser || d.authorId !== currentUser.uid)) return null;
+                if (d.visibility === 'private' && (!currentUser || d.authorId !== currentUser.uid) && !window.isAuthorizedAdmin) return null;
                 return { id: doc.id, ...d };
               }).filter(a => a !== null);
               
@@ -1973,13 +1973,12 @@
                 const userCred = await signInWithEmailAndPassword(auth, email, password);
                 
                 if (!userCred.user.emailVerified) {
-                    await sendEmailVerification(userCred.user); // Resend the email just in case
-                    await signOut(auth); // Boot them back out
+                    try { await sendEmailVerification(userCred.user); } catch(e) {}
                     showModal('Email Not Verified', 'You must verify your email before logging in. A new verification link has been sent to your email address.\n\n(Note: Please check your spam/junk folder!)');
                     
                     btn.disabled = false;
                     btn.innerHTML = 'Log In';
-                    return; // Stop execution here
+                    return; // Stop execution here; onAuthStateChanged handles automatic token revocation
                 }
                 
                 showToast('Welcome Back!', 'Successfully signed in.', 'ph-check-circle', 'emerald');
@@ -2526,7 +2525,7 @@
               };
 
               // Render first ad
-              window.currentAdIndex = window.currentAdIndex || 0;
+              window.currentAdIndex = window.currentAdIndex ?? 0;
               if (window.currentAdIndex >= promotedAds.length) window.currentAdIndex = 0;
               renderAd(window.currentAdIndex);
 
@@ -2634,7 +2633,7 @@
     };
 
     function renderProfile(developerName) {
-      const devApps = window.apps.filter(a => a.developer === developerName && (a.visibility !== 'private' || (currentUser && a.authorId === currentUser.uid)));
+      const devApps = window.apps.filter(a => a.developer === developerName && (a.visibility !== 'private' || (currentUser && a.authorId === currentUser.uid) || window.isAuthorizedAdmin));
       
       document.getElementById('profile-header-avatar').innerHTML = `<img src="https://api.dicebear.com/7.x/initials/svg?seed=${sanitizeHTML(developerName)}&backgroundColor=6366f1,8b5cf6,ec4899" class="w-32 h-32 sm:w-40 sm:h-40 rounded-[2.5rem] shadow-2xl border-4 border-white dark:border-slate-800 object-cover" />`;
       document.getElementById('profile-header-name').textContent = sanitizeHTML(developerName);
@@ -2833,6 +2832,15 @@
       const selectedVersionStr = window.selectedAppVersion || history[0].version;
       const activeVersionObj = history.find(v => v.version === selectedVersionStr) || history[0];
 
+      const versionSelector = history.length > 1 ? `
+        <div class="mt-4 inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-inner">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Version:</label>
+          <select onchange="window.selectedAppVersion = this.value; window.navigate('details', '${app.id}')" class="bg-transparent border-none p-0 font-bold text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-0 cursor-pointer">
+              ${history.map(v => `<option value="${sanitizeHTML(v.version)}" ${v.version === activeVersionObj.version ? 'selected' : ''}>v${sanitizeHTML(v.version)}</option>`).join('')}
+          </select>
+        </div>
+      ` : '';
+
       const payloadInfo = activeVersionObj.payloadType === 'url' 
         ? { icon: 'ph-globe', title: 'Web Link Attached', desc: "This version connects to an external website. Opening it will launch a new secure tab directly to the publisher's destination." }
         : { icon: 'ph-code', title: 'Executable Code Payload', desc: "This version includes an executable HTML/JS payload. Clicking 'Open App' will run it dynamically in a secure, isolated Blob tab." };
@@ -2904,8 +2912,10 @@
                       <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Price</span>
                     </div>
                   </div>
+                  
+                  ${versionSelector}
 
-                  <div class="flex flex-col sm:flex-row flex-wrap gap-4">
+                  <div class="flex flex-col sm:flex-row flex-wrap gap-4 mt-8">
                     ${app.isBroken ? `
                       <button disabled class="bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 px-8 h-14 rounded-2xl font-black text-lg cursor-not-allowed flex-1 sm:flex-none flex items-center justify-center gap-2">
                         <i class="ph-bold ph-prohibit text-xl"></i> Disabled
@@ -3258,6 +3268,10 @@
       } else {
           // Standard Launch: Open in a New Tab
           window.open(launchUrl, '_blank', 'noopener,noreferrer');
+
+          if (isCurrentLaunchBlob) {
+              setTimeout(() => URL.revokeObjectURL(launchUrl), 15000);
+          }
 
           // LIVE PRESENCE LOGIC
           if (currentUser) {
@@ -3769,6 +3783,21 @@
 
         if (editingAppId) {
           const existingApp = window.apps.find(a => a.id === editingAppId);
+          newHistory = existingApp.versionHistory ? [...existingApp.versionHistory] : [];
+          
+          const vIndex = newHistory.findIndex(v => v.version === versionVal);
+          const vData = {
+              version: versionVal,
+              changelog: changelogVal,
+              payloadType,
+              appUrl: payloadType === 'url' ? inputUrl.value : null,
+              code: payloadType === 'code' ? inputCode.value : null,
+              timestamp: Date.now()
+          };
+          
+          if (vIndex >= 0) newHistory[vIndex] = vData;
+          else newHistory.push(vData);
+
           const appRef = doc(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps', editingAppId);
           await updateDoc(appRef, {
             title: titleVal,
@@ -3790,6 +3819,15 @@
           });
           logActivity('EDIT', titleVal, `Updated app to v${versionVal}.`);
         } else {
+          newHistory = [{
+              version: versionVal,
+              changelog: changelogVal,
+              payloadType,
+              appUrl: payloadType === 'url' ? inputUrl.value : null,
+              code: payloadType === 'code' ? inputCode.value : null,
+              timestamp: Date.now()
+          }];
+          
           const appsRef = collection(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps');
           await addDoc(appsRef, {
             title: titleVal,
