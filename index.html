@@ -2495,6 +2495,11 @@
       const filtered = window.apps.filter(app => {
         if (isVaultMode && !userVault.includes(app.id)) return false;
         
+        // FIX: Prevent private (locked) apps from appearing in the general storefront tabs
+        if (app.visibility === 'private' && selectedCategory !== 'Library' && !isVaultMode) {
+            return false;
+        }
+        
         const titleMatch = (app.title || '').toLowerCase().includes(searchQuery.toLowerCase());
         const devMatch = (app.developer || '').toLowerCase().includes(searchQuery.toLowerCase());
         const catMatch = (app.category || '').toLowerCase().includes(searchQuery.toLowerCase());
