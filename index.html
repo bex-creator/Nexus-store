@@ -448,8 +448,11 @@
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <i class="ph ph-magnifying-glass text-slate-400 group-focus-within:text-indigo-500 transition-colors text-xl"></i>
         </div>
-        <input type="text" id="search-input" placeholder="Search apps, games... (Press '/' to focus)" class="w-full border-2 rounded-2xl py-3 pl-12 pr-28 sm:pr-32 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none font-medium bg-slate-100/80 border-transparent text-slate-800 placeholder-slate-400 focus:bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" />
-        <div class="absolute inset-y-0 right-1 flex items-center pr-1">
+        <input type="text" id="search-input" placeholder="Search apps, games... (Press '/' to focus)" class="w-full border-2 rounded-2xl py-3 pl-12 pr-28 sm:pr-36 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none font-medium bg-slate-100/80 border-transparent text-slate-800 placeholder-slate-400 focus:bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" />
+        <div class="absolute inset-y-0 right-1 flex items-center pr-1 gap-1">
+          <button id="clear-search-btn" data-click="clearSearch" class="hidden h-9 w-9 text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center rounded-xl transition-colors" title="Clear Search">
+            <i class="ph-bold ph-x"></i>
+          </button>
           <button id="ask-ai-btn" data-click="openAiModal" disabled class="h-9 px-3 bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-xl flex items-center gap-1.5 font-bold text-sm transition-all shadow-md" title="Nexus AI Assistant">
             <i id="ai-btn-icon" class="ph-fill ph-spinner animate-spin"></i> <span id="ai-btn-text" class="hidden sm:inline">Loading AI...</span>
           </button>
@@ -490,8 +493,21 @@
     
     <!-- HOME VIEW -->
     <div id="view-home" class="view-section block animate-fade-in">
-      <div id="category-filters" class="flex gap-3 overflow-x-auto hide-scrollbar pb-4 mb-2 pt-2 scroll-smooth">
-        <!-- Populated by JS -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-4 pt-2">
+        <div id="category-filters" class="flex gap-3 overflow-x-auto hide-scrollbar pb-2 scroll-smooth w-full sm:flex-1">
+          <!-- Populated by JS -->
+        </div>
+        <div class="relative flex-shrink-0 w-full sm:w-auto pb-2">
+          <select id="sort-filter" onchange="window.setSort(this.value)" class="w-full sm:w-auto appearance-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm rounded-xl pl-4 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm transition-colors">
+            <option value="trending">🔥 Trending</option>
+            <option value="newest">✨ Newest</option>
+            <option value="top_rated">⭐ Top Rated</option>
+            <option value="price_low">🤑 Free First</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 pb-2">
+            <i class="ph-bold ph-caret-down"></i>
+          </div>
+        </div>
       </div>
 
       <div id="home-empty" class="hidden flex-col items-center justify-center py-32 text-center animate-fade-in">
@@ -816,6 +832,15 @@
               <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-slate-900/50">
                 <div class="text-slate-400 font-mono text-xs uppercase tracking-wider font-bold flex items-center gap-2">
                   <i class="ph ph-terminal-window text-lg"></i> Nexus Creator Studio <span class="bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded text-[10px] ml-2">LIVE IDE</span>
+                </div>
+                <div class="flex items-center gap-2">
+                   <select onchange="window.loadIdeTemplate(this.value); this.value=''" class="bg-slate-800 text-slate-300 text-xs font-bold px-2 py-1 rounded outline-none border border-slate-700 cursor-pointer shadow-sm">
+                      <option value="" disabled selected>Load Template...</option>
+                      <option value="blank">Blank HTML</option>
+                      <option value="game">Canvas Game</option>
+                      <option value="threejs">Three.js 3D</option>
+                      <option value="tailwind">Tailwind App</option>
+                   </select>
                 </div>
               </div>
               <!-- AI ZERO-CODE FORGE -->
@@ -1918,6 +1943,7 @@
     let currentView = 'home';
     let searchQuery = '';
     let selectedCategory = 'All';
+    let selectedSort = 'trending';
     let selectedAppId = null; // Reused for developerName in profile view
     let payloadType = 'code';
     let editingAppId = null;
@@ -2360,12 +2386,22 @@
 
     searchInput.addEventListener('input', (e) => {
       searchQuery = e.target.value;
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (clearBtn) {
+          if (searchQuery.length > 0) clearBtn.classList.remove('hidden');
+          else clearBtn.classList.add('hidden');
+      }
       if (currentView !== 'home') {
         window.navigate('home');
       } else {
         renderHome();
       }
     });
+
+    window.setSort = (val) => {
+        selectedSort = val;
+        renderHome();
+    };
 
     // Helper for App Stats
     const getAppStats = (app) => {
@@ -2448,6 +2484,9 @@
     };
 
     function renderHome() {
+      const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
+      const purchasedApps = me?.purchasedApps || [];
+
       const filtered = window.apps.filter(app => {
         if (isVaultMode && !userVault.includes(app.id)) return false;
         
@@ -2456,9 +2495,33 @@
         const catMatch = (app.category || '').toLowerCase().includes(searchQuery.toLowerCase());
         
         const searchMatches = titleMatch || devMatch || catMatch;
-        const categoryMatches = selectedCategory === 'All' || app.category === selectedCategory;
+        
+        let categoryMatches = false;
+        if (selectedCategory === 'All') categoryMatches = true;
+        else if (selectedCategory === 'Library') {
+            categoryMatches = installedApps.has(app.id) || purchasedApps.includes(app.id) || (currentUser && app.authorId === currentUser.uid);
+        } else {
+            categoryMatches = app.category === selectedCategory;
+        }
         
         return searchMatches && categoryMatches;
+      });
+
+      filtered.sort((a, b) => {
+          if (selectedSort === 'newest') {
+              return (b.createdAt || 0) - (a.createdAt || 0);
+          } else if (selectedSort === 'top_rated') {
+              const statsA = getAppStats(a);
+              const statsB = getAppStats(b);
+              return parseFloat(statsB.rating) - parseFloat(statsA.rating);
+          } else if (selectedSort === 'price_low') {
+              return (a.price || 0) - (b.price || 0);
+          }
+          // Default: trending
+          const popA = (a.downloads || 0) + (a.revenue || 0);
+          const popB = (b.downloads || 0) + (b.revenue || 0);
+          if (popA !== popB) return popB - popA;
+          return 0; 
       });
 
       const emptyState = document.getElementById('home-empty');
@@ -2600,12 +2663,12 @@
     }
 
     function renderCategories() {
-      const categories = ['All', 'Games', 'Productivity', 'Social', 'AI Tool', 'Arcade', 'Utilities', 'Sim', 'Racing'];
+      const categories = ['All', 'Library', 'Games', 'Productivity', 'Social', 'AI Tool', 'Arcade', 'Utilities', 'Sim', 'Racing'];
       const container = document.getElementById('category-filters');
       if(!container) return;
       container.innerHTML = categories.map(cat => `
-        <button data-click="setCategory" data-arg="${cat}" class="px-5 py-2.5 rounded-full font-bold text-sm whitespace-nowrap transition-all duration-300 shadow-sm ${selectedCategory === cat ? 'bg-indigo-600 text-white shadow-indigo-500/30' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'}">
-          ${cat}
+        <button data-click="setCategory" data-arg="${cat}" class="px-5 py-2.5 rounded-full font-bold text-sm whitespace-nowrap transition-all duration-300 shadow-sm ${selectedCategory === cat ? (cat === 'Library' ? 'bg-pink-500 text-white shadow-pink-500/30' : 'bg-indigo-600 text-white shadow-indigo-500/30') : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'} ${cat === 'Library' ? 'flex items-center gap-1.5' : ''}">
+          ${cat === 'Library' ? '<i class="ph-fill ph-books"></i>' : ''}${cat}
         </button>
       `).join('');
     }
@@ -2655,9 +2718,16 @@
             const me = systemUsers.find(u => u.uid === currentUser.uid);
             const isFollowing = (me?.following || []).includes(developerName);
             devActions.innerHTML = `
-                <button data-click="toggleFollow" data-arg="${sanitizeHTML(developerName)}" class="px-6 py-2.5 rounded-2xl font-bold transition-all duration-300 shadow-sm flex items-center gap-2 ${isFollowing ? 'bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700' : 'bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-indigo-500/30'}">
-                    ${isFollowing ? '<i class="ph-bold ph-check"></i> Following' : '<i class="ph-bold ph-plus"></i> Follow'}
-                </button>
+                <div class="flex items-center gap-2">
+                    <button data-click="toggleFollow" data-arg="${sanitizeHTML(developerName)}" class="px-6 py-2.5 rounded-2xl font-bold transition-all duration-300 shadow-sm flex items-center gap-2 ${isFollowing ? 'bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700' : 'bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-indigo-500/30'}">
+                        ${isFollowing ? '<i class="ph-bold ph-check"></i> Following' : '<i class="ph-bold ph-plus"></i> Follow'}
+                    </button>
+                    ${devUser ? `
+                    <button data-click="sendCoinsToUser" data-arg="${devUser.uid}" data-arg2="${sanitizeHTML(developerName)}" class="px-4 py-2.5 rounded-2xl font-bold transition-all duration-300 shadow-sm flex items-center gap-2 bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/50" title="Gift Coins">
+                        <i class="ph-fill ph-gift text-lg"></i>
+                    </button>
+                    ` : ''}
+                </div>
             `;
         } else {
             devActions.innerHTML = '';
@@ -2958,6 +3028,11 @@
                       <button data-click="toggleFavorite" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center ${myFavorites.has(app.id) ? 'bg-pink-50 text-pink-500 hover:bg-pink-100 dark:bg-pink-900/20 dark:hover:bg-pink-900/40' : 'bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white'}" title="${myFavorites.has(app.id) ? 'Remove from Favorites' : 'Add to Favorites'}">
                         <i class="${myFavorites.has(app.id) ? 'ph-fill' : 'ph'} ph-heart text-2xl"></i>
                       </button>
+                      ${hasAccess && app.authorId && currentUser && app.authorId !== currentUser.uid ? `
+                        <button data-click="tipDeveloper" data-arg="${app.authorId}" data-arg2="${sanitizeHTML(app.developer)}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-yellow-50 hover:bg-yellow-100 text-yellow-600 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/40 dark:text-yellow-400" title="Tip Developer">
+                          <i class="ph-fill ph-hand-coins text-2xl"></i>
+                        </button>
+                      ` : ''}
                       ${isAuthorizedAdmin ? `
                         <button data-click="adminToggleVerify" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center ${app.isVerified ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 dark:text-emerald-400' : 'bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white'}" title="${app.isVerified ? 'Remove Verification' : 'Verify App Safe'}">
                         <i class="ph-fill ph-shield-check text-2xl"></i>
@@ -4038,17 +4113,22 @@
       
       const me = systemUsers.find(u => u.uid === currentUser.uid);
       const isVIP = me.isVIP || false;
-      const dailyAmount = isVIP ? 1000 : 500;
+      const baseDailyAmount = isVIP ? 1000 : 500;
       const canClaim = !me.lastDailyClaim || (Date.now() - me.lastDailyClaim > 86400000);
       const timeRemaining = me.lastDailyClaim ? Math.ceil((86400000 - (Date.now() - me.lastDailyClaim)) / 3600000) : 0;
+      
+      let streak = me.loginStreak || 0;
+      if (me.lastDailyClaim && (Date.now() - me.lastDailyClaim > 172800000)) streak = 0; // Lost streak
+      const streakBonus = streak * 50;
+      const totalAmount = baseDailyAmount + (canClaim ? streakBonus : 0);
       
       const dailyRewardHtml = canClaim ? `
         <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-4 rounded-2xl mb-6 flex items-center justify-between">
           <div class="flex items-center gap-3 text-left">
             <div class="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg"><i class="ph-fill ph-gift"></i></div>
             <div>
-              <h4 class="font-bold text-slate-900 dark:text-white text-sm">Daily Allowance</h4>
-              <p class="text-xs font-medium text-slate-500">${dailyAmount} Coins available!</p>
+              <h4 class="font-bold text-slate-900 dark:text-white text-sm">Daily Allowance ${streak > 0 ? `<span class="text-orange-500 ml-1">🔥 ${streak}</span>` : ''}</h4>
+              <p class="text-xs font-medium text-slate-500">${totalAmount} Coins available!</p>
             </div>
           </div>
           <button data-click="claimDailyCoins" data-arg="${modalId}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-all">Claim</button>
@@ -4108,15 +4188,26 @@
             if (userSnap.exists()) {
                 const me = userSnap.data();
                 const isVIP = me.isVIP || false;
-                const rewardAmount = isVIP ? 1000 : 500;
+                const baseRewardAmount = isVIP ? 1000 : 500;
                 
                 if (!me.lastDailyClaim || (Date.now() - me.lastDailyClaim > 86400000)) {
+                    let newStreak = me.loginStreak || 0;
+                    if (me.lastDailyClaim && (Date.now() - me.lastDailyClaim > 172800000)) {
+                        newStreak = 1; // Restart streak
+                    } else {
+                        newStreak++; // Increment
+                    }
+                    
+                    const streakBonus = (newStreak - 1) * 50;
+                    const finalReward = baseRewardAmount + streakBonus;
+
                     await updateDoc(userRef, { 
-                        balance: increment(rewardAmount),
-                        lastDailyClaim: Date.now()
+                        balance: increment(finalReward),
+                        lastDailyClaim: Date.now(),
+                        loginStreak: newStreak
                     });
-                    showToast('Daily Claimed!', `+${rewardAmount} Nexus Coins added to your balance.`, 'ph-gift', 'indigo');
-                    logActivity('REWARD', 'Daily Allowance', `Claimed ${rewardAmount} daily coins.`);
+                    showToast('Daily Claimed!', `+${finalReward} Coins. You are on a ${newStreak} day streak! 🔥`, 'ph-gift', 'indigo');
+                    logActivity('REWARD', 'Daily Allowance', `Claimed ${finalReward} daily coins (Streak: ${newStreak}).`);
                     document.getElementById(modalId).remove();
                 } else {
                     showModal('Already Claimed', 'You have already claimed your daily coins. Come back later!');
@@ -5107,6 +5198,15 @@
       else if (action === 'navigateFromAdmin') {
         window.navigate(window.isFromAdmin ? 'admin' : 'home');
       }
+      else if (action === 'clearSearch') {
+          const searchInput = document.getElementById('search-input');
+          if (searchInput) searchInput.value = '';
+          searchQuery = '';
+          const clearBtn = document.getElementById('clear-search-btn');
+          if (clearBtn) clearBtn.classList.add('hidden');
+          if (currentView !== 'home') window.navigate('home');
+          else renderHome();
+      }
       else if (action === 'showOnboarding') window.showOnboarding();
       else if (action === 'handlePublishClick') window.handlePublishClick();
       else if (action === 'adminApproveDev') window.adminApproveDev(arg1, arg2);
@@ -5120,6 +5220,8 @@
       else if (action === 'toggleFollow') window.toggleFollow(arg1);
       else if (action === 'showCoinRequestModal') window.showCoinRequestModal();
       else if (action === 'submitCoinRequest') window.submitCoinRequest(arg1, arg2, e);
+      else if (action === 'sendCoinsToUser') window.sendCoinsToUser(arg1, arg2);
+      else if (action === 'tipDeveloper') window.tipDeveloper(arg1, arg2);
       else if (action === 'adminApproveCoinRequest') window.adminApproveCoinRequest(arg1, arg2);
       else if (action === 'adminRejectCoinRequest') window.adminRejectCoinRequest(arg1);
       else if (action === 'closeAppViewer') window.closeAppViewer();
@@ -5821,6 +5923,150 @@
       localStorage.setItem('nexus_cursor', cursor);
       window.applyTheme();
       window.showThemeModal();
+    };
+
+    window.loadIdeTemplate = (templateName) => {
+        const editor = document.getElementById('app-code');
+        if(!editor) return;
+        let code = '';
+        if(templateName === 'blank') {
+            code = '<!DOCTYPE html>\n<html>\n<head>\n  <title>App</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>';
+        } else if (templateName === 'game') {
+            code = `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { background: #111; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; }
+    canvas { background: #222; border: 2px solid #444; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+  </style>
+</head>
+<body>
+  <h2>Mini Game</h2>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let x = 200, y = 200;
+    function loop() {
+      ctx.clearRect(0, 0, 400, 400);
+      ctx.fillStyle = '#6366f1';
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, Math.PI*2);
+      ctx.fill();
+      x += (Math.random() - 0.5) * 4;
+      y += (Math.random() - 0.5) * 4;
+      requestAnimationFrame(loop);
+    }
+    loop();
+  <\/script>
+</body>
+</html>`;
+        } else if (templateName === 'threejs') {
+            code = `<!DOCTYPE html>
+<html>
+<head>
+  <style>body { margin: 0; overflow: hidden; background: #000; }</style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>
+</head>
+<body>
+  <script>
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+    
+    const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+    const material = new THREE.MeshNormalMaterial();
+    const torusKnot = new THREE.Mesh(geometry, material);
+    scene.add(torusKnot);
+    camera.position.z = 30;
+    
+    function animate() {
+      requestAnimationFrame(animate);
+      torusKnot.rotation.x += 0.01;
+      torusKnot.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+    animate();
+  <\/script>
+</body>
+</html>`;
+        } else if (templateName === 'tailwind') {
+            code = `<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+</head>
+<body class="bg-slate-100 flex items-center justify-center h-screen">
+  <div class="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-indigo-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">UI</div>
+    <h2 class="text-2xl font-bold text-slate-800 mb-2">Tailwind App</h2>
+    <p class="text-slate-500 mb-6">Build beautiful, responsive interfaces quickly.</p>
+    <button class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-xl w-full transition-colors">Click Me</button>
+  </div>
+</body>
+</html>`;
+        }
+        editor.value = code;
+        const e = new Event('input');
+        editor.dispatchEvent(e);
+    };
+
+    window.sendCoinsToUser = (targetUid, targetName) => {
+        if (!currentUser) return;
+        const me = systemUsers.find(u => u.uid === currentUser.uid);
+        let myBal = me?.balance || 0;
+        if (myBal <= 0) {
+            showModal('Insufficient Funds', 'You do not have any coins to send!');
+            return;
+        }
+        
+        showPromptModal(
+            `Send Coins to ${targetName}`,
+            `Enter the amount of coins you want to gift. You currently have ${myBal} coins.`,
+            `Amount (e.g. 100)`,
+            `Send Gift`,
+            `bg-yellow-500 hover:bg-yellow-400 shadow-yellow-500/30 text-slate-900`,
+            async (val, modalId) => {
+                const amt = parseInt(val);
+                if (isNaN(amt) || amt <= 0 || amt > myBal) {
+                    showModal('Invalid Amount', `Please enter a valid amount between 1 and ${myBal}.`);
+                    const btn = document.getElementById(`confirm-btn-${modalId}`);
+                    if(btn) { btn.innerHTML = 'Send Gift'; btn.disabled = false; }
+                    return;
+                }
+                
+                try {
+                    const myRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
+                    const theirRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', targetUid);
+                    
+                    await updateDoc(myRef, { balance: increment(-amt) });
+                    await setDoc(theirRef, { balance: increment(amt) }, { merge: true });
+                    
+                    // Notify them
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'user_messages'), {
+                        recipientId: targetUid,
+                        text: `🎁 ${currentUser.customDisplayName || 'Someone'} gifted you ${amt} coins!`,
+                        timestamp: Date.now(),
+                        read: false,
+                        sender: 'Nexus System',
+                        senderId: currentUser.uid
+                    });
+                    
+                    logActivity('ECONOMY', 'Gifted Coins', `Sent ${amt} coins to ${targetName}`);
+                    showToast('Gift Sent!', `Successfully transferred ${amt} coins to ${targetName}.`, 'ph-gift', 'yellow');
+                    document.getElementById(modalId).remove();
+                } catch(e) {
+                    console.error(e);
+                    document.getElementById(`confirm-btn-${modalId}`).innerHTML = 'Error';
+                }
+            }
+        );
+    };
+
+    window.tipDeveloper = (targetUid, targetName) => {
+        window.sendCoinsToUser(targetUid, targetName);
     };
 
     // NEXUS CREATOR STUDIO IDE LOGIC
