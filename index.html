@@ -976,54 +976,53 @@
               </div>
               <input type="url" id="app-url" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-blue-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-white border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-900 dark:border-slate-700 dark:text-white dark:placeholder-slate-500" placeholder="https://your-web-app.com">
             </div>
+
+            <div class="mt-8 flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+              <input type="checkbox" id="app-allow-download" checked class="w-6 h-6 text-indigo-600 rounded-lg border-slate-300 focus:ring-indigo-500 cursor-pointer accent-indigo-500">
+              <div>
+                <label for="app-allow-download" class="text-base font-bold text-slate-900 dark:text-white cursor-pointer block">Allow Source Code Download</label>
+                <p class="text-sm font-medium text-slate-500 mt-0.5">Let users download the raw HTML/JS of your app.</p>
+              </div>
+            </div>
           </div>
 
           <div class="pt-8 mt-8 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-4">
             <button type="button" data-click="navigateFromAdmin" class="px-8 py-4 rounded-2xl font-bold transition-all duration-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">Cancel</button>
-            <button type="submit" id="btn-submit" class="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 text-white px-10 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl shadow-indigo-500/30 hover:-translate-y-1 active:translate-y-0 flex items-center gap-2">
+            <button type="submit" id="btn-submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-4 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2 hover:-translate-y-1 active:translate-y-0">
               <i class="ph-fill ph-lightning text-xl"></i> Publish App
             </button>
           </div>
         </form>
 
-        <form id="upload-ad-form" class="p-8 sm:p-12 space-y-10 hidden" data-submit="submitPublishAd">
+        <form id="upload-ad-form" data-submit="submitPublishAd" class="p-8 sm:p-12 space-y-10 hidden">
           <div>
-            <h3 class="text-2xl font-black mb-6 tracking-tight text-slate-900 dark:text-white">Create Advertisement</h3>
-            <p class="text-slate-500 font-medium mb-8 leading-relaxed">Promote your app across NexusStore! Sponsored ads cost <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> 10,000</span> coins.</p>
+            <h3 class="text-2xl font-black mb-6 tracking-tight text-slate-900 dark:text-white">Ad Campaign Details</h3>
+            <p class="text-slate-500 font-medium mb-6">Promote your app on the home page. Campaigns cost <i class="ph-fill ph-coin text-yellow-500"></i> 10,000 coins.</p>
             
-            <div class="space-y-6">
-              <div>
-                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Target App</label>
-                <div class="relative">
-                  <select id="publish-ad-target-app" required class="appearance-none w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:bg-slate-800">
-                     <!-- Options populated by JS -->
-                  </select>
-                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 text-slate-400">
-                    <i class="ph ph-caret-down"></i>
-                  </div>
-                </div>
+            <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Target App</label>
+            <div class="relative mb-6">
+              <select id="publish-ad-target-app" required class="appearance-none w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:bg-slate-800">
+                 <option value="">Loading apps...</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 text-slate-400">
+                <i class="ph ph-caret-down"></i>
               </div>
+            </div>
 
-              <div>
-                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Ad Tagline</label>
-                <input type="text" id="publish-ad-text" required maxlength="80" placeholder="e.g. Play the #1 game today!" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
-              </div>
-              
-              <div>
-                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Banner Image</label>
-                <div class="relative h-48 border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center transition-all cursor-pointer group shadow-sm hover:shadow-md hover:border-yellow-400 bg-slate-50 border-slate-300 dark:bg-slate-800 dark:border-slate-700 overflow-hidden">
-                  <input type="file" accept="image/*" id="publish-ad-image-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  <img id="publish-ad-image-preview" class="absolute inset-0 w-full h-full object-cover hidden transition-transform duration-300 group-hover:scale-105" />
-                  <div id="publish-ad-image-placeholder" class="text-center text-slate-400 group-hover:text-yellow-500 transition-colors z-20 pointer-events-none p-4">
-                    <i class="ph ph-image text-4xl mx-auto mb-2 block"></i>
-                    <span class="text-sm font-bold">Upload Custom Banner</span>
-                    <p class="text-xs font-medium opacity-70 mt-1">Leave empty to use app icon</p>
-                  </div>
-                </div>
+            <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Ad Tagline</label>
+            <input type="text" id="publish-ad-text" required maxlength="80" placeholder="e.g. Play the #1 game today!" class="w-full border-2 rounded-2xl px-5 py-4 mb-6 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
+            
+            <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Custom Banner (Optional)</label>
+            <div class="relative h-40 border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center transition-all cursor-pointer group shadow-sm hover:shadow-md hover:border-yellow-400 bg-slate-50 border-slate-300 dark:bg-slate-800 dark:border-slate-700 mb-8 overflow-hidden">
+              <input type="file" accept="image/*" id="publish-ad-image-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+              <img id="publish-ad-image-preview" class="absolute inset-0 w-full h-full object-cover hidden transition-transform duration-300 group-hover:scale-105" />
+              <div id="publish-ad-image-placeholder" class="text-center text-slate-400 group-hover:text-yellow-500 transition-colors z-20 pointer-events-none p-4">
+                <i class="ph ph-image text-4xl mx-auto mb-2 block"></i>
+                <span class="text-sm font-bold">Upload Custom Banner</span>
+                <p class="text-xs font-medium opacity-70 mt-1">Leave empty to use app icon</p>
               </div>
             </div>
           </div>
-
           <div class="pt-8 mt-8 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-4">
             <button type="button" data-click="navigateFromAdmin" class="px-8 py-4 rounded-2xl font-bold transition-all duration-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white">Cancel</button>
             <button type="submit" id="publish-ad-submit-btn" class="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-10 py-4 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl shadow-yellow-500/30 flex items-center justify-center gap-2 hover:-translate-y-1 active:translate-y-0">
@@ -2082,6 +2081,11 @@
     let iconPreviewBase64 = null;
     let screenshotsBase64 = [];
 
+    const isMidnightHour = () => {
+        const hour = new Date().getHours();
+        return hour >= 0 && hour < 3;
+    };
+
     // --- ELEMENTS ---
     const views = {
       home: document.getElementById('view-home'),
@@ -2520,6 +2524,7 @@
             document.getElementById('app-version').value = app.version || '1.0.0';
             document.getElementById('app-changelog').value = app.changelog || '';
             document.getElementById('app-description').value = app.description;
+            document.getElementById('app-allow-download').checked = app.allowDownload !== false;
             
             payloadType = app.payloadType || 'code';
             if (payloadType === 'url') {
@@ -2563,6 +2568,7 @@
             document.getElementById('app-price').value = '0';
             document.getElementById('app-version').value = '1.0.0';
             document.getElementById('app-changelog').value = 'Initial Release';
+            document.getElementById('app-allow-download').checked = true;
 
             iconPreviewBase64 = null;
             screenshotsBase64 = [];
@@ -2609,17 +2615,23 @@
     // Helper to render grid items
     const generateGridHtml = (appList) => {
       const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
+      const midnightHour = isMidnightHour();
       return appList.map((app, i) => {
         const stats = getAppStats(app);
         const isVIP = me && me.isVIP;
         const isNexusPlus = me && me.isNexusPlus;
-        const finalPrice = isNexusPlus ? 0 : (isVIP ? Math.floor(app.price * 0.5) : app.price);
+        
+        let finalPrice = app.price;
+        if (midnightHour) finalPrice = Math.floor(finalPrice * 0.75);
+        if (isVIP) finalPrice = Math.floor(finalPrice * 0.5);
+        if (isNexusPlus) finalPrice = 0;
+        
         return `
         <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="flex flex-col items-start group cursor-pointer animate-fade-in" style="animation-delay: ${Math.min(i * 30, 300)}ms; animation-fill-mode: both;">
           <div class="w-full aspect-square rounded-[2rem] overflow-hidden mb-4 shadow-[0_8px_20px_rgba(0,0,0,0.06)] group-hover:shadow-[0_15px_30px_rgba(99,102,241,0.2)] transition-all duration-300 group-hover:-translate-y-2 relative border bg-white border-slate-100 dark:bg-slate-800 dark:border-slate-700">
             ${app.isBroken ? '<div class="absolute top-3 left-3 bg-amber-500/90 backdrop-blur-md text-white p-2 rounded-full border border-white/10 z-30 shadow-lg" title="App Unavailable"><i class="ph-bold ph-warning text-sm"></i></div>' : ''}
             ${app.visibility === 'private' ? '<div class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md text-white p-2 rounded-full border border-white/10 z-30"><i class="ph-fill ph-lock-key text-sm"></i></div>' : ''}
-            ${app.price > 0 ? (isNexusPlus ? `<div class="absolute bottom-3 right-3 bg-purple-600/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-purple-400/50 z-30 font-black text-xs shadow-[0_0_10px_rgba(168,85,247,0.8)] flex items-center gap-1" title="Free with Nexus+"><i class="ph-fill ph-sparkle"></i> Free</div>` : (isVIP ? `<div class="absolute bottom-3 right-3 bg-purple-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-purple-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1" title="VIP 50% Off"><i class="ph-fill ph-star"></i><i class="ph-fill ph-coin"></i> ${finalPrice}</div>` : `<div class="absolute bottom-3 right-3 bg-yellow-400/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full border border-yellow-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1"><i class="ph-fill ph-coin"></i> ${app.price}</div>`)) : ''}
+            ${app.price > 0 ? (isNexusPlus ? `<div class="absolute bottom-3 right-3 bg-purple-600/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-purple-400/50 z-30 font-black text-xs shadow-[0_0_10px_rgba(168,85,247,0.8)] flex items-center gap-1" title="Free with Nexus+"><i class="ph-fill ph-sparkle"></i> Free</div>` : (isVIP ? `<div class="absolute bottom-3 right-3 bg-purple-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-purple-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1" title="VIP Discount"><i class="ph-fill ph-star"></i><i class="ph-fill ph-coin"></i> ${finalPrice}</div>` : (midnightHour ? `<div class="absolute bottom-3 right-3 bg-indigo-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-indigo-400/50 z-30 font-black text-xs shadow-lg shadow-indigo-500/30 flex items-center gap-1" title="Midnight Hour 25% Off!"><i class="ph-fill ph-moon-stars"></i><i class="ph-fill ph-coin"></i> ${finalPrice}</div>` : `<div class="absolute bottom-3 right-3 bg-yellow-400/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full border border-yellow-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1"><i class="ph-fill ph-coin"></i> ${app.price}</div>`))) : ''}
             ${app.icon ? 
               `<img src="${app.icon}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />`
               :
@@ -2857,7 +2869,7 @@
       if (isVaultMode) {
           document.getElementById('grid-title').textContent = 'My Vault';
       } else {
-          document.getElementById('grid-title').textContent = searchQuery ? 'Search Results' : 'Trending Now';
+          document.getElementById('grid-title').innerHTML = searchQuery ? 'Search Results' : (isMidnightHour() ? 'Trending Now <span class="ml-3 inline-flex items-center gap-1.5 bg-indigo-500 text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-indigo-500/30 animate-pulse"><i class="ph-fill ph-moon-stars"></i> Midnight Hour: 25% Off!</span>' : 'Trending Now');
       }
       
       document.getElementById('grid-container').innerHTML = generateGridHtml(filtered);
@@ -3068,8 +3080,10 @@
         let appPrice = Number(app.price);
         if (isNaN(appPrice)) appPrice = 0;
         
-        const isNexusPlus = me && me.isNexusPlus;
-        const finalPrice = isNexusPlus ? 0 : ((me && me.isVIP) ? Math.floor(appPrice * 0.5) : appPrice);
+        let finalPrice = appPrice;
+        if (isMidnightHour()) finalPrice = Math.floor(finalPrice * 0.75);
+        if (me && me.isVIP) finalPrice = Math.floor(finalPrice * 0.5);
+        if (me && me.isNexusPlus) finalPrice = 0;
 
         if (bal < finalPrice) {
             showModal('Insufficient Funds', `You need <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> ${finalPrice}</span> Nexus Coins to purchase this app. You currently have ${bal}. Ask an admin to grant you more coins!`);
@@ -3137,7 +3151,13 @@
       const purchasedApps = me?.purchasedApps || [];
       const isVIP = me && me.isVIP;
       const isNexusPlus = me && me.isNexusPlus;
-      const finalPrice = isNexusPlus ? 0 : (isVIP ? Math.floor(app.price * 0.5) : app.price);
+      const isMidnight = isMidnightHour();
+      
+      let finalPrice = app.price;
+      if (isMidnight) finalPrice = Math.floor(finalPrice * 0.75);
+      if (isVIP) finalPrice = Math.floor(finalPrice * 0.5);
+      if (isNexusPlus) finalPrice = 0;
+      
       const hasAccess = app.price === 0 || isNexusPlus || purchasedApps.includes(app.id) || (currentUser && app.authorId === currentUser.uid) || isAuthorizedAdmin;
 
       // Find related apps (same category or developer, excluding current app and private apps)
@@ -3224,17 +3244,7 @@
                     ` : ''}
                     <div class="flex flex-col items-center justify-center rounded-2xl px-5 py-3 border min-w-[100px] bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-700">
                       <span class="text-lg font-black flex items-center gap-1 text-slate-900 dark:text-white">
-                        ${stats.rating} <i class="ph-fill ph-star text-yellow-400"></i>
-                      </span>
-                      <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">${stats.count} Ratings</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center rounded-2xl px-5 py-3 border min-w-[100px] bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-700">
-                      <span class="text-lg font-black text-slate-900 dark:text-white">v${sanitizeHTML(activeVersionObj.version)}</span>
-                      <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Version</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center rounded-2xl px-5 py-3 border min-w-[100px] bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-700">
-                      <span class="text-lg font-black flex items-center gap-1 text-slate-900 dark:text-white">
-                        ${app.price > 0 ? (isNexusPlus ? `<i class="ph-fill ph-sparkle text-purple-500" title="Nexus+ Free Access"></i> <span class="text-purple-500">Free</span>` : (isVIP ? `<i class="ph-fill ph-star text-purple-500" title="VIP 50% Off"></i> <i class="ph-fill ph-coin text-yellow-500"></i> <span class="line-through text-slate-400 text-sm mr-1">${app.price}</span>${finalPrice}` : `<i class="ph-fill ph-coin text-yellow-500"></i> ${app.price}`)) : 'Free'}
+                        ${app.price > 0 ? (isNexusPlus ? `<i class="ph-fill ph-sparkle text-purple-500" title="Nexus+ Free Access"></i> <span class="text-purple-500">Free</span>` : (isVIP ? `<i class="ph-fill ph-star text-purple-500" title="VIP Discount"></i> <i class="ph-fill ph-coin text-yellow-500"></i> <span class="line-through text-slate-400 text-sm mr-1">${app.price}</span>${finalPrice}` : (isMidnight ? `<i class="ph-fill ph-moon-stars text-indigo-500" title="Midnight Hour 25% Off"></i> <i class="ph-fill ph-coin text-yellow-500"></i> <span class="line-through text-slate-400 text-sm mr-1">${app.price}</span>${finalPrice}` : `<i class="ph-fill ph-coin text-yellow-500"></i> ${app.price}`))) : 'Free'}
                       </span>
                       <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Price</span>
                     </div>
@@ -3267,9 +3277,11 @@
                     
                     <div class="flex items-center gap-4 justify-center sm:justify-start w-full sm:w-auto flex-wrap">
                       ${hasAccess && !app.isBroken ? `
+                        ${app.allowDownload !== false ? `
                         <button data-click="downloadApp" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Download .html">
                           <i class="ph ph-download-simple text-2xl"></i>
                         </button>
+                        ` : ''}
                         <button data-click="embedApp" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Embed App Widget">
                           <i class="ph ph-code text-2xl"></i>
                         </button>
@@ -3752,6 +3764,10 @@
           showModal('Download Disabled', 'This app has been flagged for safety concerns and its source code cannot be downloaded.');
           return;
       }
+      if (app.allowDownload === false) {
+          showModal('Download Disabled', 'The developer has disabled source code downloads for this app.');
+          return;
+      }
 
       let history = app.versionHistory && app.versionHistory.length > 0 ? app.versionHistory : [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
       const selectedVersionStr = window.selectedAppVersion || history[0].version;
@@ -4074,20 +4090,20 @@
             btnApp.classList.add(...activeClasses);
             btnAd.classList.remove(...activeClasses);
             btnAd.classList.add(...inactiveClasses);
-            formApp.classList.remove('hidden');
-            formAd.classList.add('hidden');
+            if (formApp) formApp.classList.remove('hidden');
+            if (formAd) formAd.classList.add('hidden');
             document.getElementById('upload-title').textContent = editingAppId ? 'Edit App' : 'Publish to NexusStore';
         } else {
             btnAd.classList.remove(...inactiveClasses);
             btnAd.classList.add(...activeClasses);
             btnApp.classList.remove(...activeClasses);
             btnApp.classList.add(...inactiveClasses);
-            formAd.classList.remove('hidden');
-            formApp.classList.add('hidden');
+            if (formAd) formAd.classList.remove('hidden');
+            if (formApp) formApp.classList.add('hidden');
             document.getElementById('upload-title').textContent = 'Create Ad Campaign';
 
             const dropdown = document.getElementById('publish-ad-target-app');
-            if (currentUser) {
+            if (currentUser && dropdown) {
                 const myApps = window.apps.filter(a => a.authorId === currentUser.uid);
                 if (myApps.length === 0) {
                     dropdown.innerHTML = '<option value="">No apps published yet</option>';
@@ -4160,6 +4176,7 @@
       const changelogVal = document.getElementById('app-changelog').value.trim() || 'Initial Release';
       const priceVal = parseInt(document.getElementById('app-price').value) || 0;
       const devNameVal = document.getElementById('app-developer').value;
+      const allowDownloadVal = document.getElementById('app-allow-download').checked;
 
       submitBtn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Publishing...';
       submitBtn.disabled = true;
@@ -4213,6 +4230,7 @@
             code: payloadType === 'code' ? inputCode.value : null,
             icon: iconPreviewBase64 || null,
             screenshots: screenshotsBase64,
+            allowDownload: allowDownloadVal,
             isBroken: autoFlagged ? true : (existingApp.isBroken || false),
             brokenReason: autoFlagged ? flagReason : (existingApp.brokenReason || null)
           });
@@ -4248,6 +4266,7 @@
             bgClass: 'bg-gradient-to-br from-indigo-500 to-purple-600',
             iconClass: 'ph-fill ph-app-window',
             screenshots: screenshotsBase64,
+            allowDownload: allowDownloadVal,
             createdAt: Date.now(),
             authorId: currentUser.uid,
             isBroken: autoFlagged,
@@ -4302,15 +4321,18 @@
     });
 
     let publishAdImageBase64 = null;
-    document.getElementById('publish-ad-image-input').addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            publishAdImageBase64 = await readFileAsDataURL(file);
-            document.getElementById('publish-ad-image-preview').src = publishAdImageBase64;
-            document.getElementById('publish-ad-image-preview').classList.remove('hidden');
-            document.getElementById('publish-ad-image-placeholder').classList.add('hidden');
-        }
-    });
+    const publishAdImgInput = document.getElementById('publish-ad-image-input');
+    if (publishAdImgInput) {
+        publishAdImgInput.addEventListener('change', async (e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+                publishAdImageBase64 = await readFileAsDataURL(file);
+                document.getElementById('publish-ad-image-preview').src = publishAdImageBase64;
+                document.getElementById('publish-ad-image-preview').classList.remove('hidden');
+                document.getElementById('publish-ad-image-placeholder').classList.add('hidden');
+            }
+        });
+    }
 
     window.submitPublishAd = async (e) => {
         e.preventDefault();
