@@ -4675,7 +4675,6 @@
                 ],
                 nexus: [
                     { c: 0.50, type: 'banner', id: 'neon', name: 'Neon Banner' },
-                    { c: 0.80, type: 'vip', id: 'vip', name: 'Permanent VIP Status' },
                     { c: 1.00, type: 'custom_banner', id: 'custom', name: 'Custom Banner Upload Pass' }
                 ]
             };
@@ -4709,8 +4708,8 @@
             }
 
             if (isDuplicate) {
-                // Refund cost + 10%
-                const refund = Math.floor(config.cost * 1.1);
+                // Refund 50% of cost for duplicate
+                const refund = Math.floor(config.cost * 0.50);
                 updates.balance = increment(refund - config.cost);
                 msg = `<span class="text-slate-500 text-xl block mb-2">DUPLICATE!</span> You already own the <b>${selectedLoot.name}</b>. You were refunded <span class="font-bold text-yellow-500">${refund} Coins</span>!`;
             } else {
@@ -4853,6 +4852,7 @@
              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button data-click="adminManageCoins" data-arg="${u.uid}" data-arg2="${sanitizeHTML(u.username || u.displayName || 'User')}" class="text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Manage Nexus Coins"><i class="ph-fill ph-coin"></i> Coins</button>
               <button data-click="adminSetApiKey" data-arg="${u.uid}" data-arg2="${sanitizeHTML(u.username || u.displayName || 'User')}" class="text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Assign Custom API Key"><i class="ph-fill ph-key"></i> API</button>
+              <button data-click="adminToggleNexusPlus" data-arg="${u.uid}" class="${u.isNexusPlus ? 'text-fuchsia-600 bg-fuchsia-100 dark:text-fuchsia-400 dark:bg-fuchsia-900/40' : 'text-fuchsia-500 hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900/20'} px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Toggle Nexus+ Status"><i class="ph-fill ph-sparkle"></i> Plus</button>
               <button data-click="adminToggleVIP" data-arg="${u.uid}" class="${u.isVIP ? 'text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/40' : 'text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20'} px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1" title="Toggle VIP Status"><i class="ph-fill ph-star"></i> VIP</button>
               <button data-click="viewUserHistory" data-arg="${u.uid}" data-arg2="${sanitizeHTML(u.username || u.displayName || 'User')}" class="text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-clock-counter-clockwise"></i> History</button>
               <button data-click="adminMessageUser" data-arg="${u.uid}" data-arg2="${sanitizeHTML(u.username || u.displayName || 'User')}" class="text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 px-3 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1"><i class="ph-fill ph-paper-plane-tilt"></i> Msg</button>
@@ -4949,6 +4949,29 @@
             }
         } catch (e) {
             console.error("Error toggling VIP", e);
+        }
+    };
+
+    window.adminToggleNexusPlus = async (uid) => {
+        try {
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const isCurrentlyPlus = userSnap.data().isNexusPlus || false;
+                await updateDoc(userRef, { 
+                    isNexusPlus: !isCurrentlyPlus,
+                    nexusPlusExpiry: !isCurrentlyPlus ? Date.now() + (365 * 24 * 60 * 60 * 1000) : null
+                });
+                showToast(
+                    isCurrentlyPlus ? 'Nexus+ Revoked' : 'Nexus+ Granted', 
+                    `User is ${isCurrentlyPlus ? 'no longer' : 'now'} a Nexus+ member.`, 
+                    'ph-sparkle', 
+                    'fuchsia'
+                );
+                logActivity('MODERATION', 'Nexus+ Status', `${isCurrentlyPlus ? 'Revoked' : 'Granted'} Nexus+ for ${uid}`);
+            }
+        } catch (e) {
+            console.error("Error toggling Nexus+", e);
         }
     };
 
@@ -5738,6 +5761,7 @@
       else if (action === 'forgotPassword') window.forgotPassword();
       else if (action === 'claimDailyCoins') window.claimDailyCoins(arg1);
       else if (action === 'adminToggleVIP') window.adminToggleVIP(arg1);
+      else if (action === 'adminToggleNexusPlus') window.adminToggleNexusPlus(arg1);
       else if (action === 'generateAiApp') window.generateAiApp();
     });
 
