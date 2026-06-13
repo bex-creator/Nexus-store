@@ -2086,16 +2086,48 @@
     document.getElementById('custom-banner-input').addEventListener('change', async (e) => {
       const file = e.target.files?.[0];
       if (file) {
-        // Assume readFileAsDataURL exists later in the code
-        editCustomBannerBase64 = await new Promise((res, rej) => {
+        editCustomBannerBase64 = await new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = () => res(reader.result);
-            reader.onerror = rej;
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Compress image to fit within Firestore 1MB limits
+                    const MAX_WIDTH = 1200;
+                    if (width > MAX_WIDTH) {
+                        height = Math.round((height * MAX_WIDTH) / width);
+                        width = MAX_WIDTH;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Convert to high-efficiency JPEG
+                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                };
+                img.onerror = reject;
+                img.src = event.target.result;
+            };
+            reader.onerror = reject;
             reader.readAsDataURL(file);
         });
         document.getElementById('custom-banner-preview').src = editCustomBannerBase64;
         document.getElementById('custom-banner-preview').classList.remove('hidden');
       }
+    });
+
+    document.getElementById('edit-banner-style').addEventListener('change', (e) => {
+        const container = document.getElementById('custom-banner-container');
+        if (e.target.value === 'custom') {
+            container.classList.remove('hidden');
+        } else {
+            container.classList.add('hidden');
+        }
     });
 
     window.showEditProfile = () => {
@@ -2203,7 +2235,11 @@
         if (currentView === 'profile') renderProfile(newUsername);
       } catch (err) {
         console.error(err);
-        showModal('Error', 'Could not update profile.');
+        let errorMsg = err.message;
+        if (errorMsg.includes('payload is too large') || errorMsg.includes('exceeds')) {
+            errorMsg = "Your custom banner image is too large! Please try uploading a smaller file.";
+        }
+        showModal('Error', 'Could not update profile. ' + errorMsg);
       } finally {
         btn.disabled = false;
         btn.innerHTML = 'Save Changes';
@@ -2779,18 +2815,27 @@
 
       const headerCard = document.getElementById('profile-header-card');
       if (headerCard) {
+          let bannerHTML = '';
+          if (bannerUrl) {
+              bannerHTML = `
+              <div class="w-full h-48 sm:h-64 relative z-0 flex-shrink-0 bg-slate-200 dark:bg-slate-800">
+                  <img src="${bannerUrl}" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/10"></div>
+              </div>`;
+          } else {
+              bannerHTML = `
+              <div class="w-full h-32 sm:h-48 relative z-0 flex-shrink-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+                  <div class="absolute inset-0 bg-black/10"></div>
+              </div>`;
+          }
+
           headerCard.innerHTML = `
-            ${bannerUrl ? `
-            <div class="w-full h-48 sm:h-64 relative z-0 flex-shrink-0 bg-slate-200 dark:bg-slate-800">
-                <img src="${bannerUrl}" class="w-full h-full object-cover" />
-                <div class="absolute inset-0 bg-black/10"></div>
-            </div>
-            ` : ''}
+            ${bannerHTML}
             <div class="relative z-10 px-8 pb-8 sm:px-12 sm:pb-12 flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8 w-full">
-              <div id="profile-header-avatar" class="relative z-10 flex-shrink-0 ${bannerUrl ? '-mt-16 sm:-mt-20' : 'mt-8 sm:mt-12'}">
+              <div id="profile-header-avatar" class="relative z-10 flex-shrink-0 -mt-16 sm:-mt-20">
                 <img src="${getAvatarUrl(devUser || { customDisplayName: developerName })}" class="w-32 h-32 sm:w-40 sm:h-40 rounded-[2.5rem] shadow-xl border-4 sm:border-[8px] border-white dark:border-slate-900 object-cover bg-slate-100 dark:bg-slate-800" />
               </div>
-              <div class="flex-1 relative z-10 w-full ${bannerUrl ? 'mt-2 sm:mt-6' : 'mt-8 sm:mt-12'}">
+              <div class="flex-1 relative z-10 w-full mt-2 sm:mt-6">
                 <div class="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-2">
                   <div class="flex items-center justify-center sm:justify-start gap-3 w-full sm:w-auto">
                     <h1 id="profile-header-name" class="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight break-all">${sanitizeHTML(developerName)}</h1>
