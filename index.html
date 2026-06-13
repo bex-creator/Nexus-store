@@ -334,6 +334,15 @@
         <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Username</label>
         <input type="text" id="edit-username" required minlength="3" maxlength="50" class="w-full border-2 rounded-2xl px-5 py-4 mb-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
         
+        <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Avatar Style</label>
+        <select id="edit-avatar-style" class="w-full border-2 rounded-2xl px-5 py-4 mb-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-lg bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white cursor-pointer shadow-sm">
+          <option value="initials">Initials (Default)</option>
+          <option value="bottts">Robots (Bottts)</option>
+          <option value="pixel-art">Pixel Art</option>
+          <option value="adventurer">Adventurer</option>
+          <option value="fun-emoji">Fun Emoji</option>
+        </select>
+
         <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Developer Bio</label>
         <textarea id="edit-bio" rows="3" maxlength="200" placeholder="Tell the community about yourself..." class="w-full border-2 rounded-2xl px-5 py-4 mb-6 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white"></textarea>
         
@@ -477,6 +486,9 @@
         <button data-click="handleSignOut" class="p-2.5 rounded-xl transition-colors bg-white text-red-500 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-slate-700 dark:border-transparent" title="Sign Out">
           <i class="ph-bold ph-sign-out text-xl"></i>
         </button>
+        <button data-click="navigate" data-arg="leaderboard" class="p-2.5 rounded-xl transition-colors bg-white text-yellow-500 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-yellow-400 dark:hover:bg-slate-700 dark:border-transparent" title="Leaderboards">
+          <i class="ph-fill ph-trophy text-xl"></i>
+        </button>
         <button data-click="navigate" data-arg="faq" class="p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:border-transparent" title="FAQ & Support">
           <i class="ph-bold ph-question text-xl"></i>
         </button>
@@ -549,6 +561,35 @@
         </div>
         <div id="grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8"></div>
       </section>
+    </div>
+
+    <!-- LEADERBOARD VIEW -->
+    <div id="view-leaderboard" class="view-section hidden animate-fade-in">
+      <div class="max-w-6xl mx-auto pb-20">
+        <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-sm w-fit hover:shadow-md bg-white text-slate-50 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-100 dark:border-slate-800">
+          <i class="ph ph-caret-left text-xl group-hover:-translate-x-1 transition-transform"></i> Back
+        </button>
+        <div class="flex items-center gap-4 mb-10">
+           <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/50 text-yellow-500 flex items-center justify-center rounded-2xl shadow-sm">
+              <i class="ph-fill ph-trophy text-4xl"></i>
+           </div>
+           <div>
+             <h1 class="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">Global Leaderboards</h1>
+             <p class="text-slate-500 font-medium">The wealthiest citizens and top grossing apps on NexusStore.</p>
+           </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+           <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-100 dark:border-slate-800">
+              <h3 class="text-xl font-black mb-6 text-slate-900 dark:text-white flex items-center gap-2"><i class="ph-fill ph-users text-indigo-500"></i> Wealthiest Citizens</h3>
+              <div id="leaderboard-users" class="space-y-4"></div>
+           </div>
+           <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-100 dark:border-slate-800">
+              <h3 class="text-xl font-black mb-6 text-slate-900 dark:text-white flex items-center gap-2"><i class="ph-fill ph-rocket-launch text-emerald-500"></i> Top Grossing Apps</h3>
+              <div id="leaderboard-apps" class="space-y-4"></div>
+           </div>
+        </div>
+      </div>
     </div>
 
     <!-- DETAILS VIEW -->
@@ -1504,6 +1545,14 @@
                   .replace(/'/g, '&#39;');
     };
 
+    const getAvatarUrl = (userObj) => {
+        if (!userObj) return `https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1`;
+        if (userObj.photoURL) return userObj.photoURL;
+        const style = userObj.avatarStyle || 'initials';
+        const seed = sanitizeHTML(userObj.customDisplayName || userObj.displayName || userObj.username || 'User');
+        return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundColor=6366f1,8b5cf6,ec4899`;
+    };
+
     // Security Enhancements: Anti-Spam Rate Limiter
     const userRateLimits = {};
     const checkRateLimit = (actionType, cooldownMs = 3000) => {
@@ -1964,7 +2013,8 @@
       upload: document.getElementById('view-upload'),
       admin: document.getElementById('view-admin'),
       profile: document.getElementById('view-profile'),
-      faq: document.getElementById('view-faq')
+      faq: document.getElementById('view-faq'),
+      leaderboard: document.getElementById('view-leaderboard')
     };
     const searchContainer = document.getElementById('search-container');
     const searchInput = document.getElementById('search-input');
@@ -2080,6 +2130,7 @@
        document.getElementById('edit-username').value = currentUser?.customDisplayName || currentUser?.displayName || '';
        const me = systemUsers.find(u => u.uid === currentUser?.uid);
        document.getElementById('edit-bio').value = me?.bio || '';
+       document.getElementById('edit-avatar-style').value = me?.avatarStyle || 'initials';
        modal.classList.remove('hidden');
        modal.classList.add('flex');
     };
@@ -2129,6 +2180,7 @@
       e.preventDefault();
       const newUsername = document.getElementById('edit-username').value.trim();
       const newBio = document.getElementById('edit-bio').value.trim();
+      const newAvatarStyle = document.getElementById('edit-avatar-style').value;
 
       const btn = document.getElementById('edit-profile-submit-btn');
       btn.disabled = true;
@@ -2139,12 +2191,16 @@
         await updateDoc(userRef, {
           username: newUsername,
           displayName: newUsername,
-          bio: newBio
+          bio: newBio,
+          avatarStyle: newAvatarStyle
         });
 
         currentUser.customDisplayName = newUsername;
+        if (currentUser.avatarStyle !== newAvatarStyle) {
+            currentUser.avatarStyle = newAvatarStyle;
+        }
         updateUserProfileUI(currentUser);
-        logActivity('ACCOUNT', 'Profile Updated', `Updated profile and bio`);
+        logActivity('ACCOUNT', 'Profile Updated', `Updated profile, bio, and avatar`);
         
         window.closeProfileModal();
         showToast('Profile Updated', 'Your profile details were saved.', 'ph-user-check', 'indigo');
@@ -2165,8 +2221,12 @@
         profileEl.classList.add('flex');
         
         const displayStr = user.customDisplayName || user.displayName || 'User';
+        
+        // Grab full user object to ensure we have avatarStyle
+        const fullUser = systemUsers.find(u => u.uid === user.uid) || user;
+        
         document.getElementById('user-name').textContent = displayStr;
-        document.getElementById('user-avatar').src = user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${sanitizeHTML(displayStr)}&backgroundColor=6366f1`;
+        document.getElementById('user-avatar').src = getAvatarUrl(fullUser);
       }
     };
 
@@ -2307,6 +2367,8 @@
           renderProfile(targetData);
         } else if (viewName === 'admin') {
           renderAdmin();
+        } else if (viewName === 'leaderboard') {
+          renderLeaderboard();
         } else if (viewName === 'upload') {
           window.switchUploadTab('app'); // Reset to default App Upload tab
           
@@ -2707,12 +2769,12 @@
 
     function renderProfile(developerName) {
       const devApps = window.apps.filter(a => a.developer === developerName && (a.visibility !== 'private' || (currentUser && a.authorId === currentUser.uid) || window.isAuthorizedAdmin));
+      const devUser = systemUsers.find(u => (u.username === developerName) || (u.displayName === developerName));
       
-      document.getElementById('profile-header-avatar').innerHTML = `<img src="https://api.dicebear.com/7.x/initials/svg?seed=${sanitizeHTML(developerName)}&backgroundColor=6366f1,8b5cf6,ec4899" class="w-32 h-32 sm:w-40 sm:h-40 rounded-[2.5rem] shadow-2xl border-4 border-white dark:border-slate-800 object-cover" />`;
+      document.getElementById('profile-header-avatar').innerHTML = `<img src="${getAvatarUrl(devUser || { customDisplayName: developerName })}" class="w-32 h-32 sm:w-40 sm:h-40 rounded-[2.5rem] shadow-2xl border-4 border-white dark:border-slate-800 object-cover bg-white dark:bg-slate-900" />`;
       document.getElementById('profile-header-name').textContent = sanitizeHTML(developerName);
       document.getElementById('profile-header-stats').textContent = `${devApps.length} App${devApps.length !== 1 ? 's' : ''} Published`;
       
-      const devUser = systemUsers.find(u => (u.username === developerName) || (u.displayName === developerName));
       document.getElementById('profile-header-bio').textContent = devUser?.bio ? sanitizeHTML(devUser.bio) : "This developer prefers to keep an air of mystery and hasn't written a bio yet.";
 
       const myName = currentUser?.customDisplayName || currentUser?.displayName;
@@ -2859,11 +2921,11 @@
             // Record Analytics on App Data
             try {
                 const appRef = doc(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps', app.id);
-                await setDoc(appRef, { revenue: increment(finalPrice), downloads: increment(1) }, { merge: true });
-            } catch (e) { /* Ignore default apps */ }
-            
-            // Automatically keep it installed forever locally
-            installedApps.add(targetAppId);
+            await setDoc(appRef, { revenue: increment(finalPrice), downloads: increment(1) }, { merge: true });
+        } catch (e) { /* Ignore default apps */ }
+        
+        // Automatically keep it installed forever locally
+        installedApps.add(targetAppId);
             localStorage.setItem('nexus_installed', JSON.stringify([...installedApps]));
             
             logActivity('PURCHASE', app.title, `Bought app for ${finalPrice} coins.`);
@@ -3208,6 +3270,72 @@
       }
     };
 
+    window.renderLeaderboard = () => {
+        const usersContainer = document.getElementById('leaderboard-users');
+        const appsContainer = document.getElementById('leaderboard-apps');
+
+        // Top Users
+        const topUsers = [...systemUsers]
+            .filter(u => !u.isAnonymous && u.status === 'active')
+            .sort((a, b) => (b.balance || 0) - (a.balance || 0))
+            .slice(0, 10);
+
+        usersContainer.innerHTML = topUsers.map((u, i) => {
+            const isTop3 = i < 3;
+            const rankColors = ['text-yellow-400', 'text-slate-300', 'text-amber-600'];
+            const rankIcon = isTop3 ? `<i class="ph-fill ph-medal ${rankColors[i]} text-2xl drop-shadow-md"></i>` : `<span class="font-black text-slate-400 w-6 text-center">${i+1}</span>`;
+            
+            return `
+            <div data-click="navigate" data-arg="profile" data-arg2="${sanitizeHTML(u.customDisplayName || u.displayName)}" class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border border-slate-100 dark:border-slate-700/50 group">
+               <div class="flex items-center gap-4">
+                  ${rankIcon}
+                  <div class="flex items-center gap-3">
+                     <img src="${getAvatarUrl(u)}" class="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm group-hover:scale-105 transition-transform bg-white dark:bg-slate-900">
+                     <div>
+                        <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1 group-hover:text-indigo-500 transition-colors">
+                           ${sanitizeHTML(u.customDisplayName || u.displayName)}
+                           ${u.isVIP ? '<i class="ph-fill ph-star text-purple-500 text-xs" title="VIP"></i>' : ''}
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="font-black text-yellow-500 flex items-center gap-1">
+                  ${u.balance || 0} <i class="ph-fill ph-coin"></i>
+               </div>
+            </div>`;
+        }).join('');
+
+        // Top Apps
+        const topApps = [...window.apps]
+            .filter(a => a.visibility !== 'private')
+            .sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
+            .slice(0, 10);
+
+        appsContainer.innerHTML = topApps.map((a, i) => {
+            const isTop3 = i < 3;
+            const rankColors = ['text-yellow-400', 'text-slate-300', 'text-amber-600'];
+            const rankIcon = isTop3 ? `<i class="ph-fill ph-medal ${rankColors[i]} text-2xl drop-shadow-md"></i>` : `<span class="font-black text-slate-400 w-6 text-center">${i+1}</span>`;
+            
+            return `
+            <div data-click="navigate" data-arg="details" data-arg2="${a.id}" class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border border-slate-100 dark:border-slate-700/50 group">
+               <div class="flex items-center gap-4 min-w-0">
+                  ${rankIcon}
+                  <div class="flex items-center gap-3 min-w-0">
+                     ${a.icon ? `<img src="${a.icon}" class="w-10 h-10 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform flex-shrink-0">` : `<div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-500 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform flex-shrink-0"><i class="${a.iconClass || 'ph-app-window'} text-xl"></i></div>`}
+                     <div class="min-w-0">
+                        <div class="font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-indigo-500 transition-colors">${sanitizeHTML(a.title)}</div>
+                        <div class="text-xs font-medium text-slate-500 truncate">By ${sanitizeHTML(a.developer)}</div>
+                     </div>
+                  </div>
+               </div>
+               <div class="font-black text-emerald-500 flex flex-col items-end flex-shrink-0">
+                  <div class="flex items-center gap-1">${a.revenue || 0} <i class="ph-fill ph-coin"></i></div>
+                  <div class="text-[10px] text-slate-400 uppercase tracking-widest">${a.downloads || 0} Installs</div>
+               </div>
+            </div>`;
+        }).join('');
+    };
+
     window.shareApp = (appTitle) => {
       const textToCopy = `Check out ${appTitle} on NexusStore!`;
       
@@ -3242,12 +3370,11 @@
       installedApps.add(targetAppId);
       localStorage.setItem('nexus_installed', JSON.stringify([...installedApps]));
       
-      // Record Analytics for Free Downloads
       if (app) {
           try {
               const appRef = doc(db, 'artifacts', appId, 'public', 'data', 'uploaded_apps', app.id);
               await setDoc(appRef, { downloads: increment(1) }, { merge: true });
-          } catch(e) { /* Ignore default apps */ }
+          } catch(e) { }
           logActivity('INSTALL', app.title, 'App installed to local browser session.');
       }
       
@@ -4158,9 +4285,39 @@
 
       const modalHtml = `
         <div id="${modalId}" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4">
-          <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in text-center">
+          <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in text-center max-h-[90vh] overflow-y-auto custom-scrollbar">
             
             ${dailyRewardHtml}
+            
+            <hr class="border-slate-100 dark:border-slate-800 my-6" />
+            
+            <h3 class="text-2xl font-black mb-2 text-slate-900 dark:text-white flex items-center justify-center gap-2"><i class="ph-fill ph-magic-wand text-purple-500"></i> Gacha Store</h3>
+            <p class="text-slate-500 mb-6 font-medium text-sm">Test your luck! Buy mystery boxes to win massive coin jackpots or permanent VIP status.</p>
+            
+            <div class="grid grid-cols-2 gap-3 mb-6">
+               <button data-click="openMysteryBox" data-arg="bronze" data-arg2="${modalId}" class="bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl p-4 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
+                  <i class="ph-fill ph-cube text-3xl mb-1 group-hover:animate-bounce"></i>
+                  <h4 class="font-black text-sm">Bronze Box</h4>
+                  <p class="text-[10px] font-bold opacity-90">100 <i class="ph-fill ph-coin"></i></p>
+               </button>
+               <button data-click="openMysteryBox" data-arg="silver" data-arg2="${modalId}" class="bg-gradient-to-br from-slate-400 to-slate-500 rounded-2xl p-4 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
+                  <i class="ph-fill ph-cube text-3xl mb-1 group-hover:animate-bounce"></i>
+                  <h4 class="font-black text-sm">Silver Box</h4>
+                  <p class="text-[10px] font-bold opacity-90">500 <i class="ph-fill ph-coin"></i></p>
+               </button>
+               <button data-click="openMysteryBox" data-arg="gold" data-arg2="${modalId}" class="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl p-4 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
+                  <i class="ph-fill ph-cube text-3xl mb-1 group-hover:animate-bounce"></i>
+                  <h4 class="font-black text-sm">Gold Box</h4>
+                  <p class="text-[10px] font-bold opacity-90">2,500 <i class="ph-fill ph-coin"></i></p>
+               </button>
+               <button data-click="openMysteryBox" data-arg="nexus" data-arg2="${modalId}" class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-4 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
+                  <i class="ph-fill ph-sparkle text-3xl mb-1 group-hover:animate-bounce"></i>
+                  <h4 class="font-black text-sm">Nexus Box</h4>
+                  <p class="text-[10px] font-bold opacity-90">10,000 <i class="ph-fill ph-coin"></i></p>
+               </button>
+            </div>
+
+            <hr class="border-slate-100 dark:border-slate-800 my-6" />
 
             <div class="w-16 h-16 mx-auto bg-yellow-100 text-yellow-500 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
               <i class="ph-fill ph-gift text-3xl"></i>
@@ -4229,31 +4386,84 @@
         }
     };
 
-    window.submitCoinRequest = async (amountStr, modalId, e) => {
-       const amount = parseInt(amountStr);
-       if (!amount || !currentUser) return;
-       
-       // Anti-Spam Check
-       if (!checkRateLimit('coinRequest', 15000)) return; // 15s cooldown
+    window.openMysteryBox = async (boxType, modalId) => {
+        if (!currentUser) return;
+        const me = systemUsers.find(u => u.uid === currentUser.uid);
+        let myBal = me?.balance || 0;
+        
+        const boxConfig = {
+            bronze: { cost: 100, color: 'text-orange-500', shadow: 'drop-shadow-[0_0_40px_rgba(249,115,22,0.5)]' },
+            silver: { cost: 500, color: 'text-slate-400', shadow: 'drop-shadow-[0_0_40px_rgba(148,163,184,0.5)]' },
+            gold: { cost: 2500, color: 'text-yellow-500', shadow: 'drop-shadow-[0_0_40px_rgba(234,179,8,0.5)]' },
+            nexus: { cost: 10000, color: 'text-purple-500', shadow: 'drop-shadow-[0_0_40px_rgba(168,85,247,0.5)]' }
+        };
+        const config = boxConfig[boxType] || boxConfig.silver;
 
-       const btn = e.currentTarget;
-       const originalContent = btn.innerHTML;
-       btn.innerHTML = '<i class="ph ph-spinner animate-spin text-3xl text-yellow-500"></i>';
-       
-       try {
-          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coin_requests', currentUser.uid), {
-             uid: currentUser.uid,
-             username: currentUser.customDisplayName || currentUser.displayName || 'Unknown',
-             amount: amount,
-             timestamp: Date.now()
-          });
-          document.getElementById(modalId).remove();
-          showToast('Request Sent!', `Requested ${amount} coins from admins.`, 'ph-gift', 'yellow');
-       } catch(err) {
-          console.error(err);
-          showModal('Error', 'Failed to send coin request.');
-          btn.innerHTML = originalContent;
-       }
+        if (myBal < config.cost) {
+            showModal('Insufficient Funds', `You need at least ${config.cost} coins to open a ${boxType.charAt(0).toUpperCase() + boxType.slice(1)} Box!`);
+            return;
+        }
+
+        // Close request modal
+        document.getElementById(modalId).remove();
+        
+        // Show spinning/opening animation modal
+        const animModalId = `box-${Date.now()}`;
+        document.body.insertAdjacentHTML('beforeend', `
+          <div id="${animModalId}" class="fixed inset-0 z-[300] flex items-center justify-center bg-slate-900/95 backdrop-blur-md px-4">
+             <div class="text-center animate-zoom-in">
+                <i class="ph-fill ${boxType === 'nexus' ? 'ph-sparkle' : 'ph-cube'} text-[8rem] ${config.color} animate-bounce mb-6 block ${config.shadow}"></i>
+                <h2 class="text-3xl font-black text-white animate-pulse tracking-widest uppercase">Unlocking...</h2>
+             </div>
+          </div>
+        `);
+
+        setTimeout(async () => {
+            const animModal = document.getElementById(animModalId);
+            if (animModal) animModal.remove();
+            
+            // Random Number Generation
+            const rand = Math.random();
+            let prize = 0;
+            let msg = '';
+            let isVipWin = false;
+            
+            if (boxType === 'bronze') {
+                if (rand < 0.01) { prize = 1000; msg = '<span class="text-yellow-500 text-xl block mb-2">JACKPOT!</span> You found 1,000 Coins!'; }
+                else if (rand < 0.10) { prize = 500; msg = '<span class="text-blue-500 text-xl block mb-2">RARE WIN!</span> You found 500 Coins!'; }
+                else if (rand < 0.50) { prize = 150; msg = '<span class="text-emerald-500 text-xl block mb-2">UNCOMMON</span> You found 150 Coins.'; }
+                else { prize = 10; msg = '<span class="text-slate-500 text-xl block mb-2">COMMON</span> You only found 10 Coins...'; }
+            } else if (boxType === 'silver') {
+                if (rand < 0.05) { isVipWin = !me.isVIP; prize = isVipWin ? 0 : 2000; msg = isVipWin ? '<span class="text-purple-500 text-xl block mb-2">LEGENDARY WIN!</span> You unlocked VIP Status!' : '<span class="text-blue-500 text-xl block mb-2">RARE WIN!</span> You found 2,000 Coins!'; }
+                else if (rand < 0.15) { prize = 1500; msg = '<span class="text-blue-500 text-xl block mb-2">RARE WIN!</span> You found 1,500 Coins!'; }
+                else if (rand < 0.45) { prize = 600; msg = '<span class="text-emerald-500 text-xl block mb-2">UNCOMMON</span> You found 600 Coins.'; }
+                else { prize = 200; msg = '<span class="text-slate-500 text-xl block mb-2">COMMON</span> You only found 200 Coins...'; }
+            } else if (boxType === 'gold') {
+                if (rand < 0.05) { prize = 10000; msg = '<span class="text-yellow-500 text-xl block mb-2">MEGA JACKPOT!</span> You found 10,000 Coins!'; }
+                else if (rand < 0.20) { isVipWin = !me.isVIP; prize = isVipWin ? 0 : 5000; msg = isVipWin ? '<span class="text-purple-500 text-xl block mb-2">LEGENDARY WIN!</span> You unlocked VIP Status!' : '<span class="text-blue-500 text-xl block mb-2">RARE WIN!</span> You found 5,000 Coins!'; }
+                else if (rand < 0.60) { prize = 3000; msg = '<span class="text-emerald-500 text-xl block mb-2">UNCOMMON</span> You found 3,000 Coins.'; }
+                else { prize = 1000; msg = '<span class="text-slate-500 text-xl block mb-2">COMMON</span> You found 1,000 Coins...'; }
+            } else if (boxType === 'nexus') {
+                if (rand < 0.20) { isVipWin = !me.isVIP; prize = isVipWin ? 0 : 25000; msg = isVipWin ? '<span class="text-purple-500 text-xl block mb-2">LEGENDARY WIN!</span> You unlocked VIP Status!' : '<span class="text-yellow-500 text-xl block mb-2">MEGA JACKPOT!</span> You found 25,000 Coins!'; }
+                else if (rand < 0.50) { prize = 15000; msg = '<span class="text-blue-500 text-xl block mb-2">RARE WIN!</span> You found 15,000 Coins!'; }
+                else { prize = 5000; msg = '<span class="text-slate-500 text-xl block mb-2">COMMON</span> You found 5,000 Coins...'; }
+            }
+
+            try {
+                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
+                let updates = { balance: increment(prize - config.cost) };
+                if (isVipWin) updates.isVIP = true;
+                
+                await updateDoc(userRef, updates);
+                
+                showModal('Box Opened!', msg);
+                logActivity('ECONOMY', 'Opened Loot Box', `Spent ${config.cost}, won ${isVipWin ? 'VIP Status' : prize + ' coins'}.`);
+                
+            } catch(e) {
+                console.error(e);
+                showModal('Error', 'Something went wrong opening the box.');
+            }
+        }, 2000);
     };
 
     window.renderAdminCoins = () => {
@@ -5232,6 +5442,7 @@
       else if (action === 'submitCoinRequest') window.submitCoinRequest(arg1, arg2, e);
       else if (action === 'sendCoinsToUser') window.sendCoinsToUser(arg1, arg2);
       else if (action === 'tipDeveloper') window.tipDeveloper(arg1, arg2);
+      else if (action === 'openMysteryBox') window.openMysteryBox(arg1, arg2);
       else if (action === 'adminApproveCoinRequest') window.adminApproveCoinRequest(arg1, arg2);
       else if (action === 'adminRejectCoinRequest') window.adminRejectCoinRequest(arg1);
       else if (action === 'closeAppViewer') window.closeAppViewer();
