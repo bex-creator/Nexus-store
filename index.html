@@ -521,14 +521,14 @@
       <div class="flex items-center gap-4">
         
         <!-- Nexus+ Button -->
-        <button data-click="showNexusPlusModal" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white rounded-xl font-black text-sm shadow-lg shadow-purple-500/30 transition-all hover:-translate-y-0.5" title="Get Nexus+">
-          <i class="ph-fill ph-sparkle text-lg animate-pulse"></i>
+        <button data-click="showNexusPlusModal" class="hidden sm:flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white rounded-lg font-black text-xs sm:text-sm shadow-md shadow-purple-500/30 transition-all hover:-translate-y-0.5" title="Get Nexus+">
+          <i class="ph-fill ph-sparkle text-base animate-pulse"></i>
           <span class="hidden md:inline">Nexus+</span>
         </button>
 
         <!-- Virtual Currency Balance -->
-        <button id="coin-balance-container" data-click="showCoinRequestModal" class="hidden items-center gap-1.5 px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 rounded-xl font-bold text-sm border border-yellow-200 dark:border-yellow-700/50 shadow-sm cursor-pointer transition-colors" title="Request Nexus Coins">
-          <i class="ph-fill ph-coin text-lg"></i>
+        <button id="coin-balance-container" data-click="showCoinRequestModal" class="hidden items-center gap-1 px-2.5 py-1 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 rounded-lg font-bold text-xs sm:text-sm border border-yellow-200 dark:border-yellow-700/50 shadow-sm cursor-pointer transition-colors" title="Request Nexus Coins">
+          <i class="ph-fill ph-coin text-base"></i>
           <span id="coin-balance-text">0</span>
         </button>
 
@@ -4466,7 +4466,7 @@
 
       const modalHtml = `
         <div id="${modalId}" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4">
-          <div class="bg-white dark:bg-slate-900 rounded-[3rem] p-8 max-w-lg w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in text-center max-h-[90vh] overflow-y-auto custom-scrollbar">
+          <div class="bg-white dark:bg-slate-900 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-8 max-w-3xl w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in text-center max-h-[90vh] overflow-y-auto custom-scrollbar">
             
             ${nexusPlusHtml}
 
@@ -4478,25 +4478,25 @@
             <h3 class="text-2xl font-black mb-2 text-slate-900 dark:text-white flex items-center justify-center gap-2"><i class="ph-fill ph-magic-wand text-purple-500"></i> Gacha Store</h3>
             <p class="text-slate-500 mb-8 font-medium text-sm px-4">Unlock exclusive Avatars, Profile Banners, or even a legendary Custom Banner pass!</p>
             
-            <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
                <button data-click="openMysteryBox" data-arg="bronze" data-arg2="${modalId}" class="bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl p-5 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
                   <i class="ph-fill ph-cube text-4xl mb-2 group-hover:animate-bounce"></i>
-                  <h4 class="font-black text-base">Bronze Box</h4>
+                  <h4 class="font-black text-base">Bronze</h4>
                   <p class="text-xs font-bold opacity-90 mt-1">100 <i class="ph-fill ph-coin"></i></p>
                </button>
                <button data-click="openMysteryBox" data-arg="silver" data-arg2="${modalId}" class="bg-gradient-to-br from-slate-400 to-slate-500 rounded-2xl p-5 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
                   <i class="ph-fill ph-cube text-4xl mb-2 group-hover:animate-bounce"></i>
-                  <h4 class="font-black text-base">Silver Box</h4>
+                  <h4 class="font-black text-base">Silver</h4>
                   <p class="text-xs font-bold opacity-90 mt-1">500 <i class="ph-fill ph-coin"></i></p>
                </button>
                <button data-click="openMysteryBox" data-arg="gold" data-arg2="${modalId}" class="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl p-5 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
                   <i class="ph-fill ph-cube text-4xl mb-2 group-hover:animate-bounce"></i>
-                  <h4 class="font-black text-base">Gold Box</h4>
+                  <h4 class="font-black text-base">Gold</h4>
                   <p class="text-xs font-bold opacity-90 mt-1">2,500 <i class="ph-fill ph-coin"></i></p>
                </button>
                <button data-click="openMysteryBox" data-arg="nexus" data-arg2="${modalId}" class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-5 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
                   <i class="ph-fill ph-sparkle text-4xl mb-2 group-hover:animate-bounce"></i>
-                  <h4 class="font-black text-base">Nexus Box</h4>
+                  <h4 class="font-black text-base">Nexus</h4>
                   <p class="text-xs font-bold opacity-90 mt-1">10,000 <i class="ph-fill ph-coin"></i></p>
                </button>
             </div>
@@ -4509,18 +4509,18 @@
             <h3 class="text-2xl font-black mb-2 text-slate-900 dark:text-white">Request Coins</h3>
             <p class="text-slate-500 mb-6 font-medium text-sm px-4">Select a present below to request a preset amount of Nexus Coins from the admins.</p>
             
-            <div class="grid grid-cols-2 gap-4 mb-8">
-               <button data-click="submitCoinRequest" data-arg="100" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-5 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-2 group">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
+               <button data-click="submitCoinRequest" data-arg="100" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-4 sm:p-5 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-2 group">
                  <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 100
                </button>
-               <button data-click="submitCoinRequest" data-arg="500" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-5 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-2 group">
+               <button data-click="submitCoinRequest" data-arg="500" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-4 sm:p-5 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-2 group">
                  <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 500
                </button>
-               <button data-click="submitCoinRequest" data-arg="1000" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-5 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-2 group">
-                 <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 1,000
+               <button data-click="submitCoinRequest" data-arg="1000" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-4 sm:p-5 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-2 group">
+                 <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 1K
                </button>
-               <button data-click="submitCoinRequest" data-arg="5000" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-5 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-2 group">
-                 <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 5,000
+               <button data-click="submitCoinRequest" data-arg="5000" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-4 sm:p-5 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-2 group">
+                 <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 5K
                </button>
             </div>
             
