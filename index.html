@@ -336,12 +336,19 @@
         
         <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Avatar Style</label>
         <select id="edit-avatar-style" class="w-full border-2 rounded-2xl px-5 py-4 mb-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-lg bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white cursor-pointer shadow-sm">
-          <option value="initials">Initials (Default)</option>
-          <option value="bottts">Robots (Bottts)</option>
-          <option value="pixel-art">Pixel Art</option>
-          <option value="adventurer">Adventurer</option>
-          <option value="fun-emoji">Fun Emoji</option>
+          <!-- Populated by JS -->
         </select>
+
+        <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Profile Banner</label>
+        <select id="edit-banner-style" class="w-full border-2 rounded-2xl px-5 py-4 mb-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-lg bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white cursor-pointer shadow-sm">
+          <!-- Populated by JS -->
+        </select>
+
+        <div id="custom-banner-container" class="hidden mb-4">
+            <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Upload Custom Banner <i class="ph-fill ph-star text-purple-500"></i></label>
+            <input type="file" accept="image/*" id="custom-banner-input" class="w-full border-2 rounded-2xl px-5 py-4 bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-900 dark:text-white">
+            <img id="custom-banner-preview" class="w-full h-24 object-cover mt-2 rounded-xl hidden shadow-sm border border-slate-200 dark:border-slate-700" />
+        </div>
 
         <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Developer Bio</label>
         <textarea id="edit-bio" rows="3" maxlength="200" placeholder="Tell the community about yourself..." class="w-full border-2 rounded-2xl px-5 py-4 mb-6 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white"></textarea>
@@ -1565,6 +1572,16 @@
         return true;
     };
 
+    const BANNER_URLS = {
+        'default': '',
+        'space': 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1200&q=80',
+        'forest': 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&q=80',
+        'retro': 'https://images.unsplash.com/photo-1550684376-efcbd6e3f031?w=1200&q=80',
+        'lava': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80',
+        'ocean': 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&q=80',
+        'neon': 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=1200&q=80'
+    };
+
     // USER FIREBASE CONFIGURATION
     const myFirebaseConfig = {
       apiKey: ["AIzaSyCj0dXBXU_kE", "lLsrTZBpHYk232hPGO62ho"].join(''),
@@ -2082,55 +2099,56 @@
         }
     };
 
-    window.handleSignOut = async () => {
-        try {
-            await signOut(auth);
-            window.location.reload(); 
-        } catch (e) {
-            console.error(e);
-        }
-    };
-    
-    window.forgotPassword = async () => {
-        const emailField = document.getElementById('auth-email');
-        const emailVal = emailField.value.trim();
-
-        if (!emailVal) {
-            showModal('Email Required', 'Please enter your email address in the Email field above, then click "Forgot Password?" again.');
-            return;
-        }
-
-        const btn = document.getElementById('auth-forgot-btn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>';
-
-        try {
-            await sendPasswordResetEmail(auth, emailVal);
-            showModal('Reset Email Sent', `A password reset link has been sent to ${emailVal}. Please check your inbox (and spam folder) to reset your password.`);
-        } catch (err) {
-            console.error("Password reset error:", err);
-            let msg = 'Failed to send reset email.';
-            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') msg = 'No active account found with this email.';
-            if (err.code === 'auth/invalid-email') msg = 'Please enter a valid email address.';
-            showModal('Error', msg);
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = 'Forgot Password?';
-        }
-    };
-    
-    // --- HELPER: ONBOARDING & PROFILES ---
-    const showOnboarding = () => {
+    window.showOnboarding = () => {
       document.getElementById('view-onboarding').classList.remove('hidden');
       document.getElementById('view-onboarding').classList.add('flex');
     };
 
+    let editCustomBannerBase64 = null;
+    document.getElementById('custom-banner-input').addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        // Assume readFileAsDataURL exists later in the code
+        editCustomBannerBase64 = await new Promise((res, rej) => {
+            const reader = new FileReader();
+            reader.onload = () => res(reader.result);
+            reader.onerror = rej;
+            reader.readAsDataURL(file);
+        });
+        document.getElementById('custom-banner-preview').src = editCustomBannerBase64;
+        document.getElementById('custom-banner-preview').classList.remove('hidden');
+      }
+    });
+
     window.showEditProfile = () => {
        const modal = document.getElementById('edit-profile-modal');
        document.getElementById('edit-username').value = currentUser?.customDisplayName || currentUser?.displayName || '';
-       const me = systemUsers.find(u => u.uid === currentUser?.uid);
-       document.getElementById('edit-bio').value = me?.bio || '';
-       document.getElementById('edit-avatar-style').value = me?.avatarStyle || 'initials';
+       const me = systemUsers.find(u => u.uid === currentUser?.uid) || {};
+       document.getElementById('edit-bio').value = me.bio || '';
+       
+       // Populate Avatars
+       const myAvatars = ['initials', ...(me.unlockedAvatars || [])];
+       const avatarNames = { 'initials': 'Initials (Default)', 'bottts': 'Robots', 'pixel-art': 'Pixel Art', 'adventurer': 'Adventurer', 'fun-emoji': 'Fun Emoji', 'shapes': 'Shapes', 'micah': 'Micah' };
+       document.getElementById('edit-avatar-style').innerHTML = myAvatars.map(a => `<option value="${a}" ${me.avatarStyle === a ? 'selected' : ''}>${avatarNames[a] || a}</option>`).join('');
+       
+       // Populate Banners
+       const myBanners = ['default', ...(me.unlockedBanners || [])];
+       if (me.hasCustomBanner) myBanners.push('custom');
+       const bannerNames = { 'default': 'No Banner', 'space': 'Deep Space', 'forest': 'Lush Forest', 'retro': 'Synthwave Retro', 'lava': 'Abstract Lava', 'ocean': 'Deep Ocean', 'neon': 'Neon Cyberpunk', 'custom': '🌟 Custom Upload' };
+       document.getElementById('edit-banner-style').innerHTML = myBanners.map(b => `<option value="${b}" ${me.bannerStyle === b ? 'selected' : ''}>${bannerNames[b] || b}</option>`).join('');
+
+       // Custom Banner Logic
+       if (me.hasCustomBanner) {
+           document.getElementById('custom-banner-container').classList.remove('hidden');
+           editCustomBannerBase64 = me.customBannerUrl || null;
+           if (editCustomBannerBase64) {
+               document.getElementById('custom-banner-preview').src = editCustomBannerBase64;
+               document.getElementById('custom-banner-preview').classList.remove('hidden');
+           }
+       } else {
+           document.getElementById('custom-banner-container').classList.add('hidden');
+       }
+
        modal.classList.remove('hidden');
        modal.classList.add('flex');
     };
@@ -2181,6 +2199,7 @@
       const newUsername = document.getElementById('edit-username').value.trim();
       const newBio = document.getElementById('edit-bio').value.trim();
       const newAvatarStyle = document.getElementById('edit-avatar-style').value;
+      const newBannerStyle = document.getElementById('edit-banner-style').value;
 
       const btn = document.getElementById('edit-profile-submit-btn');
       btn.disabled = true;
@@ -2192,7 +2211,9 @@
           username: newUsername,
           displayName: newUsername,
           bio: newBio,
-          avatarStyle: newAvatarStyle
+          avatarStyle: newAvatarStyle,
+          bannerStyle: newBannerStyle,
+          ...(newBannerStyle === 'custom' && editCustomBannerBase64 ? { customBannerUrl: editCustomBannerBase64 } : {})
         });
 
         currentUser.customDisplayName = newUsername;
@@ -2200,10 +2221,7 @@
             currentUser.avatarStyle = newAvatarStyle;
         }
         updateUserProfileUI(currentUser);
-        logActivity('ACCOUNT', 'Profile Updated', `Updated profile, bio, and avatar`);
-        
-        window.closeProfileModal();
-        showToast('Profile Updated', 'Your profile details were saved.', 'ph-user-check', 'indigo');
+        logActivity('ACCOUNT', 'Profile Updated', `Updated profile, bio, banner, and avatar`);
         if (currentView === 'profile') renderProfile(newUsername);
       } catch (err) {
         console.error(err);
@@ -2771,11 +2789,43 @@
       const devApps = window.apps.filter(a => a.developer === developerName && (a.visibility !== 'private' || (currentUser && a.authorId === currentUser.uid) || window.isAuthorizedAdmin));
       const devUser = systemUsers.find(u => (u.username === developerName) || (u.displayName === developerName));
       
-      document.getElementById('profile-header-avatar').innerHTML = `<img src="${getAvatarUrl(devUser || { customDisplayName: developerName })}" class="w-32 h-32 sm:w-40 sm:h-40 rounded-[2.5rem] shadow-2xl border-4 border-white dark:border-slate-800 object-cover bg-white dark:bg-slate-900" />`;
-      document.getElementById('profile-header-name').textContent = sanitizeHTML(developerName);
-      document.getElementById('profile-header-stats').textContent = `${devApps.length} App${devApps.length !== 1 ? 's' : ''} Published`;
+      let bannerHtml = '';
+      if (devUser) {
+          const bStyle = devUser.bannerStyle || 'default';
+          if (bStyle === 'custom' && devUser.customBannerUrl) {
+              bannerHtml = `<div class="absolute inset-0 z-0"><img src="${devUser.customBannerUrl}" class="w-full h-full object-cover opacity-50" /></div><div class="absolute inset-0 z-0 bg-gradient-to-t from-slate-900/90 to-transparent"></div>`;
+          } else if (bStyle !== 'default' && BANNER_URLS[bStyle]) {
+              bannerHtml = `<div class="absolute inset-0 z-0"><img src="${BANNER_URLS[bStyle]}" class="w-full h-full object-cover opacity-50" /></div><div class="absolute inset-0 z-0 bg-gradient-to-t from-slate-900/90 to-transparent"></div>`;
+          }
+      }
       
-      document.getElementById('profile-header-bio').textContent = devUser?.bio ? sanitizeHTML(devUser.bio) : "This developer prefers to keep an air of mystery and hasn't written a bio yet.";
+      // Update HTML injection to include bannerHtml
+      const headerContainer = document.getElementById('profile-header-avatar').parentElement;
+      if (headerContainer) {
+          headerContainer.innerHTML = `
+            ${bannerHtml}
+            <div id="profile-header-avatar" class="relative z-10"><img src="${getAvatarUrl(devUser || { customDisplayName: developerName })}" class="w-32 h-32 sm:w-40 sm:h-40 rounded-[2.5rem] shadow-2xl border-4 border-white dark:border-slate-800 object-cover bg-white dark:bg-slate-900" /></div>
+            <div class="flex-1 relative z-10 w-full">
+              <div class="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-2">
+                <div class="flex items-center justify-center sm:justify-start gap-3 w-full sm:w-auto">
+                  <h1 id="profile-header-name" class="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight break-all">${sanitizeHTML(developerName)}</h1>
+                  <button id="edit-profile-btn" data-click="showEditProfile" class="hidden p-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full text-slate-500 hover:text-indigo-500 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors shadow-sm" title="Edit Profile & Bio">
+                    <i class="ph-bold ph-pencil-simple"></i>
+                  </button>
+                </div>
+                <!-- Developer Follow Button -->
+                <div id="developer-actions" class="flex-shrink-0"></div>
+              </div>
+              <p id="profile-header-stats" class="text-xl font-bold text-indigo-500 mb-2">${devApps.length} App${devApps.length !== 1 ? 's' : ''} Published</p>
+              <p id="profile-header-bio" class="text-slate-600 dark:text-slate-400 font-medium mb-6 text-base sm:text-lg max-w-2xl">${devUser?.bio ? sanitizeHTML(devUser.bio) : "This developer prefers to keep an air of mystery and hasn't written a bio yet."}</p>
+              <div class="flex flex-wrap justify-center sm:justify-start gap-4">
+                <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2">
+                  <i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i> Verified Developer
+                </span>
+              </div>
+            </div>
+          `;
+      }
 
       const myName = currentUser?.customDisplayName || currentUser?.displayName;
       const editBtn = document.getElementById('edit-profile-btn');
@@ -4292,7 +4342,7 @@
             <hr class="border-slate-100 dark:border-slate-800 my-6" />
             
             <h3 class="text-2xl font-black mb-2 text-slate-900 dark:text-white flex items-center justify-center gap-2"><i class="ph-fill ph-magic-wand text-purple-500"></i> Gacha Store</h3>
-            <p class="text-slate-500 mb-6 font-medium text-sm">Test your luck! Buy mystery boxes to win massive coin jackpots or permanent VIP status.</p>
+            <p class="text-slate-500 mb-6 font-medium text-sm">Unlock exclusive Avatars, Profile Banners, or even a legendary Custom Banner pass!</p>
             
             <div class="grid grid-cols-2 gap-3 mb-6">
                <button data-click="openMysteryBox" data-arg="bronze" data-arg2="${modalId}" class="bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl p-4 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
@@ -4422,46 +4472,80 @@
             const animModal = document.getElementById(animModalId);
             if (animModal) animModal.remove();
             
-            // Random Number Generation
+            const lootTables = {
+                bronze: [
+                    { c: 0.50, type: 'avatar', id: 'bottts', name: 'Robot Avatar' },
+                    { c: 0.80, type: 'avatar', id: 'pixel-art', name: 'Pixel Avatar' },
+                    { c: 0.95, type: 'banner', id: 'forest', name: 'Forest Banner' },
+                    { c: 1.00, type: 'banner', id: 'ocean', name: 'Ocean Banner' }
+                ],
+                silver: [
+                    { c: 0.40, type: 'avatar', id: 'adventurer', name: 'Adventurer Avatar' },
+                    { c: 0.70, type: 'avatar', id: 'fun-emoji', name: 'Emoji Avatar' },
+                    { c: 0.90, type: 'banner', id: 'lava', name: 'Lava Banner' },
+                    { c: 1.00, type: 'banner', id: 'retro', name: 'Retro Banner' }
+                ],
+                gold: [
+                    { c: 0.40, type: 'avatar', id: 'shapes', name: 'Shapes Avatar' },
+                    { c: 0.70, type: 'avatar', id: 'micah', name: 'Micah Avatar' },
+                    { c: 0.90, type: 'banner', id: 'space', name: 'Space Banner' },
+                    { c: 1.00, type: 'banner', id: 'neon', name: 'Neon Banner' }
+                ],
+                nexus: [
+                    { c: 0.50, type: 'banner', id: 'neon', name: 'Neon Banner' },
+                    { c: 0.80, type: 'vip', id: 'vip', name: 'Permanent VIP Status' },
+                    { c: 1.00, type: 'custom_banner', id: 'custom', name: 'Custom Banner Upload Pass' }
+                ]
+            };
+
+            const table = lootTables[boxType] || lootTables.silver;
             const rand = Math.random();
-            let prize = 0;
+            let selectedLoot = table[0];
+            for (let i = 0; i < table.length; i++) {
+                if (rand <= table[i].c) {
+                    selectedLoot = table[i];
+                    break;
+                }
+            }
+
+            let isDuplicate = false;
+            let updates = { balance: increment(-config.cost) };
             let msg = '';
-            let isVipWin = false;
-            
-            if (boxType === 'bronze') {
-                if (rand < 0.01) { prize = 1000; msg = '<span class="text-yellow-500 text-xl block mb-2">JACKPOT!</span> You found 1,000 Coins!'; }
-                else if (rand < 0.10) { prize = 500; msg = '<span class="text-blue-500 text-xl block mb-2">RARE WIN!</span> You found 500 Coins!'; }
-                else if (rand < 0.50) { prize = 150; msg = '<span class="text-emerald-500 text-xl block mb-2">UNCOMMON</span> You found 150 Coins.'; }
-                else { prize = 10; msg = '<span class="text-slate-500 text-xl block mb-2">COMMON</span> You only found 10 Coins...'; }
-            } else if (boxType === 'silver') {
-                if (rand < 0.05) { isVipWin = !me.isVIP; prize = isVipWin ? 0 : 2000; msg = isVipWin ? '<span class="text-purple-500 text-xl block mb-2">LEGENDARY WIN!</span> You unlocked VIP Status!' : '<span class="text-blue-500 text-xl block mb-2">RARE WIN!</span> You found 2,000 Coins!'; }
-                else if (rand < 0.15) { prize = 1500; msg = '<span class="text-blue-500 text-xl block mb-2">RARE WIN!</span> You found 1,500 Coins!'; }
-                else if (rand < 0.45) { prize = 600; msg = '<span class="text-emerald-500 text-xl block mb-2">UNCOMMON</span> You found 600 Coins.'; }
-                else { prize = 200; msg = '<span class="text-slate-500 text-xl block mb-2">COMMON</span> You only found 200 Coins...'; }
-            } else if (boxType === 'gold') {
-                if (rand < 0.05) { prize = 10000; msg = '<span class="text-yellow-500 text-xl block mb-2">MEGA JACKPOT!</span> You found 10,000 Coins!'; }
-                else if (rand < 0.20) { isVipWin = !me.isVIP; prize = isVipWin ? 0 : 5000; msg = isVipWin ? '<span class="text-purple-500 text-xl block mb-2">LEGENDARY WIN!</span> You unlocked VIP Status!' : '<span class="text-blue-500 text-xl block mb-2">RARE WIN!</span> You found 5,000 Coins!'; }
-                else if (rand < 0.60) { prize = 3000; msg = '<span class="text-emerald-500 text-xl block mb-2">UNCOMMON</span> You found 3,000 Coins.'; }
-                else { prize = 1000; msg = '<span class="text-slate-500 text-xl block mb-2">COMMON</span> You found 1,000 Coins...'; }
-            } else if (boxType === 'nexus') {
-                if (rand < 0.20) { isVipWin = !me.isVIP; prize = isVipWin ? 0 : 25000; msg = isVipWin ? '<span class="text-purple-500 text-xl block mb-2">LEGENDARY WIN!</span> You unlocked VIP Status!' : '<span class="text-yellow-500 text-xl block mb-2">MEGA JACKPOT!</span> You found 25,000 Coins!'; }
-                else if (rand < 0.50) { prize = 15000; msg = '<span class="text-blue-500 text-xl block mb-2">RARE WIN!</span> You found 15,000 Coins!'; }
-                else { prize = 5000; msg = '<span class="text-slate-500 text-xl block mb-2">COMMON</span> You found 5,000 Coins...'; }
+
+            if (selectedLoot.type === 'avatar') {
+                if ((me.unlockedAvatars || []).includes(selectedLoot.id)) isDuplicate = true;
+                else updates.unlockedAvatars = arrayUnion(selectedLoot.id);
+            } else if (selectedLoot.type === 'banner') {
+                if ((me.unlockedBanners || []).includes(selectedLoot.id)) isDuplicate = true;
+                else updates.unlockedBanners = arrayUnion(selectedLoot.id);
+            } else if (selectedLoot.type === 'vip') {
+                if (me.isVIP) isDuplicate = true;
+                else updates.isVIP = true;
+            } else if (selectedLoot.type === 'custom_banner') {
+                if (me.hasCustomBanner) isDuplicate = true;
+                else updates.hasCustomBanner = true;
+            }
+
+            if (isDuplicate) {
+                // Refund cost + 10%
+                const refund = Math.floor(config.cost * 1.1);
+                updates.balance = increment(refund - config.cost);
+                msg = `<span class="text-slate-500 text-xl block mb-2">DUPLICATE!</span> You already own the <b>${selectedLoot.name}</b>. You were refunded <span class="font-bold text-yellow-500">${refund} Coins</span>!`;
+            } else {
+                const colorMap = { 'bottts': 'text-orange-500', 'pixel-art': 'text-orange-500', 'forest': 'text-emerald-500', 'ocean': 'text-blue-500', 'adventurer': 'text-slate-400', 'fun-emoji': 'text-slate-400', 'lava': 'text-red-500', 'retro': 'text-pink-500', 'shapes': 'text-yellow-500', 'micah': 'text-yellow-500', 'space': 'text-indigo-500', 'neon': 'text-purple-500', 'vip': 'text-purple-500', 'custom_banner': 'text-yellow-400' };
+                let rarityText = boxType === 'nexus' ? 'LEGENDARY WIN!' : boxType === 'gold' ? 'EPIC WIN!' : boxType === 'silver' ? 'RARE WIN!' : 'NEW UNLOCK!';
+                
+                msg = `<span class="${colorMap[selectedLoot.id] || 'text-indigo-500'} text-xl block mb-2 font-black">${rarityText}</span> You unlocked the <b>${selectedLoot.name}</b>! Equip it in your Edit Profile menu.`;
             }
 
             try {
                 const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
-                let updates = { balance: increment(prize - config.cost) };
-                if (isVipWin) updates.isVIP = true;
-                
                 await updateDoc(userRef, updates);
-                
                 showModal('Box Opened!', msg);
-                logActivity('ECONOMY', 'Opened Loot Box', `Spent ${config.cost}, won ${isVipWin ? 'VIP Status' : prize + ' coins'}.`);
-                
+                logActivity('ECONOMY', 'Opened Loot Box', `Spent ${config.cost} coins. Got ${isDuplicate ? 'Duplicate Refund' : selectedLoot.name}.`);
             } catch(e) {
                 console.error(e);
-                showModal('Error', 'Something went wrong opening the box.');
+                showModal('Error', 'Something went wrong processing your prize.');
             }
         }, 2000);
     };
