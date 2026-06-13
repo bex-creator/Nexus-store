@@ -4422,88 +4422,109 @@
       const streakBonus = streak * 50;
       const totalAmount = baseDailyAmount + (canClaim ? streakBonus : 0);
       
-      const dailyRewardHtml = canClaim ? `
-        <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-4 rounded-2xl mb-6 flex items-center justify-between">
-          <div class="flex items-center gap-3 text-left">
-            <div class="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg"><i class="ph-fill ph-gift"></i></div>
-            <div>
-              <h4 class="font-bold text-slate-900 dark:text-white text-sm">Daily Allowance ${streak > 0 ? `<span class="text-orange-500 ml-1">🔥 ${streak}</span>` : ''}</h4>
-              <p class="text-xs font-medium text-slate-500">${totalAmount} Coins available!</p>
-            </div>
-          </div>
-          <button data-click="claimDailyCoins" data-arg="${modalId}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-all">Claim</button>
+      const nexusPlusHtml = !isNexusPlus ? `
+        <div class="bg-gradient-to-br from-purple-600 to-pink-500 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden group mb-8 shadow-lg text-left border border-purple-400/30">
+           <div class="absolute -right-4 -top-4 text-white/10 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500"><i class="ph-fill ph-sparkle text-9xl"></i></div>
+           <div class="relative z-10">
+              <h4 class="font-black text-2xl sm:text-3xl mb-2 flex items-center gap-2 tracking-tight"><i class="ph-fill ph-sparkle text-yellow-300 animate-pulse"></i> Nexus+</h4>
+              <p class="text-white/90 text-sm sm:text-base font-medium mb-6 leading-relaxed max-w-[90%]">Upgrade your account to the ultimate tier! All paid apps become free, get an exclusive glowing avatar, and boost your daily allowance to 2,500 coins.</p>
+              <button data-click="subscribeNexusPlus" data-arg="${modalId}" class="bg-white text-purple-600 hover:bg-slate-50 px-6 py-4 rounded-2xl font-black shadow-xl transition-all w-full flex justify-center items-center gap-2 text-lg hover:-translate-y-1 active:translate-y-0">
+                 Join for 2,500 <i class="ph-fill ph-coin text-yellow-500"></i> / 30 Days
+              </button>
+           </div>
         </div>
       ` : `
-        <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl mb-6 flex items-center justify-between opacity-70">
-          <div class="flex items-center gap-3 text-left">
-            <div class="w-10 h-10 bg-slate-300 dark:bg-slate-700 text-slate-500 rounded-full flex items-center justify-center"><i class="ph-fill ph-clock"></i></div>
+        <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800/50 rounded-3xl p-5 sm:p-6 text-purple-600 dark:text-purple-400 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+           <div class="flex items-center gap-3 font-black text-xl"><i class="ph-fill ph-sparkle animate-pulse text-3xl"></i> Active Nexus+ Member</div>
+           <div class="text-sm font-bold bg-white dark:bg-slate-900 shadow-sm px-4 py-2 rounded-xl text-slate-700 dark:text-slate-300 flex items-center gap-2"><i class="ph-fill ph-check-circle text-emerald-500"></i> Perks Unlocked</div>
+        </div>
+      `;
+
+      const dailyRewardHtml = canClaim ? `
+        <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-5 rounded-2xl mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-4 text-left w-full sm:w-auto">
+            <div class="w-12 h-12 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg flex-shrink-0 text-xl"><i class="ph-fill ph-gift"></i></div>
             <div>
-              <h4 class="font-bold text-slate-900 dark:text-white text-sm">Daily Allowance</h4>
-              <p class="text-xs font-medium text-slate-500">Available in ~${timeRemaining} hours</p>
+              <h4 class="font-black text-slate-900 dark:text-white text-base">Daily Allowance ${streak > 0 ? `<span class="text-orange-500 ml-1">🔥 ${streak}</span>` : ''}</h4>
+              <p class="text-sm font-medium text-slate-500">${totalAmount} Coins available!</p>
             </div>
           </div>
-          <button disabled class="bg-slate-200 dark:bg-slate-800 text-slate-400 px-4 py-2 rounded-xl text-sm font-bold cursor-not-allowed">Claimed</button>
+          <button data-click="claimDailyCoins" data-arg="${modalId}" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl text-base font-bold shadow-md transition-all hover:-translate-y-0.5">Claim Coins</button>
+        </div>
+      ` : `
+        <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 opacity-70">
+          <div class="flex items-center gap-4 text-left w-full sm:w-auto">
+            <div class="w-12 h-12 bg-slate-300 dark:bg-slate-700 text-slate-500 rounded-full flex items-center justify-center flex-shrink-0 text-xl"><i class="ph-fill ph-clock"></i></div>
+            <div>
+              <h4 class="font-black text-slate-900 dark:text-white text-base">Daily Allowance</h4>
+              <p class="text-sm font-medium text-slate-500">Available in ~${timeRemaining} hours</p>
+            </div>
+          </div>
+          <button disabled class="w-full sm:w-auto bg-slate-200 dark:bg-slate-800 text-slate-400 px-6 py-3 rounded-xl text-base font-bold cursor-not-allowed">Claimed</button>
         </div>
       `;
 
       const modalHtml = `
         <div id="${modalId}" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4">
-          <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in text-center max-h-[90vh] overflow-y-auto custom-scrollbar">
+          <div class="bg-white dark:bg-slate-900 rounded-[3rem] p-8 max-w-lg w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in text-center max-h-[90vh] overflow-y-auto custom-scrollbar">
             
+            ${nexusPlusHtml}
+
+            <h3 class="text-2xl font-black mb-4 text-slate-900 dark:text-white text-left pl-2">Free Coins</h3>
             ${dailyRewardHtml}
             
-            <hr class="border-slate-100 dark:border-slate-800 my-6" />
+            <hr class="border-slate-100 dark:border-slate-800 my-8" />
             
             <h3 class="text-2xl font-black mb-2 text-slate-900 dark:text-white flex items-center justify-center gap-2"><i class="ph-fill ph-magic-wand text-purple-500"></i> Gacha Store</h3>
-            <p class="text-slate-500 mb-6 font-medium text-sm">Unlock exclusive Avatars, Profile Banners, or even a legendary Custom Banner pass!</p>
+            <p class="text-slate-500 mb-8 font-medium text-sm px-4">Unlock exclusive Avatars, Profile Banners, or even a legendary Custom Banner pass!</p>
             
-            <div class="grid grid-cols-2 gap-3 mb-6">
-               <button data-click="openMysteryBox" data-arg="bronze" data-arg2="${modalId}" class="bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl p-4 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
-                  <i class="ph-fill ph-cube text-3xl mb-1 group-hover:animate-bounce"></i>
-                  <h4 class="font-black text-sm">Bronze Box</h4>
-                  <p class="text-[10px] font-bold opacity-90">100 <i class="ph-fill ph-coin"></i></p>
+            <div class="grid grid-cols-2 gap-4 mb-8">
+               <button data-click="openMysteryBox" data-arg="bronze" data-arg2="${modalId}" class="bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl p-5 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
+                  <i class="ph-fill ph-cube text-4xl mb-2 group-hover:animate-bounce"></i>
+                  <h4 class="font-black text-base">Bronze Box</h4>
+                  <p class="text-xs font-bold opacity-90 mt-1">100 <i class="ph-fill ph-coin"></i></p>
                </button>
-               <button data-click="openMysteryBox" data-arg="silver" data-arg2="${modalId}" class="bg-gradient-to-br from-slate-400 to-slate-500 rounded-2xl p-4 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
-                  <i class="ph-fill ph-cube text-3xl mb-1 group-hover:animate-bounce"></i>
-                  <h4 class="font-black text-sm">Silver Box</h4>
-                  <p class="text-[10px] font-bold opacity-90">500 <i class="ph-fill ph-coin"></i></p>
+               <button data-click="openMysteryBox" data-arg="silver" data-arg2="${modalId}" class="bg-gradient-to-br from-slate-400 to-slate-500 rounded-2xl p-5 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
+                  <i class="ph-fill ph-cube text-4xl mb-2 group-hover:animate-bounce"></i>
+                  <h4 class="font-black text-base">Silver Box</h4>
+                  <p class="text-xs font-bold opacity-90 mt-1">500 <i class="ph-fill ph-coin"></i></p>
                </button>
-               <button data-click="openMysteryBox" data-arg="gold" data-arg2="${modalId}" class="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl p-4 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
-                  <i class="ph-fill ph-cube text-3xl mb-1 group-hover:animate-bounce"></i>
-                  <h4 class="font-black text-sm">Gold Box</h4>
-                  <p class="text-[10px] font-bold opacity-90">2,500 <i class="ph-fill ph-coin"></i></p>
+               <button data-click="openMysteryBox" data-arg="gold" data-arg2="${modalId}" class="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl p-5 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
+                  <i class="ph-fill ph-cube text-4xl mb-2 group-hover:animate-bounce"></i>
+                  <h4 class="font-black text-base">Gold Box</h4>
+                  <p class="text-xs font-bold opacity-90 mt-1">2,500 <i class="ph-fill ph-coin"></i></p>
                </button>
-               <button data-click="openMysteryBox" data-arg="nexus" data-arg2="${modalId}" class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-4 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
-                  <i class="ph-fill ph-sparkle text-3xl mb-1 group-hover:animate-bounce"></i>
-                  <h4 class="font-black text-sm">Nexus Box</h4>
-                  <p class="text-[10px] font-bold opacity-90">10,000 <i class="ph-fill ph-coin"></i></p>
+               <button data-click="openMysteryBox" data-arg="nexus" data-arg2="${modalId}" class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-5 text-white relative overflow-hidden group shadow-md hover:-translate-y-1 transition-all">
+                  <i class="ph-fill ph-sparkle text-4xl mb-2 group-hover:animate-bounce"></i>
+                  <h4 class="font-black text-base">Nexus Box</h4>
+                  <p class="text-xs font-bold opacity-90 mt-1">10,000 <i class="ph-fill ph-coin"></i></p>
                </button>
             </div>
 
-            <hr class="border-slate-100 dark:border-slate-800 my-6" />
+            <hr class="border-slate-100 dark:border-slate-800 my-8" />
 
             <div class="w-16 h-16 mx-auto bg-yellow-100 text-yellow-500 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
               <i class="ph-fill ph-gift text-3xl"></i>
             </div>
             <h3 class="text-2xl font-black mb-2 text-slate-900 dark:text-white">Request Coins</h3>
-            <p class="text-slate-500 mb-6 font-medium text-sm">Select a present below to request a preset amount of Nexus Coins from the admins.</p>
+            <p class="text-slate-500 mb-6 font-medium text-sm px-4">Select a present below to request a preset amount of Nexus Coins from the admins.</p>
             
-            <div class="grid grid-cols-2 gap-3 mb-6">
-               <button data-click="submitCoinRequest" data-arg="100" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-4 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-1 group">
+            <div class="grid grid-cols-2 gap-4 mb-8">
+               <button data-click="submitCoinRequest" data-arg="100" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-5 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-2 group">
                  <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 100
                </button>
-               <button data-click="submitCoinRequest" data-arg="500" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-4 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-1 group">
+               <button data-click="submitCoinRequest" data-arg="500" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-5 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-2 group">
                  <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 500
                </button>
-               <button data-click="submitCoinRequest" data-arg="1000" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-4 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-1 group">
+               <button data-click="submitCoinRequest" data-arg="1000" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-5 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-2 group">
                  <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 1,000
                </button>
-               <button data-click="submitCoinRequest" data-arg="5000" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-4 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-1 group">
+               <button data-click="submitCoinRequest" data-arg="5000" data-arg2="${modalId}" class="bg-slate-50 hover:bg-yellow-50 dark:bg-slate-800 dark:hover:bg-yellow-900/20 border-2 border-slate-100 hover:border-yellow-300 dark:border-slate-700 dark:hover:border-yellow-700 p-5 rounded-2xl transition-all font-black text-lg text-slate-700 dark:text-slate-300 flex flex-col items-center gap-2 group">
                  <i class="ph-fill ph-coin text-yellow-500 text-3xl group-hover:scale-110 transition-transform"></i> 5,000
                </button>
             </div>
             
-            <button data-click="closeModal" data-arg="${modalId}" class="w-full px-4 py-3 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white transition-colors">Cancel</button>
+            <button data-click="closeModal" data-arg="${modalId}" class="w-full px-6 py-4 rounded-2xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white transition-colors text-lg">Close Dashboard</button>
           </div>
         </div>
       `;
@@ -5617,13 +5638,9 @@
         window.navigate(window.isFromAdmin ? 'admin' : 'home');
       }
       else if (action === 'showNexusPlusModal') {
-          const modal = document.getElementById('nexus-plus-modal');
-          if (modal) {
-              modal.classList.remove('hidden');
-              modal.classList.add('flex');
-          }
+          window.showCoinRequestModal();
       }
-      else if (action === 'subscribeNexusPlus') window.subscribeNexusPlus();
+      else if (action === 'subscribeNexusPlus') window.subscribeNexusPlus(arg1);
       else if (action === 'clearSearch') {
           const searchInput = document.getElementById('search-input');
           if (searchInput) searchInput.value = '';
@@ -6492,7 +6509,7 @@
         );
     };
 
-    window.subscribeNexusPlus = async () => {
+    window.subscribeNexusPlus = async (modalIdToClose) => {
         if (!currentUser) {
             showModal('Login Required', 'You must be logged in to subscribe to Nexus+.');
             return;
@@ -6509,9 +6526,11 @@
             return;
         }
 
-        const btn = document.getElementById('nexus-plus-submit-btn');
-        btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Processing...';
-        btn.disabled = true;
+        const btn = document.querySelector(`[data-click="subscribeNexusPlus"]`);
+        if (btn) {
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Processing...';
+            btn.disabled = true;
+        }
 
         try {
             const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
@@ -6523,15 +6542,23 @@
             showToast('Welcome to Nexus+!', 'You have unlocked premium access.', 'ph-sparkle', 'purple');
             logActivity('PURCHASE', 'Nexus+', 'Subscribed to Nexus+ for 30 days.');
             
-            document.getElementById('nexus-plus-modal').classList.add('hidden');
-            document.getElementById('nexus-plus-modal').classList.remove('flex');
+            const nexusModal = document.getElementById('nexus-plus-modal');
+            if (nexusModal) {
+                nexusModal.classList.add('hidden');
+                nexusModal.classList.remove('flex');
+            }
+            if (modalIdToClose && typeof modalIdToClose === 'string') {
+                const cm = document.getElementById(modalIdToClose);
+                if (cm) cm.remove();
+            }
             
         } catch (err) {
             console.error(err);
             showModal('Error', 'Failed to process subscription.');
-        } finally {
-            btn.innerHTML = 'Join for 2,500 <i class="ph-fill ph-coin text-yellow-300"></i> / 30 Days';
-            btn.disabled = false;
+            if (btn) {
+                btn.innerHTML = 'Join for 2,500 <i class="ph-fill ph-coin text-yellow-500"></i> / 30 Days';
+                btn.disabled = false;
+            }
         }
     };
 
