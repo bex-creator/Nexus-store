@@ -399,6 +399,49 @@
     </div>
   </div>
 
+  <!-- Nexus+ Modal -->
+  <div id="nexus-plus-modal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
+    <div class="bg-white dark:bg-slate-900 rounded-[3rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in text-center relative overflow-hidden">
+      <div class="absolute top-0 inset-x-0 h-32 bg-gradient-to-br from-purple-600 to-pink-500 opacity-20 pointer-events-none"></div>
+      
+      <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-purple-600 to-pink-500 rounded-3xl flex items-center justify-center text-white shadow-[0_0_30px_rgba(168,85,247,0.5)] rotate-3 mb-6 relative z-10">
+        <i class="ph-fill ph-sparkle text-4xl animate-pulse"></i>
+      </div>
+      
+      <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-2 relative z-10">Nexus<span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">+</span></h2>
+      <p class="text-slate-500 font-medium mb-8 relative z-10">Upgrade your account to the ultimate tier and unlock the entire store.</p>
+      
+      <div class="space-y-4 text-left mb-8 relative z-10">
+         <div class="flex items-center gap-4 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-2xl border border-purple-100 dark:border-purple-800/50">
+            <div class="bg-purple-500 text-white p-2 rounded-xl"><i class="ph-bold ph-unlock text-xl"></i></div>
+            <div>
+               <h4 class="font-bold text-slate-900 dark:text-white">All Apps Free</h4>
+               <p class="text-xs text-slate-500 font-medium">Bypass all coin prices instantly.</p>
+            </div>
+         </div>
+         <div class="flex items-center gap-4 bg-pink-50 dark:bg-pink-900/20 p-4 rounded-2xl border border-pink-100 dark:border-pink-800/50">
+            <div class="bg-pink-500 text-white p-2 rounded-xl"><i class="ph-bold ph-user-circle text-xl"></i></div>
+            <div>
+               <h4 class="font-bold text-slate-900 dark:text-white">Glowing Avatar</h4>
+               <p class="text-xs text-slate-500 font-medium">Exclusive animated profile border.</p>
+            </div>
+         </div>
+         <div class="flex items-center gap-4 bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-800/50">
+            <div class="bg-indigo-500 text-white p-2 rounded-xl"><i class="ph-bold ph-coins text-xl"></i></div>
+            <div>
+               <h4 class="font-bold text-slate-900 dark:text-white">Massive Allowance</h4>
+               <p class="text-xs text-slate-500 font-medium">Claim 2,500 daily coins.</p>
+            </div>
+         </div>
+      </div>
+      
+      <button data-click="subscribeNexusPlus" id="nexus-plus-submit-btn" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white px-8 py-4 rounded-2xl font-black text-lg transition-all duration-300 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] hover:-translate-y-1 relative z-10 flex items-center justify-center gap-2">
+        Join for 2,500 <i class="ph-fill ph-coin text-yellow-300"></i> / 30 Days
+      </button>
+      <button data-click="closeModal" data-arg="nexus-plus-modal" class="mt-4 text-slate-400 hover:text-slate-600 dark:hover:text-white font-bold text-sm transition-colors relative z-10 w-full p-2">Maybe Later</button>
+    </div>
+  </div>
+
   <!-- Theme Selection Modal -->
   <div id="theme-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/80 backdrop-blur-xl px-4">
     <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 animate-zoom-in">
@@ -477,6 +520,12 @@
 
       <div class="flex items-center gap-4">
         
+        <!-- Nexus+ Button -->
+        <button data-click="showNexusPlusModal" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white rounded-xl font-black text-sm shadow-lg shadow-purple-500/30 transition-all hover:-translate-y-0.5" title="Get Nexus+">
+          <i class="ph-fill ph-sparkle text-lg animate-pulse"></i>
+          <span class="hidden md:inline">Nexus+</span>
+        </button>
+
         <!-- Virtual Currency Balance -->
         <button id="coin-balance-container" data-click="showCoinRequestModal" class="hidden items-center gap-1.5 px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 rounded-xl font-bold text-sm border border-yellow-200 dark:border-yellow-700/50 shadow-sm cursor-pointer transition-colors" title="Request Nexus Coins">
           <i class="ph-fill ph-coin text-lg"></i>
@@ -1853,6 +1902,8 @@
               role: 'user',
               balance: 500,
               isVIP: false,
+              isNexusPlus: false,
+              nexusPlusExpiry: null,
               lastDailyClaim: 0,
               purchasedApps: [],
               following: [],
@@ -1887,6 +1938,13 @@
             } else {
               currentUser.customDisplayName = userData.username || userData.displayName;
               updateUserProfileUI(currentUser);
+            }
+            
+            // Check Nexus+ Expiry
+            if (userData.isNexusPlus && userData.nexusPlusExpiry && Date.now() > userData.nexusPlusExpiry) {
+                await updateDoc(userRef, { isNexusPlus: false, nexusPlusExpiry: null });
+                userData.isNexusPlus = false;
+                showToast('Nexus+ Expired', 'Your Nexus+ subscription has ended.', 'ph-star-half', 'slate');
             }
 
             // Backfill email and guest status for existing users
@@ -2258,7 +2316,14 @@
         const fullUser = systemUsers.find(u => u.uid === user.uid) || user;
         
         document.getElementById('user-name').textContent = displayStr;
-        document.getElementById('user-avatar').src = getAvatarUrl(fullUser);
+        
+        const avatarEl = document.getElementById('user-avatar');
+        avatarEl.src = getAvatarUrl(fullUser);
+        if (fullUser.isNexusPlus) {
+            avatarEl.className = "w-9 h-9 rounded-full object-cover shadow-sm ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-950 ring-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.8)]";
+        } else {
+            avatarEl.className = "w-9 h-9 rounded-full object-cover border-2 border-indigo-500 shadow-sm";
+        }
       }
     };
 
@@ -2371,6 +2436,12 @@
         isFromAdmin = true;
       } else if (viewName !== 'upload') {
         isFromAdmin = false;
+      }
+
+      // Cancel playtime reward timer if user navigates away to browse the store
+      if (playTimer) {
+          clearTimeout(playTimer);
+          playTimer = null;
       }
 
       currentView = viewName;
@@ -2516,13 +2587,14 @@
       return appList.map((app, i) => {
         const stats = getAppStats(app);
         const isVIP = me && me.isVIP;
-        const finalPrice = isVIP ? Math.floor(app.price * 0.5) : app.price;
+        const isNexusPlus = me && me.isNexusPlus;
+        const finalPrice = isNexusPlus ? 0 : (isVIP ? Math.floor(app.price * 0.5) : app.price);
         return `
         <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="flex flex-col items-start group cursor-pointer animate-fade-in" style="animation-delay: ${Math.min(i * 30, 300)}ms; animation-fill-mode: both;">
           <div class="w-full aspect-square rounded-[2rem] overflow-hidden mb-4 shadow-[0_8px_20px_rgba(0,0,0,0.06)] group-hover:shadow-[0_15px_30px_rgba(99,102,241,0.2)] transition-all duration-300 group-hover:-translate-y-2 relative border bg-white border-slate-100 dark:bg-slate-800 dark:border-slate-700">
             ${app.isBroken ? '<div class="absolute top-3 left-3 bg-amber-500/90 backdrop-blur-md text-white p-2 rounded-full border border-white/10 z-30 shadow-lg" title="App Unavailable"><i class="ph-bold ph-warning text-sm"></i></div>' : ''}
             ${app.visibility === 'private' ? '<div class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md text-white p-2 rounded-full border border-white/10 z-30"><i class="ph-fill ph-lock-key text-sm"></i></div>' : ''}
-            ${app.price > 0 ? (isVIP ? `<div class="absolute bottom-3 right-3 bg-purple-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-purple-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1" title="VIP 50% Off"><i class="ph-fill ph-star"></i><i class="ph-fill ph-coin"></i> ${finalPrice}</div>` : `<div class="absolute bottom-3 right-3 bg-yellow-400/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full border border-yellow-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1"><i class="ph-fill ph-coin"></i> ${app.price}</div>`) : ''}
+            ${app.price > 0 ? (isNexusPlus ? `<div class="absolute bottom-3 right-3 bg-purple-600/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-purple-400/50 z-30 font-black text-xs shadow-[0_0_10px_rgba(168,85,247,0.8)] flex items-center gap-1" title="Free with Nexus+"><i class="ph-fill ph-sparkle"></i> Free</div>` : (isVIP ? `<div class="absolute bottom-3 right-3 bg-purple-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-purple-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1" title="VIP 50% Off"><i class="ph-fill ph-star"></i><i class="ph-fill ph-coin"></i> ${finalPrice}</div>` : `<div class="absolute bottom-3 right-3 bg-yellow-400/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full border border-yellow-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1"><i class="ph-fill ph-coin"></i> ${app.price}</div>`)) : ''}
             ${app.icon ? 
               `<img src="${app.icon}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />`
               :
@@ -2833,7 +2905,7 @@
             ${bannerHTML}
             <div class="relative z-10 px-8 pb-8 sm:px-12 sm:pb-12 flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8 w-full">
               <div id="profile-header-avatar" class="relative z-10 flex-shrink-0 -mt-16 sm:-mt-20">
-                <img src="${getAvatarUrl(devUser || { customDisplayName: developerName })}" class="w-32 h-32 sm:w-40 sm:h-40 rounded-[2.5rem] shadow-xl border-4 sm:border-[8px] border-white dark:border-slate-900 object-cover bg-slate-100 dark:bg-slate-800" />
+                <img src="${getAvatarUrl(devUser || { customDisplayName: developerName })}" class="w-32 h-32 sm:w-40 sm:h-40 rounded-[2.5rem] shadow-xl border-4 sm:border-[8px] ${devUser?.isNexusPlus ? 'border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.6)]' : 'border-white dark:border-slate-900'} object-cover bg-slate-100 dark:bg-slate-800" />
               </div>
               <div class="flex-1 relative z-10 w-full mt-2 sm:mt-6">
                 <div class="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-2">
@@ -2849,6 +2921,10 @@
                 <p id="profile-header-stats" class="text-lg font-black text-amber-500 mb-3">${devApps.length} App${devApps.length !== 1 ? 's' : ''} Published</p>
                 <p id="profile-header-bio" class="text-slate-600 dark:text-slate-400 font-medium mb-6 text-base sm:text-lg max-w-2xl">${devUser?.bio ? sanitizeHTML(devUser.bio) : "This developer prefers to keep an air of mystery and hasn't written a bio yet."}</p>
                 <div class="flex flex-wrap justify-center sm:justify-start gap-4">
+                  ${devUser?.isNexusPlus ? `
+                  <span class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.4)] border border-purple-400/50">
+                    <i class="ph-fill ph-sparkle text-lg animate-pulse"></i> Nexus+ Member
+                  </span>` : ''}
                   <span class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm border border-slate-200 dark:border-slate-700/50">
                     <i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i> Verified Developer
                   </span>
@@ -2966,7 +3042,9 @@
         
         let appPrice = Number(app.price);
         if (isNaN(appPrice)) appPrice = 0;
-        const finalPrice = (me && me.isVIP) ? Math.floor(appPrice * 0.5) : appPrice;
+        
+        const isNexusPlus = me && me.isNexusPlus;
+        const finalPrice = isNexusPlus ? 0 : ((me && me.isVIP) ? Math.floor(appPrice * 0.5) : appPrice);
 
         if (bal < finalPrice) {
             showModal('Insufficient Funds', `You need <span class="font-bold text-yellow-500"><i class="ph-fill ph-coin"></i> ${finalPrice}</span> Nexus Coins to purchase this app. You currently have ${bal}. Ask an admin to grant you more coins!`);
@@ -3033,8 +3111,9 @@
       const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
       const purchasedApps = me?.purchasedApps || [];
       const isVIP = me && me.isVIP;
-      const finalPrice = isVIP ? Math.floor(app.price * 0.5) : app.price;
-      const hasAccess = app.price === 0 || purchasedApps.includes(app.id) || (currentUser && app.authorId === currentUser.uid) || isAuthorizedAdmin;
+      const isNexusPlus = me && me.isNexusPlus;
+      const finalPrice = isNexusPlus ? 0 : (isVIP ? Math.floor(app.price * 0.5) : app.price);
+      const hasAccess = app.price === 0 || isNexusPlus || purchasedApps.includes(app.id) || (currentUser && app.authorId === currentUser.uid) || isAuthorizedAdmin;
 
       // Find related apps (same category or developer, excluding current app and private apps)
       const relatedApps = window.apps.filter(a => a.id !== targetAppId && a.visibility !== 'private' && (a.category === app.category || a.developer === app.developer)).slice(0, 6);
@@ -3130,7 +3209,7 @@
                     </div>
                     <div class="flex flex-col items-center justify-center rounded-2xl px-5 py-3 border min-w-[100px] bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-700">
                       <span class="text-lg font-black flex items-center gap-1 text-slate-900 dark:text-white">
-                        ${app.price > 0 ? (isVIP ? `<i class="ph-fill ph-star text-purple-500" title="VIP 50% Off"></i> <i class="ph-fill ph-coin text-yellow-500"></i> <span class="line-through text-slate-400 text-sm mr-1">${app.price}</span>${finalPrice}` : `<i class="ph-fill ph-coin text-yellow-500"></i> ${app.price}`) : 'Free'}
+                        ${app.price > 0 ? (isNexusPlus ? `<i class="ph-fill ph-sparkle text-purple-500" title="Nexus+ Free Access"></i> <span class="text-purple-500">Free</span>` : (isVIP ? `<i class="ph-fill ph-star text-purple-500" title="VIP 50% Off"></i> <i class="ph-fill ph-coin text-yellow-500"></i> <span class="line-through text-slate-400 text-sm mr-1">${app.price}</span>${finalPrice}` : `<i class="ph-fill ph-coin text-yellow-500"></i> ${app.price}`)) : 'Free'}
                       </span>
                       <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Price</span>
                     </div>
@@ -3371,11 +3450,11 @@
                <div class="flex items-center gap-4">
                   ${rankIcon}
                   <div class="flex items-center gap-3">
-                     <img src="${getAvatarUrl(u)}" class="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm group-hover:scale-105 transition-transform bg-white dark:bg-slate-900">
+                     <img src="${getAvatarUrl(u)}" class="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm group-hover:scale-105 transition-transform bg-white dark:bg-slate-900 ${u.isNexusPlus ? 'ring-2 ring-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.8)] border-none' : ''}">
                      <div>
                         <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1 group-hover:text-indigo-500 transition-colors">
                            ${sanitizeHTML(u.customDisplayName || u.displayName)}
-                           ${u.isVIP ? '<i class="ph-fill ph-star text-purple-500 text-xs" title="VIP"></i>' : ''}
+                           ${u.isNexusPlus ? '<i class="ph-fill ph-sparkle text-purple-500 text-xs" title="Nexus+"></i>' : (u.isVIP ? '<i class="ph-fill ph-star text-purple-500 text-xs" title="VIP"></i>' : '')}
                         </div>
                      </div>
                   </div>
@@ -3581,9 +3660,11 @@
           }
 
           // Playtime Coins Tracker
+          if (playTimer) clearTimeout(playTimer);
           showToast('App Launched', 'Keep playing! You will earn 500 coins in 2 minutes!', 'ph-rocket-launch', 'indigo');
-          setTimeout(() => {
+          playTimer = setTimeout(() => {
               window.awardPlaytimeCoins(500);
+              playTimer = null;
           }, 120000);
       }
     };
@@ -4330,8 +4411,9 @@
       if (document.getElementById(modalId)) return;
       
       const me = systemUsers.find(u => u.uid === currentUser.uid);
+      const isNexusPlus = me.isNexusPlus || false;
       const isVIP = me.isVIP || false;
-      const baseDailyAmount = isVIP ? 1000 : 500;
+      const baseDailyAmount = isNexusPlus ? 2500 : (isVIP ? 1000 : 500);
       const canClaim = !me.lastDailyClaim || (Date.now() - me.lastDailyClaim > 86400000);
       const timeRemaining = me.lastDailyClaim ? Math.ceil((86400000 - (Date.now() - me.lastDailyClaim)) / 3600000) : 0;
       
@@ -4435,8 +4517,9 @@
             const userSnap = await getDoc(userRef);
             if (userSnap.exists()) {
                 const me = userSnap.data();
+                const isNexusPlus = me.isNexusPlus || false;
                 const isVIP = me.isVIP || false;
-                const baseRewardAmount = isVIP ? 1000 : 500;
+                const baseRewardAmount = isNexusPlus ? 2500 : (isVIP ? 1000 : 500);
                 
                 if (!me.lastDailyClaim || (Date.now() - me.lastDailyClaim > 86400000)) {
                     let newStreak = me.loginStreak || 0;
@@ -5533,6 +5616,14 @@
       else if (action === 'navigateFromAdmin') {
         window.navigate(window.isFromAdmin ? 'admin' : 'home');
       }
+      else if (action === 'showNexusPlusModal') {
+          const modal = document.getElementById('nexus-plus-modal');
+          if (modal) {
+              modal.classList.remove('hidden');
+              modal.classList.add('flex');
+          }
+      }
+      else if (action === 'subscribeNexusPlus') window.subscribeNexusPlus();
       else if (action === 'clearSearch') {
           const searchInput = document.getElementById('search-input');
           if (searchInput) searchInput.value = '';
@@ -6399,6 +6490,49 @@
                 }
             }
         );
+    };
+
+    window.subscribeNexusPlus = async () => {
+        if (!currentUser) {
+            showModal('Login Required', 'You must be logged in to subscribe to Nexus+.');
+            return;
+        }
+        const me = systemUsers.find(u => u.uid === currentUser.uid);
+        if (me.isNexusPlus) {
+            showModal('Already Subscribed', 'You already have an active Nexus+ subscription!');
+            return;
+        }
+        
+        let myBal = me?.balance || 0;
+        if (myBal < 2500) {
+            showModal('Insufficient Funds', 'You need 2,500 coins to join Nexus+.');
+            return;
+        }
+
+        const btn = document.getElementById('nexus-plus-submit-btn');
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Processing...';
+        btn.disabled = true;
+
+        try {
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
+            await updateDoc(userRef, {
+                balance: increment(-2500),
+                isNexusPlus: true,
+                nexusPlusExpiry: Date.now() + (30 * 24 * 60 * 60 * 1000)
+            });
+            showToast('Welcome to Nexus+!', 'You have unlocked premium access.', 'ph-sparkle', 'purple');
+            logActivity('PURCHASE', 'Nexus+', 'Subscribed to Nexus+ for 30 days.');
+            
+            document.getElementById('nexus-plus-modal').classList.add('hidden');
+            document.getElementById('nexus-plus-modal').classList.remove('flex');
+            
+        } catch (err) {
+            console.error(err);
+            showModal('Error', 'Failed to process subscription.');
+        } finally {
+            btn.innerHTML = 'Join for 2,500 <i class="ph-fill ph-coin text-yellow-300"></i> / 30 Days';
+            btn.disabled = false;
+        }
     };
 
     window.tipDeveloper = (targetUid, targetName) => {
