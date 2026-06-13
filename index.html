@@ -2647,7 +2647,7 @@
             ${sanitizeHTML(app.title)}
             ${app.isVerified ? '<i class="ph-fill ph-shield-check text-emerald-500 flex-shrink-0 text-base" title="Verified Safe"></i>' : ''}
           </h3>
-          <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${sanitizeHTML(app.developer)}" class="text-sm font-medium text-slate-500 hover:text-indigo-500 line-clamp-1 w-full mb-1 transition-colors">${sanitizeHTML(app.developer)}</p>
+          <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${app.authorId || sanitizeHTML(app.developer)}" class="text-sm font-medium text-slate-500 hover:text-indigo-500 line-clamp-1 w-full mb-1 transition-colors">${sanitizeHTML(app.developer)}</p>
           <div class="flex items-center gap-1 text-sm font-bold text-slate-500 dark:text-slate-300">
             <span>${stats.rating}</span>
             <i class="ph-fill ph-star text-yellow-400"></i>
@@ -2858,7 +2858,7 @@
               
               <div class="flex flex-col sm:flex-row sm:items-center gap-6 mt-2">
                 <button class="bg-white/10 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 border border-white/20 px-10 py-4 rounded-2xl font-black transition-all duration-300 w-full sm:w-fit text-lg shadow-xl">View Details</button>
-                <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${sanitizeHTML(app.developer)}" class="text-white/60 hover:text-white text-base font-bold transition-colors truncate relative z-30">By ${sanitizeHTML(app.developer)}</p>
+                <p data-click="navigate" data-stop="true" data-arg="profile" data-arg2="${app.authorId || sanitizeHTML(app.developer)}" class="text-white/60 hover:text-white text-base font-bold transition-colors truncate relative z-30">By ${sanitizeHTML(app.developer)}</p>
               </div>
             </div>
           </div>
@@ -2910,30 +2910,36 @@
         }
     };
 
-    function renderProfile(developerName) {
-      const myName = currentUser?.customDisplayName || currentUser?.displayName;
-      
-      let devUser = systemUsers.find(u => 
-          (u.username === developerName) || 
-          (u.displayName === developerName) ||
-          (u.customDisplayName === developerName)
-      );
+    function renderProfile(targetData) {
+      if (!targetData) return;
 
-      // FIX: Strict UID fallback to guarantee your own profile loads perfectly even if names mismatch
-      if (currentUser && myName === developerName) {
-          const strictMe = systemUsers.find(u => u.uid === currentUser.uid);
-          if (strictMe) devUser = strictMe;
+      const searchStr = String(targetData).trim();
+      const searchLower = searchStr.toLowerCase();
+
+      // 1. Find user by exact UID match
+      let devUser = systemUsers.find(u => u.uid === searchStr);
+
+      // 2. Find user by exact matching the logged-in user's name
+      const myName = currentUser?.customDisplayName || currentUser?.displayName || '';
+      if (!devUser && currentUser && myName.trim().toLowerCase() === searchLower) {
+          devUser = systemUsers.find(u => u.uid === currentUser.uid);
       }
-      
-      // Case-insensitive fallback for other developers
+
+      // 3. Fallback to case-insensitive name matching
       if (!devUser) {
           devUser = systemUsers.find(u => 
-             (u.username || '').toLowerCase() === (developerName || '').toLowerCase() || 
-             (u.displayName || '').toLowerCase() === (developerName || '').toLowerCase()
+             (u.customDisplayName || '').trim().toLowerCase() === searchLower ||
+             (u.username || '').trim().toLowerCase() === searchLower || 
+             (u.displayName || '').trim().toLowerCase() === searchLower
           );
       }
 
-      const devApps = window.apps.filter(a => a.developer === developerName && (a.visibility !== 'private' || (currentUser && a.authorId === currentUser.uid) || window.isAuthorizedAdmin));
+      const developerName = devUser ? (devUser.customDisplayName || devUser.displayName || devUser.username || searchStr) : searchStr;
+
+      const devApps = window.apps.filter(a => {
+          if (devUser && a.authorId === devUser.uid) return true;
+          return (a.developer || '').trim().toLowerCase() === developerName.trim().toLowerCase();
+      }).filter(a => a.visibility !== 'private' || (currentUser && a.authorId === currentUser.uid) || window.isAuthorizedAdmin);
       
       let bannerUrl = '';
       if (devUser) {
@@ -2985,9 +2991,10 @@
                   <span class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.4)] border border-purple-400/50">
                     <i class="ph-fill ph-sparkle text-lg animate-pulse"></i> Nexus+ Member
                   </span>` : ''}
+                  ${devUser && allowedDevs.some(d => d.id === devUser.uid) ? `
                   <span class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm border border-slate-200 dark:border-slate-700/50">
                     <i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i> Verified Developer
-                  </span>
+                  </span>` : ''}
                 </div>
               </div>
             </div>
@@ -2996,8 +3003,10 @@
 
       const editBtn = document.getElementById('edit-profile-btn');
       const devActions = document.getElementById('developer-actions');
+      
+      const isMyProfile = devUser && currentUser && devUser.uid === currentUser.uid;
 
-      if (myName === developerName) {
+      if (isMyProfile) {
         if(editBtn) editBtn.classList.remove('hidden');
         if(devActions) devActions.innerHTML = '';
       } else {
@@ -3253,7 +3262,7 @@
                     ${app.visibility === 'private' ? '<i class="ph-fill ph-lock-key text-2xl sm:text-3xl text-slate-400" title="Private App"></i>' : ''}
                   </h1>
                   
-                  <button data-click="navigate" data-arg="profile" data-arg2="${sanitizeHTML(app.developer)}" class="text-xl text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold mb-6 transition-colors inline-flex items-center gap-2">
+                  <button data-click="navigate" data-arg="profile" data-arg2="${app.authorId || sanitizeHTML(app.developer)}" class="text-xl text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold mb-6 transition-colors inline-flex items-center gap-2">
                     ${sanitizeHTML(app.developer)} <i class="ph-bold ph-arrow-up-right text-sm"></i>
                   </button>
                   
@@ -5722,8 +5731,8 @@
           }
       }
       else if (action === 'profileLink') {
-        if (currentUser && (currentUser.customDisplayName || currentUser.displayName)) {
-            window.navigate('profile', currentUser.customDisplayName || currentUser.displayName);
+        if (currentUser) {
+            window.navigate('profile', currentUser.uid);
         }
       }
       else if (action === 'navigateFromAdmin') {
