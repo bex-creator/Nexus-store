@@ -487,77 +487,106 @@
   </div>
 
   <!-- Vault Bookmark Toggle -->
-  <button id="vault-mode-toggle" data-click="toggleVaultMode" class="fixed bottom-6 left-6 z-40 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white px-6 py-3 rounded-full font-bold shadow-lg transition-transform transform hover:scale-105 hidden items-center gap-2">
+  <button id="vault-mode-toggle" data-click="toggleVaultMode" class="fixed bottom-20 sm:bottom-6 left-4 sm:left-6 z-40 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white px-6 py-3 rounded-full font-bold shadow-lg transition-transform transform hover:scale-105 hidden items-center gap-2">
     <i class="ph-fill ph-vault"></i> Enter Vault
   </button>
 
+  <!-- Mobile Bottom Navigation -->
+  <nav class="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 pb-2 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <div class="flex items-center justify-around h-16 px-2">
+      <button data-click="navigate" data-arg="home" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
+        <i class="ph-fill ph-house text-2xl"></i>
+        <span class="text-[10px] font-bold mt-0.5">Home</span>
+      </button>
+      <button data-click="navigate" data-arg="leaderboard" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
+        <i class="ph-fill ph-trophy text-2xl"></i>
+        <span class="text-[10px] font-bold mt-0.5">Top</span>
+      </button>
+      <button data-click="handlePublishClick" class="flex flex-col items-center justify-center w-full h-full text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 transition-colors relative -top-3">
+        <div class="bg-white dark:bg-slate-900 rounded-full p-1.5 shadow-md border border-slate-100 dark:border-slate-800">
+           <div class="bg-indigo-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-indigo-500/30 shadow-lg">
+             <i class="ph-bold ph-plus text-2xl"></i>
+           </div>
+        </div>
+      </button>
+      <button data-click="showThemeModal" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
+        <i class="ph-fill ph-palette text-2xl"></i>
+        <span class="text-[10px] font-bold mt-0.5">Theme</span>
+      </button>
+      <button data-click="navigate" data-arg="faq" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
+        <i class="ph-fill ph-question text-2xl"></i>
+        <span class="text-[10px] font-bold mt-0.5">Help</span>
+      </button>
+    </div>
+  </nav>
+
   <!-- Header -->
   <header class="fixed top-0 inset-x-0 z-40 backdrop-blur-xl border-b shadow-[0_4px_30px_rgba(0,0,0,0.03)] bg-white/70 border-black/5 dark:bg-slate-950/70 dark:border-white/5 transition-colors duration-300">
-    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-6">
-      <div class="flex items-center gap-3 cursor-pointer group" data-click="navigate" data-arg="home">
-        <div class="w-12 h-12 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 group-hover:scale-105 group-hover:rotate-3 transition-all duration-300">
-          <i class="ph-fill ph-play text-2xl ml-1"></i>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-6">
+      <div class="flex items-center gap-2 sm:gap-3 cursor-pointer group" data-click="navigate" data-arg="home">
+        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 group-hover:scale-105 group-hover:rotate-3 transition-all duration-300">
+          <i class="ph-fill ph-play text-xl sm:text-2xl ml-1"></i>
         </div>
-        <span class="text-2xl font-black tracking-tighter hidden sm:block bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
+        <span class="text-xl sm:text-2xl font-black tracking-tighter hidden lg:block bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
           Nexus<span class="text-indigo-500">Store</span>
         </span>
       </div>
 
       <div id="search-container" class="flex-1 max-w-2xl relative group transition-opacity">
-        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <i class="ph ph-magnifying-glass text-slate-400 group-focus-within:text-indigo-500 transition-colors text-xl"></i>
+        <div class="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+          <i class="ph ph-magnifying-glass text-slate-400 group-focus-within:text-indigo-500 transition-colors text-lg sm:text-xl"></i>
         </div>
-        <input type="text" id="search-input" placeholder="Search apps, games... (Press '/' to focus)" class="w-full border-2 rounded-2xl py-3 pl-12 pr-28 sm:pr-36 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none font-medium bg-slate-100/80 border-transparent text-slate-800 placeholder-slate-400 focus:bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" />
+        <input type="text" id="search-input" placeholder="Search apps, games... (Press '/' to focus)" class="w-full border-2 rounded-xl sm:rounded-2xl py-2 sm:py-3 pl-10 sm:pl-12 pr-14 sm:pr-36 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none font-medium text-sm sm:text-base bg-slate-100/80 border-transparent text-slate-800 placeholder-slate-400 focus:bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" />
         <div class="absolute inset-y-0 right-1 flex items-center pr-1 gap-1">
-          <button id="clear-search-btn" data-click="clearSearch" class="hidden h-9 w-9 text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center rounded-xl transition-colors" title="Clear Search">
+          <button id="clear-search-btn" data-click="clearSearch" class="hidden h-7 w-7 sm:h-9 sm:w-9 text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center rounded-lg sm:rounded-xl transition-colors" title="Clear Search">
             <i class="ph-bold ph-x"></i>
           </button>
-          <button id="ask-ai-btn" data-click="openAiModal" disabled class="h-9 px-3 bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-xl flex items-center gap-1.5 font-bold text-sm transition-all shadow-md" title="Nexus AI Assistant">
-            <i id="ai-btn-icon" class="ph-fill ph-spinner animate-spin"></i> <span id="ai-btn-text" class="hidden sm:inline">Loading AI...</span>
+          <button id="ask-ai-btn" data-click="openAiModal" disabled class="hidden sm:flex h-9 px-3 bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-xl items-center gap-1.5 font-bold text-sm transition-all shadow-md" title="Nexus AI Assistant">
+            <i id="ai-btn-icon" class="ph-fill ph-spinner animate-spin"></i> <span id="ai-btn-text" class="hidden md:inline">Loading AI...</span>
           </button>
         </div>
       </div>
 
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2 sm:gap-4">
         
         <!-- Nexus+ Button -->
-        <button data-click="showNexusPlusModal" class="hidden sm:flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white rounded-lg font-black text-xs sm:text-sm shadow-md shadow-purple-500/30 transition-all hover:-translate-y-0.5" title="Get Nexus+">
+        <button data-click="showNexusPlusModal" class="hidden sm:flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white rounded-lg sm:rounded-xl font-black text-xs sm:text-sm shadow-md shadow-purple-500/30 transition-all hover:-translate-y-0.5" title="Get Nexus+">
           <i class="ph-fill ph-sparkle text-base animate-pulse"></i>
           <span class="hidden md:inline">Nexus+</span>
         </button>
 
         <!-- Virtual Currency Balance -->
-        <button id="coin-balance-container" data-click="showCoinRequestModal" class="hidden items-center gap-1 px-2.5 py-1 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 rounded-lg font-bold text-xs sm:text-sm border border-yellow-200 dark:border-yellow-700/50 shadow-sm cursor-pointer transition-colors" title="Request Nexus Coins">
+        <button id="coin-balance-container" data-click="showCoinRequestModal" class="hidden items-center gap-1 px-2.5 py-1.5 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm border border-yellow-200 dark:border-yellow-700/50 shadow-sm cursor-pointer transition-colors" title="Request Nexus Coins">
           <i class="ph-fill ph-coin text-base"></i>
           <span id="coin-balance-text">0</span>
         </button>
 
-        <div id="user-profile" class="flex items-center gap-3 pr-4 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity" data-click="profileLink" title="View My Profile">
-          <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1" class="w-9 h-9 rounded-full object-cover border-2 border-indigo-500 shadow-sm" />
-          <span id="user-name" class="font-bold text-sm text-slate-700 dark:text-slate-200 hidden sm:block">Loading...</span>
+        <div id="user-profile" class="flex items-center gap-3 pr-0 sm:pr-4 sm:border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity" data-click="profileLink" title="View My Profile">
+          <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-indigo-500 shadow-sm" />
+          <span id="user-name" class="font-bold text-sm text-slate-700 dark:text-slate-200 hidden md:block">Loading...</span>
         </div>
-        <button data-click="showThemeModal" class="p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-indigo-400 dark:hover:bg-slate-700 dark:border-transparent" title="Settings">
-          <i class="ph-fill ph-gear text-xl"></i>
+        <button data-click="showThemeModal" class="hidden sm:block p-2 sm:p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-indigo-400 dark:hover:bg-slate-700 dark:border-transparent" title="Settings">
+          <i class="ph-fill ph-gear text-lg sm:text-xl"></i>
         </button>
-        <button data-click="handleSignOut" class="p-2.5 rounded-xl transition-colors bg-white text-red-500 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-slate-700 dark:border-transparent" title="Sign Out">
-          <i class="ph-bold ph-sign-out text-xl"></i>
+        <button data-click="handleSignOut" class="hidden sm:block p-2 sm:p-2.5 rounded-xl transition-colors bg-white text-red-500 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-slate-700 dark:border-transparent" title="Sign Out">
+          <i class="ph-bold ph-sign-out text-lg sm:text-xl"></i>
         </button>
-        <button data-click="navigate" data-arg="leaderboard" class="p-2.5 rounded-xl transition-colors bg-white text-yellow-500 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-yellow-400 dark:hover:bg-slate-700 dark:border-transparent" title="Leaderboards">
-          <i class="ph-fill ph-trophy text-xl"></i>
+        <button data-click="navigate" data-arg="leaderboard" class="hidden sm:block p-2 sm:p-2.5 rounded-xl transition-colors bg-white text-yellow-500 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-yellow-400 dark:hover:bg-slate-700 dark:border-transparent" title="Leaderboards">
+          <i class="ph-fill ph-trophy text-lg sm:text-xl"></i>
         </button>
-        <button data-click="navigate" data-arg="faq" class="p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:border-transparent" title="FAQ & Support">
-          <i class="ph-bold ph-question text-xl"></i>
+        <button data-click="navigate" data-arg="faq" class="hidden sm:block p-2 sm:p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:border-transparent" title="FAQ & Support">
+          <i class="ph-bold ph-question text-lg sm:text-xl"></i>
         </button>
-        <button data-click="handlePublishClick" class="flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:translate-y-0 bg-indigo-600 hover:bg-indigo-500 text-white">
-          <i class="ph ph-plus text-xl font-bold"></i>
-          <span class="hidden sm:inline">Publish</span>
+        <button data-click="handlePublishClick" class="hidden sm:flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-bold transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:translate-y-0 bg-indigo-600 hover:bg-indigo-500 text-white text-sm sm:text-base">
+          <i class="ph ph-plus text-lg sm:text-xl font-bold"></i>
+          <span class="hidden lg:inline">Publish</span>
         </button>
       </div>
     </div>
   </header>
 
   <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-28 min-h-screen">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-24 sm:py-28 min-h-screen">
     
     <!-- HOME VIEW -->
     <div id="view-home" class="view-section block animate-fade-in">
@@ -922,15 +951,15 @@
               <div class="flex items-center gap-3 p-3 border-b border-white/5 bg-indigo-900/20">
                  <div class="bg-indigo-500/20 text-indigo-400 p-1.5 rounded-lg"><i class="ph-fill ph-sparkle text-lg block"></i></div>
                  <input type="text" id="ai-forge-input" placeholder="AI Zero-Code: Describe an app (e.g. 'A neon snake game with a score counter')..." class="flex-1 bg-transparent border-none outline-none text-indigo-100 placeholder-indigo-400/50 text-sm font-medium">
-                 <button type="button" id="ai-forge-btn" data-click="generateAiApp" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-sm font-bold transition-all shadow-md flex items-center gap-2 whitespace-nowrap">
-                   Generate Code
+                 <button type="button" id="ai-forge-btn" data-click="generateAiApp" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md flex items-center gap-2 whitespace-nowrap">
+                   Generate
                  </button>
               </div>
-              <div class="flex flex-col lg:flex-row h-[500px]">
-                <div class="w-full lg:w-1/2 border-b lg:border-b-0 lg:border-r border-white/10 relative">
+              <div class="flex flex-col lg:flex-row h-[700px] lg:h-[500px]">
+                <div class="w-full h-1/2 lg:h-full lg:w-1/2 border-b lg:border-b-0 lg:border-r border-white/10 relative">
                   <textarea id="app-code" class="absolute inset-0 w-full h-full bg-slate-950 text-emerald-400 font-mono text-sm p-6 outline-none resize-none custom-scrollbar" spellcheck="false" placeholder="Write your HTML, CSS, and JS here..."></textarea>
                 </div>
-                <div class="w-full lg:w-1/2 relative bg-white">
+                <div class="w-full h-1/2 lg:h-full lg:w-1/2 relative bg-white">
                   <div class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 text-slate-400 font-bold" id="ide-preview-placeholder">
                      <i class="ph-fill ph-code mb-2 text-4xl opacity-50"></i>
                      Live Preview
@@ -1171,7 +1200,7 @@
   </main>
   
   <!-- Toast Notification Container -->
-  <div id="toast-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
+  <div id="toast-container" class="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
   
   </div> <!-- END APP ROOT -->
 
