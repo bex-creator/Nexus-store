@@ -436,7 +436,7 @@
       </div>
       
       <button data-click="subscribeNexusPlus" id="nexus-plus-submit-btn" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white px-8 py-4 rounded-2xl font-black text-lg transition-all duration-300 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] hover:-translate-y-1 relative z-10 flex items-center justify-center gap-2">
-        Join for 2,500 <i class="ph-fill ph-coin text-yellow-300"></i> / 30 Days
+        Join for 25,000 <i class="ph-fill ph-coin text-yellow-300"></i> / 30 Days
       </button>
       <button data-click="closeModal" data-arg="nexus-plus-modal" class="mt-4 text-slate-400 hover:text-slate-600 dark:hover:text-white font-bold text-sm transition-colors relative z-10 w-full p-2">Maybe Later</button>
     </div>
@@ -4454,7 +4454,7 @@
               <h4 class="font-black text-2xl sm:text-3xl mb-2 flex items-center gap-2 tracking-tight"><i class="ph-fill ph-sparkle text-yellow-300 animate-pulse"></i> Nexus+</h4>
               <p class="text-white/90 text-sm sm:text-base font-medium mb-6 leading-relaxed max-w-[90%]">Upgrade your account to the ultimate tier! All paid apps become free, get an exclusive glowing avatar, and boost your daily allowance to 2,500 coins.</p>
               <button data-click="subscribeNexusPlus" data-arg="${modalId}" class="bg-white text-purple-600 hover:bg-slate-50 px-6 py-4 rounded-2xl font-black shadow-xl transition-all w-full flex justify-center items-center gap-2 text-lg hover:-translate-y-1 active:translate-y-0">
-                 Join for 2,500 <i class="ph-fill ph-coin text-yellow-500"></i> / 30 Days
+                 Join for 25,000 <i class="ph-fill ph-coin text-yellow-500"></i> / 30 Days
               </button>
            </div>
         </div>
@@ -6546,8 +6546,8 @@
         }
         
         let myBal = me?.balance || 0;
-        if (myBal < 2500) {
-            showModal('Insufficient Funds', 'You need 2,500 coins to join Nexus+.');
+        if (myBal < 25000) {
+            showModal('Insufficient Funds', 'You need 25,000 coins to join Nexus+.');
             return;
         }
 
@@ -6560,7 +6560,7 @@
         try {
             const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
             await updateDoc(userRef, {
-                balance: increment(-2500),
+                balance: increment(-25000),
                 isNexusPlus: true,
                 nexusPlusExpiry: Date.now() + (30 * 24 * 60 * 60 * 1000)
             });
@@ -6581,7 +6581,7 @@
             console.error(err);
             showModal('Error', 'Failed to process subscription.');
             if (btn) {
-                btn.innerHTML = 'Join for 2,500 <i class="ph-fill ph-coin text-yellow-500"></i> / 30 Days';
+                btn.innerHTML = 'Join for 25,000 <i class="ph-fill ph-coin text-yellow-500"></i> / 30 Days';
                 btn.disabled = false;
             }
         }
