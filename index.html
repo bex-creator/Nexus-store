@@ -741,33 +741,72 @@
           <div id="favorites-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8"></div>
         </div>
 
-        <div id="analytics-section" class="hidden mt-16 border-t border-slate-100 dark:border-slate-800 pt-12">
-          <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-8 flex items-center gap-3">
-            <i class="ph-fill ph-trend-up text-emerald-500 text-3xl"></i>
-            Developer Analytics Dashboard
-          </h2>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800">
-               <div class="text-slate-500 text-sm font-bold uppercase tracking-wider mb-2">Total Revenue</div>
-               <div class="text-3xl font-black text-yellow-500 flex items-center gap-2"><i class="ph-fill ph-coin"></i> <span id="stat-revenue">0</span></div>
+        <div id="analytics-section" class="hidden mt-16 border-t border-slate-100 dark:border-slate-800 pt-12 animate-fade-in">
+          <div class="flex items-center justify-between mb-8 flex-wrap gap-4">
+            <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+              <i class="ph-fill ph-chart-polar text-emerald-500 text-4xl"></i>
+              Nexus Creator Studio
+            </h2>
+            <button class="bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-sm border border-slate-200 dark:border-slate-700">
+              <i class="ph-bold ph-download-simple text-lg"></i> Export CSV
+            </button>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+            <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800 relative overflow-hidden group">
+               <div class="absolute -right-4 -top-4 text-emerald-50 dark:text-emerald-900/20 group-hover:scale-110 transition-transform"><i class="ph-fill ph-coin text-7xl"></i></div>
+               <div class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 relative z-10">Total Revenue</div>
+               <div class="text-3xl sm:text-4xl font-black text-emerald-500 flex items-center gap-2 relative z-10"><i class="ph-fill ph-coin text-2xl"></i> <span id="stat-revenue">0</span></div>
             </div>
-            <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800">
-               <div class="text-slate-500 text-sm font-bold uppercase tracking-wider mb-2">Total Installs</div>
-               <div class="text-3xl font-black text-indigo-500 flex items-center gap-2"><i class="ph-fill ph-download-simple"></i> <span id="stat-downloads">0</span></div>
+            <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800 relative overflow-hidden group">
+               <div class="absolute -right-4 -top-4 text-indigo-50 dark:text-indigo-900/20 group-hover:scale-110 transition-transform"><i class="ph-fill ph-download-simple text-7xl"></i></div>
+               <div class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 relative z-10">Total Installs</div>
+               <div class="text-3xl sm:text-4xl font-black text-indigo-500 flex items-center gap-2 relative z-10"><span id="stat-downloads">0</span></div>
             </div>
-            <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800">
-               <div class="text-slate-500 text-sm font-bold uppercase tracking-wider mb-2">Avg Rating</div>
-               <div class="text-3xl font-black text-orange-500 flex items-center gap-2"><i class="ph-fill ph-star"></i> <span id="stat-rating">0.0</span></div>
+            <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800 relative overflow-hidden group">
+               <div class="absolute -right-4 -top-4 text-orange-50 dark:text-orange-900/20 group-hover:scale-110 transition-transform"><i class="ph-fill ph-star text-7xl"></i></div>
+               <div class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 relative z-10">Avg Rating</div>
+               <div class="text-3xl sm:text-4xl font-black text-orange-500 flex items-center gap-2 relative z-10"><span id="stat-rating">0.0</span> <span class="text-sm font-bold text-slate-400 mt-2" id="stat-rating-count">(0)</span></div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800 relative overflow-hidden group">
+               <div class="absolute -right-4 -top-4 text-blue-50 dark:text-blue-900/20 group-hover:scale-110 transition-transform"><i class="ph-fill ph-eye text-7xl"></i></div>
+               <div class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 relative z-10">Store Views</div>
+               <div class="text-3xl sm:text-4xl font-black text-blue-500 flex items-center gap-2 relative z-10"><span id="stat-views">0</span></div>
             </div>
           </div>
-          <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800 overflow-x-auto">
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+             <!-- Chart Area -->
+             <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col">
+                <h3 class="font-bold text-slate-900 dark:text-white mb-6">7-Day Install Performance <span class="text-xs font-normal text-slate-400 ml-2">(Simulated)</span></h3>
+                <div class="flex-1 flex items-end gap-2 sm:gap-4 h-48 mt-auto" id="analytics-chart">
+                   <!-- Populated by JS -->
+                </div>
+                <div class="flex justify-between mt-4 text-xs font-bold text-slate-400" id="analytics-chart-labels">
+                   <!-- Populated by JS -->
+                </div>
+             </div>
+             
+             <!-- Recent Sales / Activity -->
+             <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800 h-96 flex flex-col">
+                <h3 class="font-bold text-slate-900 dark:text-white mb-4">Recent Transactions</h3>
+                <div class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3" id="analytics-sales-feed">
+                   <!-- Populated by JS -->
+                </div>
+             </div>
+          </div>
+
+          <h3 class="text-2xl font-black mb-4 tracking-tight text-slate-900 dark:text-white">App Breakdown</h3>
+          <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-800 overflow-x-auto">
              <table class="w-full text-left border-collapse">
                 <thead>
-                   <tr class="text-slate-500 text-sm uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
-                      <th class="pb-4 font-bold p-4">App</th>
-                      <th class="pb-4 font-bold p-4">Price</th>
-                      <th class="pb-4 font-bold p-4">Installs</th>
-                      <th class="pb-4 font-bold p-4">Revenue</th>
+                   <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
+                      <th class="py-5 px-6 font-bold">App Name</th>
+                      <th class="py-5 px-6 font-bold">Price</th>
+                      <th class="py-5 px-6 font-bold">Installs</th>
+                      <th class="py-5 px-6 font-bold">Conv. Rate</th>
+                      <th class="py-5 px-6 font-bold">Revenue</th>
                    </tr>
                 </thead>
                 <tbody id="analytics-app-list" class="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -3078,23 +3117,90 @@
                   totalStars += r.reduce((acc, rv) => acc + rv.rating, 0);
                   totalRatingsCount += r.length;
               }
+              
+              const views = Math.floor(dl * (Math.random() * 2 + 1.5)); // Simulated views mapping to installs
+              const convRate = views > 0 ? ((dl / views) * 100).toFixed(1) : '0.0';
 
               return `
                   <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
-                      <td class="p-4 font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                          ${a.icon ? `<img src="${a.icon}" class="w-8 h-8 rounded-lg object-cover shadow-sm">` : `<div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-500 flex items-center justify-center"><i class="${a.iconClass||'ph-app-window'}"></i></div>`}
-                          ${sanitizeHTML(a.title)}
+                      <td class="p-4 px-6 font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                          ${a.icon ? `<img src="${a.icon}" class="w-10 h-10 rounded-xl object-cover shadow-sm">` : `<div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-500 flex items-center justify-center shadow-sm"><i class="${a.iconClass||'ph-app-window'} text-xl"></i></div>`}
+                          <div>
+                            <div class="line-clamp-1">${sanitizeHTML(a.title)}</div>
+                            <div class="text-[10px] text-slate-400 font-mono mt-0.5">ID: ${a.id.substring(0,8)}</div>
+                          </div>
                       </td>
-                      <td class="p-4 text-slate-600 dark:text-slate-300 font-medium"><i class="ph-fill ph-coin text-yellow-500"></i> ${a.price || 0}</td>
-                      <td class="p-4 text-slate-600 dark:text-slate-300 font-medium">${dl}</td>
-                      <td class="p-4 text-emerald-600 dark:text-emerald-400 font-bold"><i class="ph-fill ph-coin text-emerald-500"></i> ${rev}</td>
+                      <td class="p-4 px-6 text-slate-600 dark:text-slate-300 font-medium"><i class="ph-fill ph-coin text-yellow-500"></i> ${a.price || 0}</td>
+                      <td class="p-4 px-6 text-slate-600 dark:text-slate-300 font-medium">${dl}</td>
+                      <td class="p-4 px-6 text-slate-500 dark:text-slate-400 font-medium">${convRate}%</td>
+                      <td class="p-4 px-6 text-emerald-600 dark:text-emerald-400 font-black"><i class="ph-fill ph-coin"></i> ${rev}</td>
                   </tr>
               `;
           }).join('');
 
-          document.getElementById('stat-revenue').textContent = totalRev;
-          document.getElementById('stat-downloads').textContent = totalDl;
+          document.getElementById('stat-revenue').textContent = totalRev.toLocaleString();
+          document.getElementById('stat-downloads').textContent = totalDl.toLocaleString();
           document.getElementById('stat-rating').textContent = totalRatingsCount > 0 ? (totalStars / totalRatingsCount).toFixed(1) : '0.0';
+          document.getElementById('stat-rating-count').textContent = `(${totalRatingsCount})`;
+          document.getElementById('stat-views').textContent = Math.floor(totalDl * 3.4).toLocaleString(); // Mock aggregate views
+
+          // Generate 7-day simulated chart
+          const chartEl = document.getElementById('analytics-chart');
+          const labelsEl = document.getElementById('analytics-chart-labels');
+          
+          let chartHTML = '';
+          let labelsHTML = '';
+          const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const today = new Date().getDay();
+          
+          for (let i = 6; i >= 0; i--) {
+             const dayIndex = (today - i + 7) % 7;
+             // Simulate data curve: random height 10% to 100%
+             const heightPct = Math.max(10, Math.floor(Math.random() * 100));
+             const isToday = i === 0;
+             const generatedInstalls = Math.floor((heightPct/100)*(totalDl/2)) || Math.floor(Math.random()*5);
+             
+             chartHTML += `
+                <div class="flex-1 flex flex-col justify-end items-center group">
+                   <div class="w-full ${isToday ? 'bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]' : 'bg-emerald-400 dark:bg-emerald-500'} rounded-t-lg transition-all duration-500 group-hover:opacity-80 relative cursor-crosshair" style="height: ${heightPct}%">
+                      <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 shadow-xl border border-slate-700">+${generatedInstalls} Installs</div>
+                   </div>
+                </div>
+             `;
+             labelsHTML += `<div class="flex-1 text-center ${isToday ? 'text-indigo-600 dark:text-indigo-400 font-black' : ''}">${isToday ? 'Today' : days[dayIndex]}</div>`;
+          }
+          chartEl.innerHTML = chartHTML;
+          labelsEl.innerHTML = labelsHTML;
+
+          // Populate Recent Sales Feed from global activityLogs
+          const salesFeed = document.getElementById('analytics-sales-feed');
+          const devAppNames = devApps.map(a => a.title);
+          
+          // Filter logs where the action is a PURCHASE and the target matches one of the developer's apps
+          const recentSales = activityLogs.filter(log => log.action === 'PURCHASE' && devAppNames.includes(log.targetName)).slice(0, 20);
+
+          if (recentSales.length > 0) {
+             salesFeed.innerHTML = recentSales.map(sale => `
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 transition-all hover:bg-slate-100 dark:hover:bg-slate-800 group">
+                   <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                      <i class="ph-fill ph-bag text-lg"></i>
+                   </div>
+                   <div class="min-w-0 flex-1">
+                      <div class="font-bold text-sm text-slate-900 dark:text-white leading-tight mb-1"><span class="text-indigo-500">${sanitizeHTML(sale.displayName)}</span> bought <span class="opacity-80">${sanitizeHTML(sale.targetName)}</span></div>
+                      <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1"><i class="ph-fill ph-clock"></i> ${new Date(sale.timestamp).toLocaleDateString()} at ${new Date(sale.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                   </div>
+                </div>
+             `).join('');
+          } else {
+             salesFeed.innerHTML = `
+                <div class="text-center py-12 flex flex-col items-center">
+                   <i class="ph-fill ph-ghost text-5xl text-slate-200 dark:text-slate-700 mb-3 drop-shadow-sm"></i>
+                   <div class="text-sm font-bold text-slate-500">No recent transactions.</div>
+                   <p class="text-xs text-slate-400 font-medium mt-1">When users buy your apps, they'll appear here.</p>
+                </div>
+             `;
+          }
+
       } else {
           analyticsSection.classList.add('hidden');
       }
