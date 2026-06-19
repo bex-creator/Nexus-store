@@ -779,7 +779,7 @@
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
              <!-- Chart Area -->
              <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col">
-                <h3 class="font-bold text-slate-900 dark:text-white mb-6">7-Day Install Performance <span class="text-xs font-normal text-slate-400 ml-2">(Simulated)</span></h3>
+                <h3 class="font-bold text-slate-900 dark:text-white mb-6">7-Day Install Performance</h3>
                 <div class="flex-1 flex items-end gap-2 sm:gap-4 h-48 mt-auto" id="analytics-chart">
                    <!-- Populated by JS -->
                 </div>
@@ -3144,26 +3144,52 @@
           document.getElementById('stat-rating-count').textContent = `(${totalRatingsCount})`;
           document.getElementById('stat-views').textContent = Math.floor(totalDl * 3.4).toLocaleString(); // Mock aggregate views
 
-          // Generate 7-day simulated chart
+          // Populate Recent Sales Feed & Graph from global activityLogs
+          const salesFeed = document.getElementById('analytics-sales-feed');
+          const devAppNames = devApps.map(a => a.title);
+
+          // Generate 7-day actual chart based on activity logs
           const chartEl = document.getElementById('analytics-chart');
           const labelsEl = document.getElementById('analytics-chart-labels');
+          
+          const now = new Date();
+          const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+          const oneDay = 24 * 60 * 60 * 1000;
+          const dailyInstalls = [0, 0, 0, 0, 0, 0, 0];
+
+          // Process logs for INSTALL actions
+          activityLogs.forEach(log => {
+             if (log.action === 'INSTALL' && devAppNames.includes(log.targetName)) {
+                const logDate = new Date(log.timestamp);
+                const startOfLogDate = new Date(logDate.getFullYear(), logDate.getMonth(), logDate.getDate()).getTime();
+                const diffDays = Math.round((startOfToday - startOfLogDate) / oneDay);
+                
+                if (diffDays >= 0 && diffDays < 7) {
+                   dailyInstalls[6 - diffDays]++; 
+                }
+             }
+          });
+
+          const maxInstalls = Math.max(...dailyInstalls);
           
           let chartHTML = '';
           let labelsHTML = '';
           const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-          const today = new Date().getDay();
+          const todayDayOfWeek = now.getDay();
           
-          for (let i = 6; i >= 0; i--) {
-             const dayIndex = (today - i + 7) % 7;
-             // Simulate data curve: random height 10% to 100%
-             const heightPct = Math.max(10, Math.floor(Math.random() * 100));
-             const isToday = i === 0;
-             const generatedInstalls = Math.floor((heightPct/100)*(totalDl/2)) || Math.floor(Math.random()*5);
+          for (let i = 0; i < 7; i++) {
+             const daysAgo = 6 - i;
+             const dayIndex = (todayDayOfWeek - daysAgo + 7) % 7;
+             const isToday = daysAgo === 0;
+             const count = dailyInstalls[i];
+             
+             // Minimum 2% height for visual baseline, up to 100% relative to the max day
+             const heightPct = count > 0 ? Math.max(10, Math.floor((count / maxInstalls) * 100)) : 2;
              
              chartHTML += `
                 <div class="flex-1 flex flex-col justify-end items-center group">
                    <div class="w-full ${isToday ? 'bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]' : 'bg-emerald-400 dark:bg-emerald-500'} rounded-t-lg transition-all duration-500 group-hover:opacity-80 relative cursor-crosshair" style="height: ${heightPct}%">
-                      <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 shadow-xl border border-slate-700">+${generatedInstalls} Installs</div>
+                      <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 shadow-xl border border-slate-700">${count} Installs</div>
                    </div>
                 </div>
              `;
@@ -3171,10 +3197,6 @@
           }
           chartEl.innerHTML = chartHTML;
           labelsEl.innerHTML = labelsHTML;
-
-          // Populate Recent Sales Feed from global activityLogs
-          const salesFeed = document.getElementById('analytics-sales-feed');
-          const devAppNames = devApps.map(a => a.title);
           
           // Filter logs where the action is a PURCHASE and the target matches one of the developer's apps
           const recentSales = activityLogs.filter(log => log.action === 'PURCHASE' && devAppNames.includes(log.targetName)).slice(0, 20);
