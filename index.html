@@ -2686,7 +2686,8 @@
         const buckets = new Array(numBuckets).fill(0);
 
         activityLogs.forEach(log => {
-            if (log.action === 'INSTALL' && devAppNames.includes(log.targetName)) {
+            // Count both free Installs and paid Purchases on the chart
+            if ((log.action === 'INSTALL' || log.action === 'PURCHASE') && devAppNames.includes(log.targetName)) {
                 const logDate = new Date(log.timestamp);
                 
                 if (timeframe === '7d' || timeframe === '30d') {
