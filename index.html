@@ -779,11 +779,18 @@
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
              <!-- Chart Area -->
              <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col">
-                <h3 class="font-bold text-slate-900 dark:text-white mb-6">7-Day Install Performance</h3>
-                <div class="flex-1 flex items-end gap-2 sm:gap-4 h-48 mt-auto" id="analytics-chart">
+                <div class="flex items-center justify-between mb-6">
+                   <h3 class="font-bold text-slate-900 dark:text-white">Install Performance</h3>
+                   <select id="analytics-timeframe" onchange="window.updateAnalyticsChart(this.value)" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold px-3 py-1.5 rounded-lg outline-none cursor-pointer shadow-sm">
+                       <option value="7d">Last 7 Days</option>
+                       <option value="30d">Last 30 Days</option>
+                       <option value="1y">Last 12 Months</option>
+                   </select>
+                </div>
+                <div class="flex-1 flex items-end gap-2 sm:gap-4 h-48 mt-auto transition-all" id="analytics-chart">
                    <!-- Populated by JS -->
                 </div>
-                <div class="flex justify-between mt-4 text-xs font-bold text-slate-400" id="analytics-chart-labels">
+                <div class="flex justify-between mt-4 text-xs font-bold text-slate-400 relative" id="analytics-chart-labels">
                    <!-- Populated by JS -->
                 </div>
              </div>
@@ -2653,6 +2660,105 @@
       return { rating: (sum / reviews.length).toFixed(1), count: reviews.length.toString() };
     };
 
+    window.updateAnalyticsChart = (timeframe = '7d') => {
+        const devAppNames = window.currentProfileAppNames || [];
+        const chartEl = document.getElementById('analytics-chart');
+        const labelsEl = document.getElementById('analytics-chart-labels');
+        if (!chartEl || !labelsEl) return;
+
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        let numBuckets = 7;
+        let gapClass = 'gap-2 sm:gap-4';
+        
+        if (timeframe === '30d') {
+            numBuckets = 30;
+            gapClass = 'gap-0.5 sm:gap-1';
+        } else if (timeframe === '1y') {
+            numBuckets = 12;
+            gapClass = 'gap-2 sm:gap-4';
+        }
+
+        chartEl.className = `flex-1 flex items-end h-48 mt-auto transition-all ${gapClass}`;
+
+        const buckets = new Array(numBuckets).fill(0);
+
+        activityLogs.forEach(log => {
+            if (log.action === 'INSTALL' && devAppNames.includes(log.targetName)) {
+                const logDate = new Date(log.timestamp);
+                
+                if (timeframe === '7d' || timeframe === '30d') {
+                    const startOfLogDate = new Date(logDate.getFullYear(), logDate.getMonth(), logDate.getDate()).getTime();
+                    const diffDays = Math.round((startOfToday - startOfLogDate) / oneDay);
+                    if (diffDays >= 0 && diffDays < numBuckets) {
+                        buckets[numBuckets - 1 - diffDays]++;
+                    }
+                } else if (timeframe === '1y') {
+                    const monthDiff = (now.getFullYear() - logDate.getFullYear()) * 12 + (now.getMonth() - logDate.getMonth());
+                    if (monthDiff >= 0 && monthDiff < 12) {
+                        buckets[11 - monthDiff]++;
+                    }
+                }
+            }
+        });
+
+        const maxInstalls = Math.max(...buckets);
+
+        let chartHTML = '';
+        let labelsHTML = '';
+        const daysShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        for (let i = 0; i < numBuckets; i++) {
+            const count = buckets[i];
+            const heightPct = count > 0 ? Math.max(10, Math.floor((count / maxInstalls) * 100)) : 2;
+            const isLast = i === numBuckets - 1;
+            
+            let labelText = '';
+            if (timeframe === '7d') {
+                const daysAgo = 6 - i;
+                const dayIndex = (now.getDay() - daysAgo + 7) % 7;
+                labelText = isLast ? 'Today' : daysShort[dayIndex];
+            } else if (timeframe === '30d') {
+                const daysAgo = 29 - i;
+                if (daysAgo === 0) labelText = 'Today';
+                else if (daysAgo === 14) labelText = '15d ago';
+                else if (daysAgo === 29) labelText = '30d ago';
+            } else if (timeframe === '1y') {
+                const monthsAgo = 11 - i;
+                const monthIndex = (now.getMonth() - monthsAgo + 12) % 12;
+                labelText = isLast ? 'This Mo' : monthsShort[monthIndex];
+            }
+
+            chartHTML += `
+                <div class="flex-1 flex flex-col justify-end items-center group relative min-w-[2px]">
+                    <div class="w-full ${isLast ? 'bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]' : 'bg-emerald-400 dark:bg-emerald-500'} rounded-t-sm sm:rounded-t-lg transition-all duration-500 group-hover:opacity-80 relative cursor-crosshair" style="height: ${heightPct}%">
+                        <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 shadow-xl border border-slate-700">${count} Installs</div>
+                    </div>
+                </div>
+            `;
+            
+            if (timeframe === '30d') {
+                if (labelText) {
+                   labelsHTML += `<div class="absolute text-center ${isLast ? 'text-indigo-600 dark:text-indigo-400 font-black' : ''}" style="left: ${((i+0.5)/30)*100}%; transform: translateX(-50%);">${labelText}</div>`;
+                }
+            } else {
+                labelsHTML += `<div class="flex-1 text-center truncate px-0.5 text-[10px] sm:text-xs ${isLast ? 'text-indigo-600 dark:text-indigo-400 font-black' : ''}">${labelText}</div>`;
+            }
+        }
+        
+        chartEl.innerHTML = chartHTML;
+        
+        if (timeframe === '30d') {
+            labelsEl.className = "relative h-4 mt-4 text-[10px] sm:text-xs font-bold text-slate-400";
+        } else {
+            labelsEl.className = "flex justify-between mt-4 text-[10px] sm:text-xs font-bold text-slate-400 relative";
+        }
+        labelsEl.innerHTML = labelsHTML;
+    };
+
     // Helper to render grid items
     const generateGridHtml = (appList) => {
       const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
@@ -3148,55 +3254,10 @@
           const salesFeed = document.getElementById('analytics-sales-feed');
           const devAppNames = devApps.map(a => a.title);
 
-          // Generate 7-day actual chart based on activity logs
-          const chartEl = document.getElementById('analytics-chart');
-          const labelsEl = document.getElementById('analytics-chart-labels');
-          
-          const now = new Date();
-          const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-          const oneDay = 24 * 60 * 60 * 1000;
-          const dailyInstalls = [0, 0, 0, 0, 0, 0, 0];
-
-          // Process logs for INSTALL actions
-          activityLogs.forEach(log => {
-             if (log.action === 'INSTALL' && devAppNames.includes(log.targetName)) {
-                const logDate = new Date(log.timestamp);
-                const startOfLogDate = new Date(logDate.getFullYear(), logDate.getMonth(), logDate.getDate()).getTime();
-                const diffDays = Math.round((startOfToday - startOfLogDate) / oneDay);
-                
-                if (diffDays >= 0 && diffDays < 7) {
-                   dailyInstalls[6 - diffDays]++; 
-                }
-             }
-          });
-
-          const maxInstalls = Math.max(...dailyInstalls);
-          
-          let chartHTML = '';
-          let labelsHTML = '';
-          const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-          const todayDayOfWeek = now.getDay();
-          
-          for (let i = 0; i < 7; i++) {
-             const daysAgo = 6 - i;
-             const dayIndex = (todayDayOfWeek - daysAgo + 7) % 7;
-             const isToday = daysAgo === 0;
-             const count = dailyInstalls[i];
-             
-             // Minimum 2% height for visual baseline, up to 100% relative to the max day
-             const heightPct = count > 0 ? Math.max(10, Math.floor((count / maxInstalls) * 100)) : 2;
-             
-             chartHTML += `
-                <div class="flex-1 flex flex-col justify-end items-center group">
-                   <div class="w-full ${isToday ? 'bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]' : 'bg-emerald-400 dark:bg-emerald-500'} rounded-t-lg transition-all duration-500 group-hover:opacity-80 relative cursor-crosshair" style="height: ${heightPct}%">
-                      <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 shadow-xl border border-slate-700">${count} Installs</div>
-                   </div>
-                </div>
-             `;
-             labelsHTML += `<div class="flex-1 text-center ${isToday ? 'text-indigo-600 dark:text-indigo-400 font-black' : ''}">${isToday ? 'Today' : days[dayIndex]}</div>`;
-          }
-          chartEl.innerHTML = chartHTML;
-          labelsEl.innerHTML = labelsHTML;
+          window.currentProfileAppNames = devAppNames;
+          const timeframeDropdown = document.getElementById('analytics-timeframe');
+          if (timeframeDropdown) timeframeDropdown.value = '7d';
+          window.updateAnalyticsChart('7d');
           
           // Filter logs where the action is a PURCHASE and the target matches one of the developer's apps
           const recentSales = activityLogs.filter(log => log.action === 'PURCHASE' && devAppNames.includes(log.targetName)).slice(0, 20);
