@@ -733,7 +733,7 @@
         </h2>
         <div id="profile-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8"></div>
 
-        <div id="favorites-section" class="hidden mt-16 border-t border-slate-100 dark:border-slate-800 pt-12">
+        <div id="favorites-section" class="hidden mt-16 border-t border-slate-200/10 dark:border-slate-800/10 pt-12">
           <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-8 flex items-center gap-3">
             <i class="ph-fill ph-heart text-pink-500 text-3xl"></i>
             My Favorites
@@ -741,7 +741,7 @@
           <div id="favorites-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8"></div>
         </div>
 
-        <div id="analytics-section" class="hidden mt-16 border-t border-slate-100 dark:border-slate-800 pt-12 animate-fade-in">
+        <div id="analytics-section" class="hidden mt-16 border-t border-slate-200/10 dark:border-slate-800/10 pt-12 animate-fade-in">
           <div class="flex items-center justify-between mb-8 flex-wrap gap-4">
             <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
               <i class="ph-fill ph-chart-polar text-emerald-500 text-4xl"></i>
@@ -787,7 +787,7 @@
                        <option value="1y">Last 12 Months</option>
                    </select>
                 </div>
-                <div class="flex-1 flex items-end gap-2 sm:gap-4 h-48 mt-auto transition-all" id="analytics-chart">
+                <div class="flex-1 h-48 mt-auto relative w-full" id="analytics-chart">
                    <!-- Populated by JS -->
                 </div>
                 <div class="flex justify-between mt-4 text-xs font-bold text-slate-400 relative" id="analytics-chart-labels">
@@ -2671,17 +2671,11 @@
         const oneDay = 24 * 60 * 60 * 1000;
 
         let numBuckets = 7;
-        let gapClass = 'gap-2 sm:gap-4';
-        
         if (timeframe === '30d') {
             numBuckets = 30;
-            gapClass = 'gap-0.5 sm:gap-1';
         } else if (timeframe === '1y') {
             numBuckets = 12;
-            gapClass = 'gap-2 sm:gap-4';
         }
-
-        chartEl.className = `flex-1 flex items-end h-48 mt-auto transition-all ${gapClass}`;
 
         const buckets = new Array(numBuckets).fill(0);
 
@@ -2707,17 +2701,39 @@
 
         const maxInstalls = Math.max(...buckets);
 
-        let chartHTML = '';
+        let points = [];
+        let pointsHTML = '';
         let labelsHTML = '';
         const daysShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         
         for (let i = 0; i < numBuckets; i++) {
             const count = buckets[i];
-            const heightPct = count > 0 ? Math.max(10, Math.floor((count / maxInstalls) * 100)) : 2;
-            const isLast = i === numBuckets - 1;
+            
+            // Calculate absolute X in responsive SVG coordinate system (0 to 1000)
+            const x = numBuckets > 1 ? 50 + (i / (numBuckets - 1)) * 900 : 500;
+            
+            // Calculate Y with boundaries, rendering flat baseline if maxInstalls is 0
+            const y = maxInstalls > 0 ? 170 - (count / maxInstalls) * 140 : 170;
+            
+            points.push({ x, y });
+
+            // Percentage values for pixel-perfect relative absolute overlays
+            const leftPct = numBuckets > 1 ? 5 + (i / (numBuckets - 1)) * 90 : 50;
+            const topPct = (y / 200) * 100;
+
+            // Render interactive HTML glowing hover dots with custom tooltips
+            pointsHTML += `
+                <div class="absolute group cursor-crosshair z-10 transition-all duration-300" style="left: calc(${leftPct}% - 6px); top: calc(${topPct}% - 6px); width: 12px; height: 12px;">
+                    <div class="w-3 h-3 rounded-full bg-white border-2 border-indigo-500 shadow-[0_0_8px_rgba(99,102,241,1)] group-hover:scale-125 group-hover:bg-indigo-400 dark:group-hover:bg-indigo-300 transition-all duration-150"></div>
+                    <div class="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-950/95 text-white text-[10px] sm:text-xs font-black px-3 py-1.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none z-30 shadow-2xl border border-indigo-500/30">
+                        ${count} Installs
+                    </div>
+                </div>
+            `;
             
             let labelText = '';
+            const isLast = i === numBuckets - 1;
             if (timeframe === '7d') {
                 const daysAgo = 6 - i;
                 const dayIndex = (now.getDay() - daysAgo + 7) % 7;
@@ -2733,24 +2749,52 @@
                 labelText = isLast ? 'This Mo' : monthsShort[monthIndex];
             }
 
-            chartHTML += `
-                <div class="flex-1 flex flex-col justify-end items-center group relative min-w-[2px]">
-                    <div class="w-full ${isLast ? 'bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]' : 'bg-emerald-400 dark:bg-emerald-500'} rounded-t-sm sm:rounded-t-lg transition-all duration-500 group-hover:opacity-80 relative cursor-crosshair" style="height: ${heightPct}%">
-                        <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 shadow-xl border border-slate-700">${count} Installs</div>
-                    </div>
-                </div>
-            `;
-            
             if (timeframe === '30d') {
                 if (labelText) {
-                   labelsHTML += `<div class="absolute text-center ${isLast ? 'text-indigo-600 dark:text-indigo-400 font-black' : ''}" style="left: ${((i+0.5)/30)*100}%; transform: translateX(-50%);">${labelText}</div>`;
+                   labelsHTML += `<div class="absolute text-center ${isLast ? 'text-indigo-600 dark:text-indigo-400 font-black' : ''}" style="left: ${leftPct}%; transform: translateX(-50%);">${labelText}</div>`;
                 }
             } else {
                 labelsHTML += `<div class="flex-1 text-center truncate px-0.5 text-[10px] sm:text-xs ${isLast ? 'text-indigo-600 dark:text-indigo-400 font-black' : ''}">${labelText}</div>`;
             }
         }
-        
-        chartEl.innerHTML = chartHTML;
+
+        // Generate line paths
+        let linePathD = '';
+        let areaPathD = '';
+        if (points.length > 0) {
+            linePathD = `M ${points[0].x} ${points[0].y} ` + points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ');
+            areaPathD = `${linePathD} L ${points[points.length - 1].x} 195 L ${points[0].x} 195 Z`;
+        }
+
+        chartEl.className = "flex-1 relative h-48 mt-auto w-full";
+        chartEl.innerHTML = `
+            <svg viewBox="0 0 1000 200" class="w-full h-full overflow-visible" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="chart-stroke-grad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stop-color="#818cf8" />
+                        <stop offset="50%" stop-color="#a855f7" />
+                        <stop offset="100%" stop-color="#ec4899" />
+                    </linearGradient>
+                    <linearGradient id="chart-area-grad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#818cf8" stop-opacity="0.35" />
+                        <stop offset="50%" stop-color="#a855f7" stop-opacity="0.15" />
+                        <stop offset="100%" stop-color="#ec4899" stop-opacity="0.0" />
+                    </linearGradient>
+                </defs>
+                <!-- Background Grid Lines -->
+                <line x1="50" y1="50" x2="950" y2="50" stroke="#334155" stroke-dasharray="6" stroke-opacity="0.25" stroke-width="1.5" />
+                <line x1="50" y1="110" x2="950" y2="110" stroke="#334155" stroke-dasharray="6" stroke-opacity="0.25" stroke-width="1.5" />
+                <line x1="50" y1="170" x2="950" y2="170" stroke="#334155" stroke-dasharray="6" stroke-opacity="0.25" stroke-width="1.5" />
+                
+                <!-- Area Fill -->
+                ${areaPathD ? `<path d="${areaPathD}" fill="url(#chart-area-grad)" class="transition-all duration-500" />` : ''}
+                
+                <!-- Main Trend Line -->
+                ${linePathD ? `<path d="${linePathD}" fill="none" stroke="url(#chart-stroke-grad)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" class="transition-all duration-500 filter drop-shadow-[0_2px_8px_rgba(129,140,248,0.5)]" />` : ''}
+            </svg>
+            <!-- Overlay Interactive Dots -->
+            ${pointsHTML}
+        `;
         
         if (timeframe === '30d') {
             labelsEl.className = "relative h-4 mt-4 text-[10px] sm:text-xs font-bold text-slate-400";
