@@ -512,10 +512,6 @@
         <i class="ph-fill ph-house text-2xl"></i>
         <span class="text-[10px] font-bold mt-0.5">Home</span>
       </button>
-      <button data-click="navigate" data-arg="quests" class="flex flex-col items-center justify-center w-full h-full text-orange-500 hover:text-orange-600 dark:text-orange-400 transition-colors">
-        <i class="ph-fill ph-target text-2xl"></i>
-        <span class="text-[10px] font-bold mt-0.5">Quests</span>
-      </button>
       <button data-click="navigate" data-arg="leaderboard" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
         <i class="ph-fill ph-trophy text-2xl"></i>
         <span class="text-[10px] font-bold mt-0.5">Top</span>
@@ -573,9 +569,6 @@
           <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-indigo-500 shadow-sm" />
           <span id="user-name" class="font-bold text-sm text-slate-700 dark:text-slate-200 hidden md:block">Loading...</span>
         </div>
-        <button data-click="navigate" data-arg="quests" class="hidden sm:block p-2 sm:p-2.5 rounded-xl transition-colors bg-white text-orange-500 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-orange-400 dark:hover:bg-slate-700 dark:border-transparent" title="Daily Quests">
-          <i class="ph-fill ph-target text-lg sm:text-xl"></i>
-        </button>
         <button data-click="showThemeModal" class="hidden sm:block p-2 sm:p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-indigo-400 dark:hover:bg-slate-700 dark:border-transparent" title="Settings">
           <i class="ph-fill ph-gear text-lg sm:text-xl"></i>
         </button>
@@ -658,6 +651,16 @@
         <div id="recent-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8"></div>
       </section>
 
+      <!-- AI Smart Match Section -->
+      <section id="home-smart-match-section" class="hidden mb-12 animate-fade-in">
+        <div class="flex items-center gap-3 mb-8">
+          <i class="ph-fill ph-sparkle text-purple-500 text-2xl font-bold animate-pulse"></i>
+          <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Your Daily Mix</h2>
+          <span class="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ml-2 border border-purple-200 dark:border-purple-800/50 shadow-sm">AI Curated</span>
+        </div>
+        <div id="smart-match-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      </section>
+
       <!-- Bottom Section: Trending Now grid (Full Width) -->
       <section id="home-grid-section" class="hidden pb-12">
         <div class="flex items-center gap-3 mb-8">
@@ -699,32 +702,6 @@
 
     <!-- DETAILS VIEW -->
     <div id="view-details" class="view-section hidden animate-fade-in"></div>
-
-    <!-- QUESTS VIEW -->
-    <div id="view-quests" class="view-section hidden animate-fade-in pb-20">
-      <div class="max-w-5xl mx-auto pt-4">
-        <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-sm w-fit hover:shadow-md bg-white text-slate-50 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-100 dark:border-slate-800">
-          <i class="ph ph-caret-left text-xl group-hover:-translate-x-1 transition-transform"></i> Back
-        </button>
-        
-        <div class="bg-gradient-to-br from-orange-500 to-red-500 rounded-[3rem] p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden mb-12">
-            <div class="absolute -right-10 -bottom-10 text-white/10"><i class="ph-fill ph-target text-[15rem]"></i></div>
-            <div class="relative z-10">
-                <h1 class="text-4xl sm:text-5xl font-black mb-3 tracking-tight drop-shadow-md flex items-center gap-3">
-                    <i class="ph-fill ph-target text-yellow-300 animate-pulse"></i> Nexus Bounties
-                </h1>
-                <p class="text-orange-100 text-lg sm:text-xl font-medium max-w-xl leading-relaxed">Complete daily and lifetime challenges to earn massive coin payouts. Progress resets at midnight!</p>
-            </div>
-        </div>
-
-        <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-            <i class="ph-fill ph-calendar-check text-indigo-500 text-3xl"></i> Active Quests
-        </h2>
-        <div id="quests-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Populated by JS -->
-        </div>
-      </div>
-    </div>
 
     <!-- FAQ & SUPPORT VIEW -->
     <div id="view-faq" class="view-section hidden animate-fade-in">
@@ -967,7 +944,12 @@
               </div>
               <div>
                  <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">What's New in this Version?</label>
-                 <input type="text" id="app-changelog" placeholder="Initial Release" value="Initial Release" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800">
+                 <div class="flex gap-2">
+                     <input type="text" id="app-changelog" placeholder="Initial Release" value="Initial Release" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800">
+                     <button type="button" id="btn-auto-changelog" data-click="generateAutoChangelog" class="hidden items-center gap-1.5 px-4 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-2xl font-bold text-sm transition-all shadow-sm active:scale-95 flex-shrink-0" title="Auto-Generate Changelog from Code Diff">
+                         <i class="ph-fill ph-sparkle"></i> Auto
+                     </button>
+                 </div>
               </div>
             </div>
 
@@ -1340,6 +1322,16 @@
                         content: "You are an elite Game Developer and UI/UX Designer. The user will give you a prompt. You must output a single, complete, fully-functional HTML file containing HTML5, CSS (using TailwindCSS via <script src=\"https://cdn.tailwindcss.com\"><\/script>), and JavaScript. The app must look incredible, be bug-free, have a polished UI, and feature smooth animations or gameplay loops. CRITICAL: Output ONLY raw HTML code. Do NOT wrap the code in markdown blocks (do NOT use ```html). Start your response exactly with <!DOCTYPE html>." 
                     });
                     apiMessages.push({ role: "user", content: task.prompt });
+                } else if (task.action === 'smart_match') {
+                    // Limit catalog text to prevent token overflow
+                    const catalogText = (window.apps || []).slice(0, 50).map(a => `- ID: ${a.id}, Title: "${a.title}", Category: ${a.category}, Desc: ${a.description}`).join('\n');
+                    apiMessages.push({ role: "system", content: "You are an AI recommender. Analyze the user's history and recommend exactly 3 DIFFERENT apps from the catalog. You MUST return ONLY a raw JSON array. Example: [{\"id\": \"youtube\", \"reason\": \"Since you like watching stuff...\"}]. DO NOT include any markdown formatting or backticks." });
+                    apiMessages.push({ role: "user", content: `History: ${task.history}\n\nCatalog:\n${catalogText}` });
+                } else if (task.action === 'generate_changelog') {
+                    apiMessages.push({ role: "system", content: "Compare the Old Code and New Code. Write a very brief 1-sentence changelog summarizing the most important technical or visual change. Return ONLY the plain text sentence, no markdown." });
+                    const oldC = (task.oldCode || '').substring(0, 10000);
+                    const newC = (task.newCode || '').substring(0, 10000);
+                    apiMessages.push({ role: "user", content: `Old Code:\n${oldC}\n\nNew Code:\n${newC}` });
                 } else {
                     // FIX: Inject the live app catalog into the AI's memory so it knows what is in the store!
                     const catalogText = (window.apps || []).map(a => 
@@ -1478,7 +1470,7 @@
                 setTimeout(() => {
                     sendToUI({ action: 'ready', device: 'cloud-keyless' });
                 }, 100); 
-            } else if (action === 'chat' || action === 'overview' || action === 'generate_app') {
+            } else if (action === 'chat' || action === 'overview' || action === 'generate_app' || action === 'smart_match' || action === 'generate_changelog') {
                 this.queue.push(data);
                 this.processQueue();
             }
@@ -1659,6 +1651,29 @@
                 if (editBtn) {
                     editBtn.disabled = false;
                     editBtn.innerHTML = '<i class="ph-fill ph-magic-wand text-base"></i> AI Edit Code';
+                }
+            } else if (type === 'smart_match') {
+                try {
+                    let jsonStr = answer;
+                    if (jsonStr.startsWith('```json')) jsonStr = jsonStr.substring(7);
+                    if (jsonStr.startsWith('```')) jsonStr = jsonStr.substring(3);
+                    if (jsonStr.endsWith('```')) jsonStr = jsonStr.substring(0, jsonStr.length - 3);
+                    window.smartMatchResults = JSON.parse(jsonStr.trim());
+                    if (typeof window.renderHome === 'function') window.renderHome();
+                } catch(e) {
+                    console.error("Smart match parsing error:", e);
+                }
+            } else if (type === 'generate_changelog') {
+                const btn = document.getElementById('btn-auto-changelog');
+                const input = document.getElementById('app-changelog');
+                if (btn) {
+                    btn.innerHTML = '<i class="ph-fill ph-sparkle"></i> Auto';
+                    btn.disabled = false;
+                }
+                if (input) {
+                    input.value = answer.replace(/^"|"$/g, '').trim();
+                    input.classList.add('ring-4', 'ring-indigo-500');
+                    setTimeout(() => input.classList.remove('ring-4', 'ring-indigo-500'), 1000);
                 }
             }
         } else if (action === 'error') {
@@ -2213,8 +2228,7 @@
       admin: document.getElementById('view-admin'),
       profile: document.getElementById('view-profile'),
       faq: document.getElementById('view-faq'),
-      leaderboard: document.getElementById('view-leaderboard'),
-      quests: document.getElementById('view-quests')
+      leaderboard: document.getElementById('view-leaderboard')
     };
     const searchContainer = document.getElementById('search-container');
     const searchInput = document.getElementById('search-input');
@@ -2646,6 +2660,9 @@
             document.getElementById('app-description').value = app.description;
             document.getElementById('app-allow-download').checked = app.allowDownload !== false;
             
+            document.getElementById('btn-auto-changelog').classList.remove('hidden');
+            document.getElementById('btn-auto-changelog').classList.add('flex');
+            
             payloadType = app.payloadType || 'code';
             if (payloadType === 'url') {
               document.getElementById('app-url').value = app.appUrl || '';
@@ -2681,6 +2698,9 @@
             document.getElementById('upload-title').textContent = 'Publish to NexusStore';
             document.getElementById('btn-submit').innerHTML = '<i class="ph-fill ph-lightning text-xl"></i> Publish App';
             document.getElementById('upload-form').reset();
+            
+            document.getElementById('btn-auto-changelog').classList.add('hidden');
+            document.getElementById('btn-auto-changelog').classList.remove('flex');
             
             if (currentUser && currentUser.customDisplayName) {
                document.getElementById('app-developer').value = currentUser.customDisplayName;
@@ -6271,6 +6291,7 @@
       else if (action === 'promptAiEdit') window.promptAiEdit();
       else if (action === 'generateAiReviewSummary') window.generateAiReviewSummary(arg1);
       else if (action === 'runQA') window.runQA();
+      else if (action === 'generateAutoChangelog') window.generateAutoChangelog();
     });
 
     document.addEventListener('submit', (e) => {
@@ -7319,6 +7340,33 @@
         window.sendCoinsToUser(targetUid, targetName);
     };
 
+    window.generateAutoChangelog = () => {
+        if (!editingAppId) return;
+        const app = window.apps.find(a => a.id === editingAppId);
+        if (!app || app.payloadType !== 'code') {
+            showModal('Cannot Auto-Generate', 'Auto-changelog is only supported for hosted HTML/JS code payloads.');
+            return;
+        }
+        const newCode = document.getElementById('app-code').value;
+        const oldCode = app.code;
+        if (!newCode || !oldCode || newCode === oldCode) {
+            showModal('No Changes', 'No code changes detected yet.');
+            return;
+        }
+
+        const btn = document.getElementById('btn-auto-changelog');
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>';
+        btn.disabled = true;
+
+        window.aiWorker.postMessage({
+            action: 'generate_changelog',
+            oldCode: oldCode,
+            newCode: newCode,
+            id: editingAppId
+        });
+        logActivity('UPLOAD', 'Auto Changelog', `Requested AI to generate changelog for ${app.title}`);
+    };
+
     // NEXUS CREATOR STUDIO IDE LOGIC
     let previewTimeout;
     document.getElementById('app-code').addEventListener('input', (e) => {
@@ -7345,6 +7393,9 @@
 
     // Apply themes on boot
     window.applyTheme();
+
+    // Export renderHome globally to be called by worker
+    window.renderHome = renderHome;
 
     // Initial Render
     renderHome();
