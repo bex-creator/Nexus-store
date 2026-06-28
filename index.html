@@ -886,41 +886,7 @@
             <h3 class="text-2xl font-black mb-6 tracking-tight text-slate-900 dark:text-white">1. Basic Info</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">App Name</label>
-                <input required id="app-title" type="text" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" placeholder="e.g. Flappy Bird clone">
-              </div>
-              <div>
-                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Developer</label>
-                <input required id="app-developer" type="text" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" placeholder="Your name or studio">
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
-              <div>
-                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Category</label>
-                <div class="relative">
-                  <select id="app-category" class="appearance-none w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:bg-slate-800">
-                    <option>Games</option>
-                    <option>Productivity</option>
-                    <option>Education</option>
-                    <option>Social</option>
-                    <option>Utilities</option>
-                    <option>AI Tool</option>
-                    <option>Video</option>
-                    <option>Editor</option>
-                    <option>Arcade</option>
-                    <option>Strategy</option>
-                    <option>Survival</option>
-                    <option>Sim</option>
-                    <option>Racing</option>
-                  </select>
-                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 text-slate-400">
-                    <i class="ph ph-caret-down"></i>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Visibility</label>
+                <label class="block text-sm font-bold mb-2 flex items-center gap-1 uppercase tracking-wide text-slate-700 dark:text-slate-400">Visibility</label>
                 <div class="relative">
                   <select id="app-visibility" class="appearance-none w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:bg-slate-800">
                     <option value="public">Public (Everyone can see)</option>
@@ -934,6 +900,10 @@
               <div>
                 <label class="block text-sm font-bold mb-2 flex items-center gap-1 uppercase tracking-wide text-slate-700 dark:text-slate-400">Price <i class="ph-fill ph-coin text-yellow-500"></i></label>
                 <input id="app-price" type="number" min="0" value="0" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" placeholder="0 = Free">
+                <div class="flex items-center gap-2 mt-3">
+                   <input type="checkbox" id="app-dynamic-pricing" class="w-5 h-5 text-indigo-600 rounded-md border-slate-300 focus:ring-indigo-500 cursor-pointer accent-indigo-500">
+                   <label for="app-dynamic-pricing" class="text-xs font-bold text-slate-600 dark:text-slate-400 cursor-pointer flex items-center gap-1" title="AI automatically lowers price during off-peak hours and raises it during high-traffic hours."><i class="ph-fill ph-sparkle text-indigo-500"></i> AI Dynamic Pricing</label>
+                </div>
               </div>
             </div>
 
@@ -2220,6 +2190,20 @@
         return hour >= 0 && hour < 3;
     };
 
+    const calculateAppPrice = (app) => {
+        let basePrice = Number(app.price);
+        if (isNaN(basePrice) || basePrice <= 0) return 0;
+
+        if (app.dynamicPricing) {
+            const hour = new Date().getHours();
+            // Peak traffic hours: 5 PM to 10 PM (17 to 22) -> 1.5x Multiplier
+            if (hour >= 17 && hour <= 22) return Math.ceil(basePrice * 1.5);
+            // Low traffic hours: 3 AM to 9 AM (3 to 9) -> 0.5x Multiplier
+            if (hour >= 3 && hour <= 9) return Math.max(1, Math.ceil(basePrice * 0.5));
+        }
+        return basePrice;
+    };
+
     // --- ELEMENTS ---
     const views = {
       home: document.getElementById('view-home'),
@@ -2655,6 +2639,7 @@
             document.getElementById('app-category').value = app.category;
             document.getElementById('app-visibility').value = app.visibility || 'public';
             document.getElementById('app-price').value = app.price || 0;
+            document.getElementById('app-dynamic-pricing').checked = app.dynamicPricing || false;
             document.getElementById('app-version').value = app.version || '1.0.0';
             document.getElementById('app-changelog').value = app.changelog || '';
             document.getElementById('app-description').value = app.description;
@@ -2706,6 +2691,7 @@
                document.getElementById('app-developer').value = currentUser.customDisplayName;
             }
             document.getElementById('app-price').value = '0';
+            document.getElementById('app-dynamic-pricing').checked = false;
             document.getElementById('app-version').value = '1.0.0';
             document.getElementById('app-changelog').value = 'Initial Release';
             document.getElementById('app-allow-download').checked = true;
@@ -2945,7 +2931,7 @@
         const isVIP = me && me.isVIP;
         const isNexusPlus = me && me.isNexusPlus;
         
-        let finalPrice = app.price;
+        let finalPrice = calculateAppPrice(app);
         if (midnightHour) finalPrice = Math.floor(finalPrice * 0.75);
         if (isVIP) finalPrice = Math.floor(finalPrice * 0.5);
         if (isNexusPlus) finalPrice = 0;
@@ -2955,7 +2941,7 @@
           <div class="w-full aspect-square rounded-[2rem] overflow-hidden mb-4 shadow-[0_8px_20px_rgba(0,0,0,0.06)] group-hover:shadow-[0_15px_30px_rgba(99,102,241,0.2)] transition-all duration-300 group-hover:-translate-y-2 relative border bg-white border-slate-100 dark:bg-slate-800 dark:border-slate-700">
             ${app.isBroken ? '<div class="absolute top-3 left-3 bg-amber-500/90 backdrop-blur-md text-white p-2 rounded-full border border-white/10 z-30 shadow-lg" title="App Unavailable"><i class="ph-bold ph-warning text-sm"></i></div>' : ''}
             ${app.visibility === 'private' ? '<div class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md text-white p-2 rounded-full border border-white/10 z-30"><i class="ph-fill ph-lock-key text-sm"></i></div>' : ''}
-            ${app.price > 0 ? (isNexusPlus ? `<div class="absolute bottom-3 right-3 bg-purple-600/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-purple-400/50 z-30 font-black text-xs shadow-[0_0_10px_rgba(168,85,247,0.8)] flex items-center gap-1" title="Free with Nexus+"><i class="ph-fill ph-sparkle"></i> Free</div>` : (isVIP ? `<div class="absolute bottom-3 right-3 bg-purple-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-purple-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1" title="VIP Discount"><i class="ph-fill ph-star"></i><i class="ph-fill ph-coin"></i> ${finalPrice}</div>` : (midnightHour ? `<div class="absolute bottom-3 right-3 bg-indigo-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-indigo-400/50 z-30 font-black text-xs shadow-lg shadow-indigo-500/30 flex items-center gap-1" title="Midnight Hour 25% Off!"><i class="ph-fill ph-moon-stars"></i><i class="ph-fill ph-coin"></i> ${finalPrice}</div>` : `<div class="absolute bottom-3 right-3 bg-yellow-400/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full border border-yellow-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1"><i class="ph-fill ph-coin"></i> ${app.price}</div>`))) : ''}
+            ${app.price > 0 ? (isNexusPlus ? `<div class="absolute bottom-3 right-3 bg-purple-600/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-purple-400/50 z-30 font-black text-xs shadow-[0_0_10px_rgba(168,85,247,0.8)] flex items-center gap-1" title="Free with Nexus+"><i class="ph-fill ph-sparkle"></i> Free</div>` : (isVIP ? `<div class="absolute bottom-3 right-3 bg-purple-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-purple-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1" title="VIP Discount"><i class="ph-fill ph-star"></i><i class="ph-fill ph-coin"></i> ${finalPrice}</div>` : (midnightHour ? `<div class="absolute bottom-3 right-3 bg-indigo-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full border border-indigo-400/50 z-30 font-black text-xs shadow-lg shadow-indigo-500/30 flex items-center gap-1" title="Midnight Hour 25% Off!"><i class="ph-fill ph-moon-stars"></i><i class="ph-fill ph-coin"></i> ${finalPrice}</div>` : `<div class="absolute bottom-3 right-3 bg-yellow-400/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full border border-yellow-300/50 z-30 font-black text-xs shadow-lg flex items-center gap-1" title="${app.dynamicPricing ? 'AI Managed Price' : 'Standard Price'}">${app.dynamicPricing ? '<i class="ph-fill ph-sparkle text-indigo-600"></i>' : ''}<i class="ph-fill ph-coin"></i> ${finalPrice}</div>`))) : ''}
             ${app.icon ? 
               `<img src="${app.icon}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />`
               :
@@ -3540,8 +3526,7 @@
         let bal = me?.balance;
         if (isNaN(bal) || bal === undefined) bal = 0;
         
-        let appPrice = Number(app.price);
-        if (isNaN(appPrice)) appPrice = 0;
+        let appPrice = calculateAppPrice(app);
         
         let finalPrice = appPrice;
         if (isMidnightHour()) finalPrice = Math.floor(finalPrice * 0.75);
@@ -3616,7 +3601,7 @@
       const isNexusPlus = me && me.isNexusPlus;
       const isMidnight = isMidnightHour();
       
-      let finalPrice = app.price;
+      let finalPrice = calculateAppPrice(app);
       if (isMidnight) finalPrice = Math.floor(finalPrice * 0.75);
       if (isVIP) finalPrice = Math.floor(finalPrice * 0.5);
       if (isNexusPlus) finalPrice = 0;
@@ -3705,9 +3690,10 @@
                       <span class="text-xs font-bold text-emerald-500/70 uppercase tracking-wide">Verified</span>
                     </div>
                     ` : ''}
-                    <div class="flex flex-col items-center justify-center rounded-2xl px-5 py-3 border min-w-[100px] bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-700">
+                    <div class="flex flex-col items-center justify-center rounded-2xl px-5 py-3 border min-w-[100px] bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-700 relative">
+                      ${app.dynamicPricing ? '<div class="absolute -top-3 -right-3 bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 p-1.5 rounded-full shadow-sm"><i class="ph-fill ph-sparkle text-xs" title="AI Price Managed"></i></div>' : ''}
                       <span class="text-lg font-black flex items-center gap-1 text-slate-900 dark:text-white">
-                        ${app.price > 0 ? (isNexusPlus ? `<i class="ph-fill ph-sparkle text-purple-500" title="Nexus+ Free Access"></i> <span class="text-purple-500">Free</span>` : (isVIP ? `<i class="ph-fill ph-star text-purple-500" title="VIP Discount"></i> <i class="ph-fill ph-coin text-yellow-500"></i> <span class="line-through text-slate-400 text-sm mr-1">${app.price}</span>${finalPrice}` : (isMidnight ? `<i class="ph-fill ph-moon-stars text-indigo-500" title="Midnight Hour 25% Off"></i> <i class="ph-fill ph-coin text-yellow-500"></i> <span class="line-through text-slate-400 text-sm mr-1">${app.price}</span>${finalPrice}` : `<i class="ph-fill ph-coin text-yellow-500"></i> ${app.price}`))) : 'Free'}
+                        ${app.price > 0 ? (isNexusPlus ? `<i class="ph-fill ph-sparkle text-purple-500" title="Nexus+ Free Access"></i> <span class="text-purple-500">Free</span>` : (isVIP ? `<i class="ph-fill ph-star text-purple-500" title="VIP Discount"></i> <i class="ph-fill ph-coin text-yellow-500"></i> <span class="line-through text-slate-400 text-sm mr-1">${app.price}</span>${finalPrice}` : (isMidnight ? `<i class="ph-fill ph-moon-stars text-indigo-500" title="Midnight Hour 25% Off"></i> <i class="ph-fill ph-coin text-yellow-500"></i> <span class="line-through text-slate-400 text-sm mr-1">${app.price}</span>${finalPrice}` : `<i class="ph-fill ph-coin text-yellow-500"></i> ${finalPrice}`))) : 'Free'}
                       </span>
                       <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Price</span>
                     </div>
@@ -4693,6 +4679,7 @@
       const versionVal = document.getElementById('app-version').value.trim() || '1.0.0';
       const changelogVal = document.getElementById('app-changelog').value.trim() || 'Initial Release';
       const priceVal = parseInt(document.getElementById('app-price').value) || 0;
+      const dynamicPricingVal = document.getElementById('app-dynamic-pricing').checked;
       const devNameVal = document.getElementById('app-developer').value;
       const allowDownloadVal = document.getElementById('app-allow-download').checked;
 
@@ -4740,6 +4727,7 @@
             visibility: document.getElementById('app-visibility').value,
             description: document.getElementById('app-description').value,
             price: priceVal,
+            dynamicPricing: dynamicPricingVal,
             version: versionVal,
             changelog: changelogVal,
             versionHistory: newHistory,
@@ -4771,6 +4759,7 @@
             visibility: document.getElementById('app-visibility').value,
             description: document.getElementById('app-description').value,
             price: priceVal,
+            dynamicPricing: dynamicPricingVal,
             version: versionVal,
             changelog: changelogVal,
             versionHistory: newHistory,
