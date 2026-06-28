@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Security Enhancements: Content Security Policy -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob: wss:; object-src 'self' https: data: blob:;">
+  
+  <!-- PWA Enhancements -->
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NexusStore">
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22NexusStore%22%2C%22short_name%22%3A%22Nexus%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%234f46e5%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImdyYWQiIHgxPSIwJSIgeTE9IjEwMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiM0ZjQ2ZTUiIC8%2BPHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiM5MzMzZWEiIC8%2BPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZWM0ODk5IiAvPjwvbGluZWFyR3JhZGllbnQ%2BPC9kZWZzPjxyZWN0IHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiByeD0iNjAiIGZpbGw9InVybCgjZ3JhZCkiIC8%2BPHBhdGggZD0iTTE5NC44NiwxMTMuNDNsLTk2LTY0QTE1LjkzLDE1LjkzLDAsMCwwLDc0LjUsNDlWMjA3YTE2LDE2LDAsMCwwLDI0LjM2LDEzLjMzbDk2LTY0YTE2LDE2LDAsMCwwLDAtMjYuNjZaIiBmaWxsPSIjZmZmZmZmIiAvPjwvc3ZnPg%3D%3D%22%2C%22sizes%22%3A%22256x256%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+  
   <title>NexusStore</title>
   
   <!-- Nexus Favicon -->
@@ -580,6 +588,10 @@
         </button>
         <button data-click="navigate" data-arg="faq" class="hidden sm:block p-2 sm:p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:border-transparent" title="FAQ & Support">
           <i class="ph-bold ph-question text-lg sm:text-xl"></i>
+        </button>
+        <button id="pwa-install-btn" data-click="installPwa" class="hidden sm:flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-bold transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/25 hover:-translate-y-0.5 active:translate-y-0 bg-emerald-600 hover:bg-emerald-500 text-white text-sm sm:text-base" style="display: none;">
+          <i class="ph ph-download-simple text-lg sm:text-xl font-bold"></i>
+          <span class="hidden lg:inline">Install App</span>
         </button>
         <button data-click="handlePublishClick" class="hidden sm:flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-bold transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:translate-y-0 bg-indigo-600 hover:bg-indigo-500 text-white text-sm sm:text-base">
           <i class="ph ph-plus text-lg sm:text-xl font-bold"></i>
@@ -6362,6 +6374,7 @@
       else if (action === 'generateAutoChangelog') window.generateAutoChangelog();
       else if (action === 'generateNexusWrapped') window.generateNexusWrapped();
       else if (action === 'generateDevInsights') window.generateDevInsights();
+      else if (action === 'installPwa') window.installPwa();
     });
 
     document.addEventListener('submit', (e) => {
@@ -7561,6 +7574,77 @@
 
     // Export renderHome globally to be called by worker
     window.renderHome = renderHome;
+
+    // --- PWA INSTALLATION LOGIC ---
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Stash the event so it can be triggered later.
+        deferredPrompt = e;
+        // Update UI to notify the user they can install the PWA
+        const installBtn = document.getElementById('pwa-install-btn');
+        if (installBtn) {
+            installBtn.style.display = 'flex';
+            installBtn.classList.remove('hidden');
+        }
+    });
+
+    window.installPwa = async () => {
+        if (!deferredPrompt) return;
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+        }
+        // We've used the prompt, and can't use it again, discard it
+        deferredPrompt = null;
+        // Hide the install button
+        const installBtn = document.getElementById('pwa-install-btn');
+        if (installBtn) {
+            installBtn.style.display = 'none';
+        }
+        showToast('Install Started', 'NexusStore is being installed to your device.', 'ph-device-mobile', 'emerald');
+    };
+
+    window.addEventListener('appinstalled', () => {
+        // Hide the app-provided install promotion
+        const installBtn = document.getElementById('pwa-install-btn');
+        if (installBtn) installBtn.style.display = 'none';
+        deferredPrompt = null;
+        console.log('PWA was installed');
+    });
+
+    // --- INLINE SERVICE WORKER (Strict Single File Enforcement) ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            const swCode = `
+                const CACHE_NAME = 'nexus-store-v1';
+                self.addEventListener('install', (event) => {
+                    self.skipWaiting();
+                });
+                self.addEventListener('activate', (event) => {
+                    event.waitUntil(clients.claim());
+                });
+                self.addEventListener('fetch', (event) => {
+                    // Cache-first strategy fallback
+                    event.respondWith(
+                        fetch(event.request).catch(() => {
+                            return caches.match(event.request);
+                        })
+                    );
+                });
+            `;
+            const swBlob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(swBlob);
+            
+            navigator.serviceWorker.register(swUrl)
+                .then(registration => console.log('ServiceWorker registration successful'))
+                .catch(err => console.log('ServiceWorker registration failed: ', err));
+        });
+    }
 
     // Initial Render
     renderHome();
