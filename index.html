@@ -3195,8 +3195,47 @@
           }
       }
 
+      // SMART MATCH LOGIC
+      if (currentUser && window.aiReady && !window.smartMatchRequested && !isVaultMode && !searchQuery && selectedCategory === 'All') {
+          const historyApps = [...(me?.recentApps || []), ...(me?.purchasedApps || []), ...userVault];
+          if (historyApps.length > 0) {
+              window.smartMatchRequested = true;
+              // Extract titles of games they know for context
+              const historyNames = [...new Set(historyApps.map(id => window.apps.find(a => a.id === id)?.title).filter(Boolean))].join(', ');
+              window.aiWorker.postMessage({ action: 'smart_match', history: historyNames, id: 'smart-match' });
+          }
+      }
+
+      const smartMatchSection = document.getElementById('home-smart-match-section');
+      if (smartMatchSection) {
+          if (window.smartMatchResults && window.smartMatchResults.length > 0 && !searchQuery && !isVaultMode && selectedCategory === 'All') {
+              smartMatchSection.classList.remove('hidden');
+              
+              document.getElementById('smart-match-container').innerHTML = window.smartMatchResults.map(match => {
+                  const app = window.apps.find(a => a.id === match.id);
+                  if (!app) return '';
+                  return `
+                  <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800/50 p-5 rounded-[2rem] flex flex-col gap-4 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group shadow-sm">
+                     <div class="flex items-center gap-4">
+                         ${app.icon ? `<img src="${app.icon}" class="w-16 h-16 rounded-[1.2rem] object-cover shadow-md border border-white/20 group-hover:scale-105 transition-transform duration-300" />` : `<div class="w-16 h-16 rounded-[1.2rem] ${app.bgClass || 'bg-slate-600'} text-white flex items-center justify-center text-3xl shadow-md border border-white/20 group-hover:scale-105 transition-transform duration-300"><i class="${app.iconClass || 'ph-app-window'}"></i></div>`}
+                         <div class="min-w-0">
+                             <h3 class="font-black text-lg text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">${sanitizeHTML(app.title)}</h3>
+                             <p class="text-sm font-bold text-slate-500 truncate">${sanitizeHTML(app.category)} • By ${sanitizeHTML(app.developer)}</p>
+                         </div>
+                     </div>
+                     <p class="text-sm font-medium text-indigo-800 dark:text-indigo-200/90 leading-relaxed bg-white/50 dark:bg-slate-950/50 p-4 rounded-xl border border-white/40 dark:border-indigo-500/10 shadow-inner mt-auto"><i class="ph-fill ph-quotes text-indigo-300 dark:text-indigo-600 mr-1"></i>${sanitizeHTML(match.reason)}</p>
+                  </div>
+                  `;
+              }).join('');
+          } else {
+              smartMatchSection.classList.add('hidden');
+          }
+      }
+
       if (isVaultMode) {
           document.getElementById('grid-title').textContent = 'My Vault';
+      } else if (window.isSemanticSearchActive) {
+          document.getElementById('grid-title').innerHTML = `AI Search Results <i class="ph-fill ph-sparkle text-indigo-500 animate-pulse"></i>`;
       } else {
           document.getElementById('grid-title').innerHTML = searchQuery ? 'Search Results' : (isMidnightHour() ? 'Trending Now <span class="ml-3 inline-flex items-center gap-1.5 bg-indigo-500 text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-indigo-500/30 animate-pulse"><i class="ph-fill ph-moon-stars"></i> Midnight Hour: 25% Off!</span>' : 'Trending Now');
       }
