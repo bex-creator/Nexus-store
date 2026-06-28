@@ -755,6 +755,24 @@
         <div id="profile-header-card" class="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 mb-12 flex flex-col text-center sm:text-left relative overflow-hidden">
            <!-- Content injected by JS -->
         </div>
+
+        <div id="wrapped-section" class="hidden mb-12 animate-fade-in">
+           <div class="bg-gradient-to-r from-pink-500 to-rose-500 rounded-[2.5rem] p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border border-pink-400/30">
+              <div class="absolute -right-4 -top-4 text-white/10 pointer-events-none"><i class="ph-fill ph-gift text-9xl"></i></div>
+              <div class="relative z-10 text-center md:text-left">
+                  <h2 class="text-3xl font-black mb-2 flex items-center justify-center md:justify-start gap-2"><i class="ph-fill ph-sparkle text-yellow-300 animate-pulse"></i> Nexus Wrapped</h2>
+                  <p class="font-medium text-pink-100 max-w-lg">Get an AI-generated, personalized story of your gaming habits and store activity over the last 30 days.</p>
+              </div>
+              <button data-click="generateNexusWrapped" id="btn-generate-wrapped" class="relative z-10 bg-white text-pink-600 px-8 py-4 rounded-2xl font-black hover:bg-pink-50 transition-all shadow-[0_10px_25px_rgba(0,0,0,0.15)] active:scale-95 flex items-center gap-2 whitespace-nowrap hover:-translate-y-1">
+                 <i class="ph-fill ph-magic-wand text-xl"></i> Reveal My Story
+              </button>
+           </div>
+           <div id="wrapped-result-container" class="hidden mt-6 p-8 bg-white dark:bg-slate-900 border border-pink-200 dark:border-pink-900/30 rounded-[2.5rem] shadow-lg animate-zoom-in relative overflow-hidden">
+               <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-rose-500"></div>
+               <h3 class="text-xl font-black text-pink-500 mb-4 flex items-center gap-2"><i class="ph-fill ph-user-focus"></i> Your Gamer Profile</h3>
+               <p id="wrapped-result-text" class="text-slate-700 dark:text-slate-300 font-medium leading-relaxed whitespace-pre-line text-lg"></p>
+           </div>
+        </div>
         
         <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-8 flex items-center gap-3">
           <i class="ph-fill ph-squares-four text-indigo-500 text-3xl"></i>
@@ -803,6 +821,24 @@
                <div class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 relative z-10">Store Views</div>
                <div class="text-3xl sm:text-4xl font-black text-blue-500 flex items-center gap-2 relative z-10"><span id="stat-views">0</span></div>
             </div>
+          </div>
+
+          <!-- NEW: AI Developer Insights -->
+          <div class="mb-8 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-900/30 dark:to-purple-900/30 border border-indigo-200 dark:border-indigo-800/50 rounded-[2.5rem] p-8 shadow-inner relative overflow-hidden">
+             <div class="absolute -right-8 -bottom-8 text-indigo-500/10 pointer-events-none"><i class="ph-fill ph-robot text-[12rem]"></i></div>
+             <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-2">
+                 <div>
+                     <h3 class="font-black text-2xl text-indigo-700 dark:text-indigo-400 flex items-center gap-2 mb-2"><i class="ph-fill ph-sparkle"></i> Performance Insights</h3>
+                     <p class="text-sm sm:text-base font-medium text-slate-600 dark:text-slate-400 max-w-xl">Get a custom AI-driven strategy report analyzing your install-to-purchase conversion rates and actionable advice to boost your Nexus Coin revenue.</p>
+                 </div>
+                 <button data-click="generateDevInsights" id="btn-generate-insights" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold shadow-md transition-all active:scale-95 flex items-center gap-2 flex-shrink-0 whitespace-nowrap">
+                     <i class="ph-bold ph-chart-line-up text-lg"></i> Analyze Portfolio
+                 </button>
+             </div>
+             <div id="dev-insights-container" class="hidden relative z-10 mt-6">
+                 <hr class="border-indigo-200/50 dark:border-indigo-800/50 my-6" />
+                 <p id="dev-insights-text" class="text-slate-800 dark:text-slate-200 font-medium leading-relaxed whitespace-pre-line text-lg"></p>
+             </div>
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
@@ -1302,6 +1338,12 @@
                     const oldC = (task.oldCode || '').substring(0, 10000);
                     const newC = (task.newCode || '').substring(0, 10000);
                     apiMessages.push({ role: "user", content: `Old Code:\n${oldC}\n\nNew Code:\n${newC}` });
+                } else if (task.action === 'nexus_wrapped') {
+                    apiMessages.push({ role: "system", content: "You are an AI analyzing a user's NexusStore activity over the last 30 days. Write a personalized, story-like summary of their gaming habits in exactly 2-3 sentences. Give them a fun gamer archetype title (e.g., 'Midnight Gamer', 'Arcade Enthusiast', 'Whale'). Be enthusiastic and mention specific apps they interacted with or their generosity if they tipped." });
+                    apiMessages.push({ role: "user", content: `Here are my stats for the last 30 days:\n${task.historyStats}` });
+                } else if (task.action === 'dev_insights') {
+                    apiMessages.push({ role: "system", content: "You are an elite App Store Financial Manager. Analyze the developer's portfolio performance (installs, revenue, price, conversion rates). Write a custom, actionable weekly strategy report in 3-4 sentences. Give specific advice like lowering prices, updating screenshots, or capitalizing on their best-performing app." });
+                    apiMessages.push({ role: "user", content: `Here is my portfolio performance:\n${task.portfolioStats}` });
                 } else {
                     // FIX: Inject the live app catalog into the AI's memory so it knows what is in the store!
                     const catalogText = (window.apps || []).map(a => 
@@ -1440,7 +1482,7 @@
                 setTimeout(() => {
                     sendToUI({ action: 'ready', device: 'cloud-keyless' });
                 }, 100); 
-            } else if (action === 'chat' || action === 'overview' || action === 'generate_app' || action === 'smart_match' || action === 'generate_changelog') {
+            } else if (action === 'chat' || action === 'overview' || action === 'generate_app' || action === 'smart_match' || action === 'generate_changelog' || action === 'nexus_wrapped' || action === 'dev_insights') {
                 this.queue.push(data);
                 this.processQueue();
             }
@@ -1556,6 +1598,20 @@
                         el.textContent += token; // Legacy fallback
                     }
                 }
+            } else if (type === 'nexus_wrapped') {
+                const el = document.getElementById('wrapped-result-text');
+                if (el) {
+                    if (el.innerHTML.includes('dot-flashing')) el.textContent = '';
+                    if (e.data.textSoFar !== undefined) el.textContent = e.data.textSoFar;
+                    else if (token) el.textContent += token;
+                }
+            } else if (type === 'dev_insights') {
+                const el = document.getElementById('dev-insights-text');
+                if (el) {
+                    if (el.innerHTML.includes('dot-flashing')) el.textContent = '';
+                    if (e.data.textSoFar !== undefined) el.textContent = e.data.textSoFar;
+                    else if (token) el.textContent += token;
+                }
             } else if (type === 'generate_app') {
                 const inputEl = document.getElementById('app-code');
                 if (inputEl) {
@@ -1591,6 +1647,22 @@
                 if (app) app.trueAiOverview = answer; // Cache it so it doesn't recalculate on next visit
                 const el = document.getElementById('overview-text-' + id);
                 if (el) el.textContent = answer;
+            } else if (type === 'nexus_wrapped') {
+                const el = document.getElementById('wrapped-result-text');
+                const btn = document.getElementById('btn-generate-wrapped');
+                if (el) el.textContent = answer;
+                if (btn) {
+                    btn.innerHTML = '<i class="ph-fill ph-check"></i> Story Revealed';
+                    setTimeout(() => { btn.innerHTML = '<i class="ph-fill ph-magic-wand text-xl"></i> Reveal My Story'; btn.disabled = false; }, 3000);
+                }
+            } else if (type === 'dev_insights') {
+                const el = document.getElementById('dev-insights-text');
+                const btn = document.getElementById('btn-generate-insights');
+                if (el) el.textContent = answer;
+                if (btn) {
+                    btn.innerHTML = '<i class="ph-fill ph-check"></i> Analysis Complete';
+                    setTimeout(() => { btn.innerHTML = '<i class="ph-bold ph-chart-line-up text-lg"></i> Analyze Portfolio'; btn.disabled = false; }, 3000);
+                }
             } else if (type === 'generate_app') {
                 const inputEl = document.getElementById('app-code');
                 const btn = document.getElementById('ai-forge-btn');
@@ -1663,6 +1735,13 @@
             } else if (type === 'overview') {
                 const el = document.getElementById('overview-text-' + id);
                 if (el) el.innerHTML = `<span class="text-red-400">Failed to generate review. Engine error.</span>`;
+            } else if (type === 'nexus_wrapped' || type === 'dev_insights') {
+                const elId = type === 'nexus_wrapped' ? 'wrapped-result-text' : 'dev-insights-text';
+                const el = document.getElementById(elId);
+                if (el) el.innerHTML = `<span class="text-red-500 font-bold">Failed to process analytics data. Please try again.</span>`;
+                const btnId = type === 'nexus_wrapped' ? 'btn-generate-wrapped' : 'btn-generate-insights';
+                const btn = document.getElementById(btnId);
+                if (btn) btn.disabled = false;
             } else if (type === 'generate_app') {
                 const btn = document.getElementById('ai-forge-btn');
                 if (btn) {
@@ -6281,6 +6360,8 @@
       else if (action === 'generateAiReviewSummary') window.generateAiReviewSummary(arg1);
       else if (action === 'runQA') window.runQA();
       else if (action === 'generateAutoChangelog') window.generateAutoChangelog();
+      else if (action === 'generateNexusWrapped') window.generateNexusWrapped();
+      else if (action === 'generateDevInsights') window.generateDevInsights();
     });
 
     document.addEventListener('submit', (e) => {
@@ -7354,6 +7435,101 @@
             id: editingAppId
         });
         logActivity('UPLOAD', 'Auto Changelog', `Requested AI to generate changelog for ${app.title}`);
+    };
+
+    window.generateNexusWrapped = () => {
+        if (!window.aiReady || !currentUser) return;
+        
+        const btn = document.getElementById('btn-generate-wrapped');
+        const container = document.getElementById('wrapped-result-container');
+        const textEl = document.getElementById('wrapped-result-text');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Analyzing...';
+        
+        container.classList.remove('hidden');
+        textEl.innerHTML = '<div class="dot-flashing my-4"></div>';
+        
+        // Compile User Stats from Logs (Last 30 Days)
+        const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+        const userLogs = activityLogs.filter(log => log.uid === currentUser.uid && log.timestamp > thirtyDaysAgo);
+        
+        let playCount = 0;
+        let purchaseCount = 0;
+        let totalCoinsTipped = 0;
+        let actionFreq = {};
+        
+        userLogs.forEach(log => {
+            if (log.action === 'INSTALL' || log.action === 'PURCHASE') {
+                if (log.action === 'INSTALL') playCount++;
+                if (log.action === 'PURCHASE') purchaseCount++;
+                actionFreq[log.targetName] = (actionFreq[log.targetName] || 0) + 1;
+            }
+            if (log.action === 'ECONOMY' && log.details && log.details.includes('Sent')) {
+                const match = log.details.match(/Sent (\d+) coins/);
+                if (match && match[1]) totalCoinsTipped += parseInt(match[1]);
+            }
+        });
+        
+        let favoriteApp = 'Nothing yet';
+        let maxInteractions = 0;
+        for (const [appName, count] of Object.entries(actionFreq)) {
+            if (count > maxInteractions) {
+                maxInteractions = count;
+                favoriteApp = appName;
+            }
+        }
+        
+        const historyStats = userLogs.length === 0 
+            ? "User hasn't played or purchased anything yet. They are a brand new ghost in the system."
+            : `Total Games/Apps Played: ${playCount}\nApps Purchased: ${purchaseCount}\nCoins Gifted/Tipped: ${totalCoinsTipped}\nMost Interacted App: "${favoriteApp}" (${maxInteractions} interactions)`;
+
+        window.aiWorker.postMessage({
+            action: 'nexus_wrapped',
+            historyStats: historyStats,
+            id: currentUser.uid
+        });
+        
+        logActivity('ACCOUNT', 'Nexus Wrapped', 'Generated monthly activity summary.');
+    };
+
+    window.generateDevInsights = () => {
+        if (!window.aiReady || !currentUser) return;
+        
+        const btn = document.getElementById('btn-generate-insights');
+        const container = document.getElementById('dev-insights-container');
+        const textEl = document.getElementById('dev-insights-text');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i> Analyzing...';
+        
+        container.classList.remove('hidden');
+        textEl.innerHTML = '<div class="dot-flashing my-4"></div>';
+        
+        const devApps = window.apps.filter(a => a.authorId === currentUser.uid);
+        
+        if (devApps.length === 0) {
+            textEl.innerHTML = "You haven't published any apps yet! Publish your first app to get performance insights.";
+            btn.innerHTML = '<i class="ph-bold ph-chart-line-up text-lg"></i> Analyze Portfolio';
+            btn.disabled = false;
+            return;
+        }
+
+        let portfolioStats = devApps.map(a => {
+            const dl = a.downloads || 0;
+            const rev = a.revenue || 0;
+            const views = Math.floor(dl * (Math.random() * 2 + 1.5)); // Simulated views mapping
+            const convRate = views > 0 ? ((dl / views) * 100).toFixed(1) : '0.0';
+            return `- App: "${a.title}" | Price: ${a.price} | Installs: ${dl} | Views: ${views} | Conv. Rate: ${convRate}% | Total Rev: ${rev}`;
+        }).join('\n');
+
+        window.aiWorker.postMessage({
+            action: 'dev_insights',
+            portfolioStats: portfolioStats,
+            id: currentUser.uid
+        });
+        
+        logActivity('ACCOUNT', 'Dev Insights', 'Generated AI strategy report for developer portfolio.');
     };
 
     // NEXUS CREATOR STUDIO IDE LOGIC
