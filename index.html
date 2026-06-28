@@ -456,6 +456,16 @@
         </button>
       </div>
 
+      <!-- NEW: AI VIBE THEME GENERATOR -->
+      <div class="mb-8 p-6 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-2xl relative overflow-hidden shadow-inner">
+        <div class="absolute -right-4 -top-4 text-indigo-500/10"><i class="ph-fill ph-magic-wand text-7xl"></i></div>
+        <h3 class="text-sm font-bold mb-3 uppercase tracking-wide text-indigo-900 dark:text-indigo-300 flex items-center gap-2 relative z-10"><i class="ph-fill ph-sparkle"></i> AI Vibe Generator</h3>
+        <div class="flex flex-col sm:flex-row gap-2 relative z-10">
+            <input type="text" id="ai-theme-prompt" placeholder="e.g. Cyberpunk Neon, Matcha..." class="flex-1 border-2 rounded-xl px-4 py-2.5 bg-white dark:bg-slate-950 border-indigo-200 dark:border-indigo-800/50 text-slate-900 dark:text-white outline-none focus:border-indigo-500 text-sm font-bold transition-colors shadow-sm">
+            <button type="button" data-click="generateAiTheme" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition-all text-sm flex items-center justify-center gap-2 whitespace-nowrap active:scale-95"><i class="ph-bold ph-palette"></i> Generate</button>
+        </div>
+      </div>
+
       <div class="mb-8">
         <label class="block text-sm font-bold mb-4 uppercase tracking-wide text-slate-700 dark:text-slate-400">Accent Color</label>
         <div class="flex gap-4">
@@ -496,15 +506,15 @@
   </button>
 
   <!-- Mobile Bottom Navigation -->
-              <nav class="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 pb-2 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+  <nav class="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 pb-2 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
     <div class="flex items-center justify-around h-16 px-2">
       <button data-click="navigate" data-arg="home" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
         <i class="ph-fill ph-house text-2xl"></i>
         <span class="text-[10px] font-bold mt-0.5">Home</span>
       </button>
-      <button data-click="navigate" data-arg="discover" class="flex flex-col items-center justify-center w-full h-full text-fuchsia-500 hover:text-fuchsia-600 dark:text-fuchsia-400 transition-colors">
-        <i class="ph-fill ph-compass text-2xl"></i>
-        <span class="text-[10px] font-bold mt-0.5">Discover</span>
+      <button data-click="navigate" data-arg="quests" class="flex flex-col items-center justify-center w-full h-full text-orange-500 hover:text-orange-600 dark:text-orange-400 transition-colors">
+        <i class="ph-fill ph-target text-2xl"></i>
+        <span class="text-[10px] font-bold mt-0.5">Quests</span>
       </button>
       <button data-click="navigate" data-arg="leaderboard" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
         <i class="ph-fill ph-trophy text-2xl"></i>
@@ -563,8 +573,8 @@
           <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-indigo-500 shadow-sm" />
           <span id="user-name" class="font-bold text-sm text-slate-700 dark:text-slate-200 hidden md:block">Loading...</span>
         </div>
-        <button data-click="navigate" data-arg="discover" class="hidden sm:block p-2 sm:p-2.5 rounded-xl transition-colors bg-white text-fuchsia-500 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-fuchsia-400 dark:hover:bg-slate-700 dark:border-transparent" title="Discover Apps">
-          <i class="ph-fill ph-compass text-lg sm:text-xl"></i>
+        <button data-click="navigate" data-arg="quests" class="hidden sm:block p-2 sm:p-2.5 rounded-xl transition-colors bg-white text-orange-500 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-orange-400 dark:hover:bg-slate-700 dark:border-transparent" title="Daily Quests">
+          <i class="ph-fill ph-target text-lg sm:text-xl"></i>
         </button>
         <button data-click="showThemeModal" class="hidden sm:block p-2 sm:p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-indigo-400 dark:hover:bg-slate-700 dark:border-transparent" title="Settings">
           <i class="ph-fill ph-gear text-lg sm:text-xl"></i>
@@ -639,6 +649,15 @@
 
       </div>
 
+      <!-- Continue Where You Left Off -->
+      <section id="home-recent-section" class="hidden mb-12 animate-fade-in">
+        <div class="flex items-center gap-3 mb-8">
+          <i class="ph-fill ph-clock-counter-clockwise text-indigo-500 text-2xl font-bold"></i>
+          <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Continue Playing</h2>
+        </div>
+        <div id="recent-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8"></div>
+      </section>
+
       <!-- Bottom Section: Trending Now grid (Full Width) -->
       <section id="home-grid-section" class="hidden pb-12">
         <div class="flex items-center gap-3 mb-8">
@@ -681,14 +700,30 @@
     <!-- DETAILS VIEW -->
     <div id="view-details" class="view-section hidden animate-fade-in"></div>
 
-    <!-- DISCOVER VIEW (TikTok Style Swipe Feed) -->
-    <div id="view-discover" class="view-section hidden fixed inset-0 z-[9999] bg-slate-950 overflow-y-auto snap-y snap-mandatory hide-scrollbar">
-       <button data-click="navigate" data-arg="home" class="fixed top-6 left-6 z-[10000] bg-black/40 backdrop-blur-xl text-white p-3 rounded-full hover:bg-black/60 transition-colors border border-white/10 shadow-2xl">
-          <i class="ph-bold ph-caret-left text-2xl"></i>
-       </button>
-       <div id="discover-feed-container" class="h-full w-full max-w-2xl mx-auto border-x border-white/5 bg-black shadow-2xl">
-          <!-- Populated by JS -->
-       </div>
+    <!-- QUESTS VIEW -->
+    <div id="view-quests" class="view-section hidden animate-fade-in pb-20">
+      <div class="max-w-5xl mx-auto pt-4">
+        <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-sm w-fit hover:shadow-md bg-white text-slate-50 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-100 dark:border-slate-800">
+          <i class="ph ph-caret-left text-xl group-hover:-translate-x-1 transition-transform"></i> Back
+        </button>
+        
+        <div class="bg-gradient-to-br from-orange-500 to-red-500 rounded-[3rem] p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden mb-12">
+            <div class="absolute -right-10 -bottom-10 text-white/10"><i class="ph-fill ph-target text-[15rem]"></i></div>
+            <div class="relative z-10">
+                <h1 class="text-4xl sm:text-5xl font-black mb-3 tracking-tight drop-shadow-md flex items-center gap-3">
+                    <i class="ph-fill ph-target text-yellow-300 animate-pulse"></i> Nexus Bounties
+                </h1>
+                <p class="text-orange-100 text-lg sm:text-xl font-medium max-w-xl leading-relaxed">Complete daily and lifetime challenges to earn massive coin payouts. Progress resets at midnight!</p>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+            <i class="ph-fill ph-calendar-check text-indigo-500 text-3xl"></i> Active Quests
+        </h2>
+        <div id="quests-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Populated by JS -->
+        </div>
+      </div>
     </div>
 
     <!-- FAQ & SUPPORT VIEW -->
@@ -1020,7 +1055,8 @@
               <div class="flex flex-col lg:flex-row h-[700px] lg:h-[500px]">
                 <div class="w-full h-1/2 lg:h-full lg:w-1/2 border-b lg:border-b-0 lg:border-r border-white/10 relative">
                   <textarea id="app-code" class="absolute inset-0 w-full h-full bg-slate-950 text-emerald-400 font-mono text-sm p-6 outline-none resize-none custom-scrollbar" spellcheck="false" placeholder="Write your HTML, CSS, and JS here..."></textarea>
-                  <button type="button" data-click="promptAiEdit" class="absolute bottom-4 right-4 bg-indigo-600/90 backdrop-blur text-white px-4 py-2 rounded-xl text-xs font-bold shadow-[0_0_15px_rgba(99,102,241,0.5)] hover:bg-indigo-500 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 z-20 border border-indigo-400/30">
+                  <!-- NEW: AI CODE COPILOT WAND -->
+                  <button type="button" data-click="promptAiEdit" class="absolute bottom-4 right-4 bg-indigo-600/90 backdrop-blur text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-[0_0_15px_rgba(99,102,241,0.5)] hover:bg-indigo-500 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 z-20 border border-indigo-400/30">
                     <i class="ph-fill ph-magic-wand text-base"></i> AI Edit Code
                   </button>
                 </div>
@@ -2178,7 +2214,7 @@
       profile: document.getElementById('view-profile'),
       faq: document.getElementById('view-faq'),
       leaderboard: document.getElementById('view-leaderboard'),
-      discover: document.getElementById('view-discover')
+      quests: document.getElementById('view-quests')
     };
     const searchContainer = document.getElementById('search-container');
     const searchInput = document.getElementById('search-input');
@@ -2576,8 +2612,8 @@
       } else {
         if (window.adRotationInterval) clearInterval(window.adRotationInterval);
         
-        if (viewName === 'discover') {
-          renderDiscover();
+        if (viewName === 'quests') {
+          renderQuests();
         } else if (viewName === 'details' && targetData) {
           window.selectedAppVersion = null; // Reset version selection
           renderDetails(targetData);
@@ -3136,6 +3172,29 @@
         picksSection.classList.add('hidden');
       }
 
+      // RECENT APPS LOGIC (Continue where you left off)
+      const recentSection = document.getElementById('home-recent-section');
+      if (recentSection) {
+          let recentAppIds = [];
+          if (currentUser) {
+              recentAppIds = me?.recentApps || [];
+          } else {
+              recentAppIds = JSON.parse(localStorage.getItem('nexus_recent_apps') || '[]');
+          }
+          
+          const recentAppsToRender = recentAppIds
+              .map(id => window.apps.find(a => a.id === id))
+              .filter(a => a && (a.visibility !== 'private' || (currentUser && a.authorId === currentUser.uid)))
+              .slice(0, 6);
+              
+          if (recentAppsToRender.length > 0 && !searchQuery && !isVaultMode && selectedCategory === 'All') {
+              recentSection.classList.remove('hidden');
+              document.getElementById('recent-container').innerHTML = generateGridHtml(recentAppsToRender);
+          } else {
+              recentSection.classList.add('hidden');
+          }
+      }
+
       if (isVaultMode) {
           document.getElementById('grid-title').textContent = 'My Vault';
       } else {
@@ -3243,7 +3302,7 @@
               </div>
               <div class="flex-1 relative z-10 w-full mt-2 sm:mt-6">
                 <div class="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-2">
-                  <div class="flex items-center justify-center sm:justify-start gap-3 w-full sm:w-auto">
+                  <div class="flex items-center justify-center sm:justify-start gap-3 w-full sm:w-auto flex-wrap">
                     <h1 id="profile-header-name" class="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight break-all">${sanitizeHTML(developerName)}</h1>
                     <button id="edit-profile-btn" data-click="showEditProfile" class="hidden p-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full text-slate-500 hover:text-indigo-500 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors shadow-sm" title="Edit Profile & Bio">
                       <i class="ph-bold ph-pencil-simple text-sm"></i>
@@ -3605,6 +3664,9 @@
                         <button id="btn-buy-app" data-click="buyApp" data-arg="${app.id}" class="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-8 h-14 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl shadow-yellow-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
                           Buy for <i class="ph-fill ph-coin"></i> ${finalPrice}
                         </button>
+                        <button data-click="promptGiftApp" data-arg="${app.id}" class="bg-pink-100 hover:bg-pink-200 text-pink-600 dark:bg-pink-900/30 dark:hover:bg-pink-900/50 dark:text-pink-400 px-6 h-14 rounded-2xl font-bold text-lg transition-all duration-300 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2 border border-pink-200 dark:border-pink-800/50" title="Gift to a friend">
+                          <i class="ph-fill ph-gift text-2xl"></i> Gift
+                        </button>
                       ` : `
                           ${!isInstalled ? `
                             <button data-click="installApp" data-arg="${app.id}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 h-14 rounded-2xl font-bold text-lg transition-all duration-300 shadow-xl hover:shadow-indigo-500/30 hover:-translate-y-1 active:translate-y-0 flex-1 sm:flex-none flex items-center justify-center gap-2">
@@ -3697,7 +3759,13 @@
               <div class="mb-10 max-w-3xl">
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Reviews & Ratings</h3>
+                  <!-- NEW: AI REVIEW CONSENSUS SUMMARIZER -->
+                  <button data-click="generateAiReviewSummary" data-arg="${app.id}" class="text-sm font-bold text-indigo-600 bg-indigo-100 hover:bg-indigo-200 dark:text-indigo-400 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 px-4 py-2 rounded-xl transition-all flex items-center gap-2 shadow-sm active:scale-95">
+                    <i class="ph-fill ph-sparkle text-lg"></i> AI Summary
+                  </button>
                 </div>
+                
+                <div id="ai-review-summary-container" class="hidden mb-6"></div>
                 
                 <div class="bg-slate-50 dark:bg-slate-900/50 rounded-[2rem] p-6 mb-8 border border-slate-100 dark:border-slate-800">
                   <h4 class="font-bold text-lg mb-3 text-slate-900 dark:text-white">Leave a Review</h4>
@@ -4025,10 +4093,15 @@
               setTimeout(() => URL.revokeObjectURL(launchUrl), 15000);
           }
 
-          // LIVE PRESENCE LOGIC
+          // LIVE PRESENCE LOGIC & CONTINUE PLAYING TRACKER
           if (currentUser) {
+             const me = systemUsers.find(u => u.uid === currentUser.uid);
+             let recent = me?.recentApps || [];
+             recent = [app.id, ...recent.filter(id => id !== app.id)].slice(0, 10);
+             
              updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), {
-                 currentActivity: { appId: app.id, title: app.title, timestamp: Date.now() }
+                 currentActivity: { appId: app.id, title: app.title, timestamp: Date.now() },
+                 recentApps: recent
              });
              
              // Auto-clear presence after 15 minutes since we can't track when they close the new tab
@@ -4037,6 +4110,10 @@
                      currentActivity: null
                  }).catch(e => {});
              }, 15 * 60 * 1000);
+          } else {
+             let recent = JSON.parse(localStorage.getItem('nexus_recent_apps') || '[]');
+             recent = [app.id, ...recent.filter(id => id !== app.id)].slice(0, 10);
+             localStorage.setItem('nexus_recent_apps', JSON.stringify(recent));
           }
 
           // Playtime Coins Tracker
@@ -6114,6 +6191,7 @@
       else if (action === 'adminSetApiKey') window.adminSetApiKey(arg1, arg2);
       else if (action === 'deleteReview') window.deleteReview(arg1);
       else if (action === 'buyApp') window.buyApp(arg1);
+      else if (action === 'promptGiftApp') window.promptGiftApp(arg1);
       else if (action === 'toggleFollow') window.toggleFollow(arg1);
       else if (action === 'showCoinRequestModal') window.showCoinRequestModal();
       else if (action === 'submitCoinRequest') window.submitCoinRequest(arg1, arg2, e);
@@ -6147,9 +6225,10 @@
       else if (action === 'adminToggleVIP') window.adminToggleVIP(arg1);
       else if (action === 'adminToggleNexusPlus') window.adminToggleNexusPlus(arg1);
       else if (action === 'generateAiApp') window.generateAiApp();
-      else if (action === 'generateAiBanner') window.generateAiBanner();
-      else if (action === 'generateAiIcon') window.generateAiIcon();
+      else if (action === 'generateAiTheme') window.generateAiTheme();
       else if (action === 'promptAiEdit') window.promptAiEdit();
+      else if (action === 'generateAiReviewSummary') window.generateAiReviewSummary(arg1);
+      else if (action === 'runQA') window.runQA();
     });
 
     document.addEventListener('submit', (e) => {
@@ -6654,144 +6733,135 @@
         });
     };
 
-    window.generateAiBanner = async () => {
-        const promptInput = document.getElementById('ai-banner-prompt');
+    window.generateAiTheme = async () => {
+        const promptInput = document.getElementById('ai-theme-prompt');
         const prompt = promptInput ? promptInput.value.trim() : '';
-        if (!prompt) return showModal('Missing Prompt', 'Please describe the banner you want the AI to create!');
+        if (!prompt) return showModal('Missing Vibe', 'Please describe the theme vibe you want!');
         
-        const btn = document.querySelector('[data-click="generateAiBanner"]');
+        const btn = document.querySelector('[data-click="generateAiTheme"]');
         if (btn) {
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Gen...';
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>';
             btn.disabled = true;
         }
-        
+
         try {
-            const seed = Math.floor(Math.random() * 1000000);
-            const fullPrompt = `${prompt}, high quality masterpiece, wide banner landscape wallpaper`;
-            const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=1200&height=400&nologo=true&seed=${seed}`;
+            const res = await fetch("https://text.pollinations.ai/openai/chat/completions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    messages: [
+                        { role: "system", content: "You are a CSS theme generator. Return ONLY a valid JSON object matching the vibe the user describes. Keys must be exactly: 'accentRgb' (space-separated RGB values, e.g. '255 0 128'), and 'mode' ('dark' or 'light'). No markdown, just raw JSON." },
+                        { role: "user", content: `Vibe: ${prompt}` }
+                    ],
+                    model: "openai",
+                    response_format: { type: "json_object" }
+                })
+            });
             
-            const res = await fetch(url);
-            if (!res.ok) throw new Error("Image server failed");
-            const blob = await res.blob();
+            if (!res.ok) throw new Error("API failed");
+            const data = await res.json();
             
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                editCustomBannerBase64 = reader.result; // Data URL for saving to Firestore
-                document.getElementById('custom-banner-preview').src = editCustomBannerBase64;
-                document.getElementById('custom-banner-preview').classList.remove('hidden');
-                if (btn) {
-                    btn.innerHTML = '<i class="ph-fill ph-sparkle text-lg"></i> AI Gen';
-                    btn.disabled = false;
-                }
-            };
-            reader.readAsDataURL(blob);
-        } catch(e) {
+            // Clean markdown blocks if AI ignored system prompt
+            let content = data.choices[0].message.content.trim();
+            if (content.startsWith('```json')) content = content.substring(7);
+            if (content.startsWith('```')) content = content.substring(3);
+            if (content.endsWith('```')) content = content.substring(0, content.length - 3);
+            
+            let themeObj = JSON.parse(content.trim());
+            
+            if (themeObj.accentRgb) {
+                const root = document.documentElement;
+                root.style.setProperty('--theme-accent-400', themeObj.accentRgb);
+                root.style.setProperty('--theme-accent-500', themeObj.accentRgb);
+                root.style.setProperty('--theme-accent-600', themeObj.accentRgb);
+            }
+            
+            if (themeObj.mode === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+            
+            // Reset background overrides just in case
+            document.body.style.backgroundImage = 'none';
+            document.body.classList.remove('bg-transparent');
+            document.body.classList.add('bg-slate-50', 'dark:bg-slate-950');
+            
+            showToast('Vibe Applied', `Theme generated for "${prompt}"`, 'ph-palette', 'indigo');
+            logActivity('ACCOUNT', 'AI Theme Gen', `Generated theme for: ${prompt}`);
+            
+            // Clear selections visually
+            document.querySelectorAll('.accent-btn, .mode-btn').forEach(b => {
+                b.classList.remove('ring-4', 'ring-offset-2', 'ring-offset-slate-100', 'dark:ring-offset-slate-900', 'ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
+            });
+            
+        } catch (e) {
             console.error(e);
+            showToast('Error', 'Failed to generate theme.', 'ph-warning-circle', 'red');
+        } finally {
             if (btn) {
-                btn.innerHTML = '<i class="ph-fill ph-sparkle text-lg"></i> AI Gen';
+                btn.innerHTML = '<i class="ph-bold ph-palette"></i> Generate';
                 btn.disabled = false;
             }
-            showModal('Error', 'AI Image generation failed. Please try again.');
         }
     };
 
-    window.generateAiIcon = async () => {
-        const title = document.getElementById('app-title').value.trim() || 'Awesome App';
-        const cat = document.getElementById('app-category').value;
-        const btn = document.querySelector('[data-click="generateAiIcon"]');
+    window.generateAiReviewSummary = async (targetAppId) => {
+        const container = document.getElementById('ai-review-summary-container');
+        const btn = document.querySelector(`[data-click="generateAiReviewSummary"]`);
         
-        if (btn) {
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-sm"></i> Generating...';
-            btn.disabled = true;
+        const reviews = appReviews.filter(r => r.targetAppId === targetAppId);
+        if (reviews.length === 0) {
+            return showModal('Not Enough Data', 'There are no user reviews to summarize yet!');
         }
         
+        if (btn) { 
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Analyzing...'; 
+            btn.disabled = true; 
+        }
+        
+        container.classList.remove('hidden');
+        container.innerHTML = '<div class="p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-[2rem] animate-pulse text-indigo-500 font-bold text-center border border-indigo-200 dark:border-indigo-800/50 shadow-inner flex flex-col items-center gap-2"><i class="ph-fill ph-sparkle text-3xl"></i> Reading all reviews...</div>';
+
         try {
-            const prompt = `Minimalist flat 2d mobile app icon for a ${cat} named "${title}", clean vector art style, colorful, isolated on a solid dark background, symmetrical, masterpiece`;
-            const seed = Math.floor(Math.random() * 1000000);
-            const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=400&height=400&nologo=true&seed=${seed}`;
+            // Read up to 20 recent reviews to fit within reasonable context limits
+            const reviewsText = reviews.slice(0, 20).map(r => `Rating: ${r.rating}/5 - ${r.text}`).join('\n');
+            const res = await fetch("[https://text.pollinations.ai/openai/chat/completions](https://text.pollinations.ai/openai/chat/completions)", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    messages: [
+                        { role: "system", content: "You are a helpful app store assistant. Summarize the following user reviews into a short, friendly 2-sentence consensus. Then, on a new line, list ONE major 'Pro' and ONE major 'Con'. Be concise." },
+                        { role: "user", content: reviewsText }
+                    ],
+                    model: "openai"
+                })
+            });
             
-            const res = await fetch(url);
-            if (!res.ok) throw new Error("Image server failed");
-            const blob = await res.blob();
+            if (!res.ok) throw new Error("API failed");
+            const data = await res.json();
+            const summary = data.choices[0].message.content.trim();
             
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                iconPreviewBase64 = reader.result;
-                document.getElementById('icon-preview').src = iconPreviewBase64;
-                document.getElementById('icon-preview').classList.remove('hidden');
-                document.getElementById('icon-placeholder').classList.add('hidden');
-                if (btn) {
-                    btn.innerHTML = '<i class="ph-fill ph-sparkle text-sm"></i> Auto-Gen AI Icon';
-                    btn.disabled = false;
-                }
-            };
-            reader.readAsDataURL(blob);
+            container.innerHTML = `
+                <div class="p-6 sm:p-8 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/30 rounded-[2rem] shadow-inner relative overflow-hidden animate-zoom-in">
+                    <div class="absolute -right-4 -top-4 text-indigo-500/10"><i class="ph-fill ph-sparkle text-7xl"></i></div>
+                    <h4 class="font-black text-xl text-indigo-600 dark:text-indigo-400 mb-3 flex items-center gap-2 relative z-10"><i class="ph-fill ph-sparkle"></i> AI Consensus</h4>
+                    <p class="text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed relative z-10">${sanitizeHTML(summary)}</p>
+                </div>
+            `;
+            logActivity('REVIEW', 'AI Summary', `Generated review summary for app ${targetAppId}`);
         } catch(e) {
             console.error(e);
-            if (btn) {
-                btn.innerHTML = '<i class="ph-fill ph-warning-circle text-red-500 text-sm"></i> Failed';
-                setTimeout(() => { 
-                    btn.innerHTML = '<i class="ph-fill ph-sparkle text-sm"></i> Auto-Gen AI Icon'; 
-                    btn.disabled = false; 
-                }, 2000);
+            container.innerHTML = '<div class="text-red-500 font-bold p-4 bg-red-50 dark:bg-red-900/20 rounded-[2rem] text-center">Failed to generate summary. The neural engine might be overloaded.</div>';
+        } finally {
+            if (btn) { 
+                btn.innerHTML = '<i class="ph-fill ph-check text-lg"></i> Analysis Complete'; 
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="ph-fill ph-sparkle text-lg"></i> AI Summary'; 
+                    btn.disabled = false;
+                }, 3000);
             }
         }
-    };
-
-    window.renderDiscover = () => {
-        const container = document.getElementById('discover-feed-container');
-        // Filter out private apps and randomize order for fun discovery
-        let discoverApps = window.apps.filter(a => a.visibility !== 'private');
-        discoverApps.sort(() => Math.random() - 0.5); // Shuffle
-        
-        if (discoverApps.length === 0) {
-            container.innerHTML = '<div class="flex items-center justify-center h-full text-white">No apps found.</div>';
-            return;
-        }
-
-        container.innerHTML = discoverApps.map(app => {
-            const bgElement = app.icon 
-                ? `<img src="${app.icon}" class="absolute inset-0 w-full h-full object-cover opacity-20 blur-3xl scale-125">` 
-                : `<div class="absolute inset-0 w-full h-full opacity-20 blur-3xl scale-125 ${app.bgClass || 'bg-indigo-600'}"></div>`;
-
-            const iconElement = app.icon
-                ? `<img src="${app.icon}" class="w-32 h-32 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-4 border-white/10 mb-6 object-cover animate-zoom-in">`
-                : `<div class="w-32 h-32 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-4 border-white/10 mb-6 ${app.bgClass || 'bg-slate-600'} flex items-center justify-center text-white animate-zoom-in"><i class="${app.iconClass || 'ph-app-window'} text-[4rem]"></i></div>`;
-
-            let finalPrice = app.price;
-            let isFree = finalPrice === 0 || (currentUser && systemUsers.find(u => u.uid === currentUser.uid)?.isNexusPlus);
-
-            return `
-            <div class="h-screen w-full snap-start snap-always relative overflow-hidden flex flex-col justify-end pb-24 group">
-                ${bgElement}
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
-                
-                <div class="relative z-10 px-8 flex flex-col items-center text-center">
-                    ${iconElement}
-                    <h2 class="text-4xl sm:text-5xl font-black text-white tracking-tight mb-2 drop-shadow-lg">${sanitizeHTML(app.title)}</h2>
-                    <p class="text-indigo-400 font-bold text-lg mb-6 drop-shadow-md">By ${sanitizeHTML(app.developer)}</p>
-                    
-                    <p class="text-slate-200/90 text-base sm:text-lg mb-8 line-clamp-3 max-w-md mx-auto leading-relaxed">
-                        ${sanitizeHTML(app.description)}
-                    </p>
-
-                    <div class="flex items-center gap-4 w-full max-w-sm mx-auto">
-                        <button data-click="navigate" data-arg="details" data-arg2="${app.id}" class="flex-1 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-6 py-4 rounded-2xl font-bold transition-all duration-300">
-                            View Details
-                        </button>
-                        <button data-click="${isFree ? 'runApp' : 'buyApp'}" data-arg="${app.id}" class="flex-1 ${isFree ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-yellow-500 hover:bg-yellow-400 text-slate-900'} text-white px-6 py-4 rounded-2xl font-black shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
-                            ${isFree ? '<i class="ph-fill ph-play text-xl"></i> Play' : '<i class="ph-fill ph-coin text-xl"></i> ' + finalPrice}
-                        </button>
-                    </div>
-                </div>
-
-                <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/40 animate-bounce flex flex-col items-center pointer-events-none opacity-100 transition-opacity">
-                    <span class="text-[10px] font-bold uppercase tracking-widest mb-1">Swipe</span>
-                    <i class="ph-bold ph-caret-down text-xl"></i>
-                </div>
-            </div>
-            `;
-        }).join('');
     };
 
     document.getElementById('ad-image-input').addEventListener('change', async (e) => {
