@@ -2612,9 +2612,7 @@
       } else {
         if (window.adRotationInterval) clearInterval(window.adRotationInterval);
         
-        if (viewName === 'quests') {
-          renderQuests();
-        } else if (viewName === 'details' && targetData) {
+        if (viewName === 'details' && targetData) {
           window.selectedAppVersion = null; // Reset version selection
           renderDetails(targetData);
         } else if (viewName === 'profile' && targetData) {
