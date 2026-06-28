@@ -347,6 +347,10 @@
         <div id="custom-banner-container" class="hidden mb-4">
             <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Upload Custom Banner <i class="ph-fill ph-star text-purple-500"></i></label>
             <input type="file" accept="image/*" id="custom-banner-input" class="w-full border-2 rounded-2xl px-5 py-4 bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-900 dark:text-white">
+            <div class="flex gap-2 mt-3 mb-2">
+                <input type="text" id="ai-banner-prompt" placeholder="Or describe an AI banner (e.g. Cyberpunk city)..." class="flex-1 border-2 rounded-xl px-4 py-2 bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-900 dark:text-white outline-none focus:border-indigo-500 text-sm font-medium transition-colors">
+                <button type="button" data-click="generateAiBanner" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl font-bold shadow-md transition-all text-sm flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-95"><i class="ph-fill ph-sparkle text-lg"></i> AI Gen</button>
+            </div>
             <img id="custom-banner-preview" class="w-full h-24 object-cover mt-2 rounded-xl hidden shadow-sm border border-slate-200 dark:border-slate-700" />
         </div>
 
@@ -492,11 +496,15 @@
   </button>
 
   <!-- Mobile Bottom Navigation -->
-  <nav class="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 pb-2 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+              <nav class="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 pb-2 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
     <div class="flex items-center justify-around h-16 px-2">
       <button data-click="navigate" data-arg="home" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
         <i class="ph-fill ph-house text-2xl"></i>
         <span class="text-[10px] font-bold mt-0.5">Home</span>
+      </button>
+      <button data-click="navigate" data-arg="discover" class="flex flex-col items-center justify-center w-full h-full text-fuchsia-500 hover:text-fuchsia-600 dark:text-fuchsia-400 transition-colors">
+        <i class="ph-fill ph-compass text-2xl"></i>
+        <span class="text-[10px] font-bold mt-0.5">Discover</span>
       </button>
       <button data-click="navigate" data-arg="leaderboard" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
         <i class="ph-fill ph-trophy text-2xl"></i>
@@ -512,10 +520,6 @@
       <button data-click="showThemeModal" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
         <i class="ph-fill ph-palette text-2xl"></i>
         <span class="text-[10px] font-bold mt-0.5">Theme</span>
-      </button>
-      <button data-click="navigate" data-arg="faq" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
-        <i class="ph-fill ph-question text-2xl"></i>
-        <span class="text-[10px] font-bold mt-0.5">Help</span>
       </button>
     </div>
   </nav>
@@ -559,6 +563,9 @@
           <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-indigo-500 shadow-sm" />
           <span id="user-name" class="font-bold text-sm text-slate-700 dark:text-slate-200 hidden md:block">Loading...</span>
         </div>
+        <button data-click="navigate" data-arg="discover" class="hidden sm:block p-2 sm:p-2.5 rounded-xl transition-colors bg-white text-fuchsia-500 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-fuchsia-400 dark:hover:bg-slate-700 dark:border-transparent" title="Discover Apps">
+          <i class="ph-fill ph-compass text-lg sm:text-xl"></i>
+        </button>
         <button data-click="showThemeModal" class="hidden sm:block p-2 sm:p-2.5 rounded-xl transition-colors bg-white text-slate-600 shadow-sm hover:shadow-md border border-slate-200 dark:bg-slate-800 dark:text-indigo-400 dark:hover:bg-slate-700 dark:border-transparent" title="Settings">
           <i class="ph-fill ph-gear text-lg sm:text-xl"></i>
         </button>
@@ -673,6 +680,16 @@
 
     <!-- DETAILS VIEW -->
     <div id="view-details" class="view-section hidden animate-fade-in"></div>
+
+    <!-- DISCOVER VIEW (TikTok Style Swipe Feed) -->
+    <div id="view-discover" class="view-section hidden fixed inset-0 z-[9999] bg-slate-950 overflow-y-auto snap-y snap-mandatory hide-scrollbar">
+       <button data-click="navigate" data-arg="home" class="fixed top-6 left-6 z-[10000] bg-black/40 backdrop-blur-xl text-white p-3 rounded-full hover:bg-black/60 transition-colors border border-white/10 shadow-2xl">
+          <i class="ph-bold ph-caret-left text-2xl"></i>
+       </button>
+       <div id="discover-feed-container" class="h-full w-full max-w-2xl mx-auto border-x border-white/5 bg-black shadow-2xl">
+          <!-- Populated by JS -->
+       </div>
+    </div>
 
     <!-- FAQ & SUPPORT VIEW -->
     <div id="view-faq" class="view-section hidden animate-fade-in">
@@ -940,6 +957,11 @@
                     <span class="text-sm font-bold">Upload</span>
                   </div>
                 </div>
+                <div class="w-full max-w-[160px]">
+                    <button type="button" data-click="generateAiIcon" class="w-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 px-2 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95">
+                        <i class="ph-fill ph-sparkle text-sm"></i> Auto-Gen AI Icon
+                    </button>
+                </div>
               </div>
 
               <div class="flex-1 overflow-hidden">
@@ -998,6 +1020,9 @@
               <div class="flex flex-col lg:flex-row h-[700px] lg:h-[500px]">
                 <div class="w-full h-1/2 lg:h-full lg:w-1/2 border-b lg:border-b-0 lg:border-r border-white/10 relative">
                   <textarea id="app-code" class="absolute inset-0 w-full h-full bg-slate-950 text-emerald-400 font-mono text-sm p-6 outline-none resize-none custom-scrollbar" spellcheck="false" placeholder="Write your HTML, CSS, and JS here..."></textarea>
+                  <button type="button" data-click="promptAiEdit" class="absolute bottom-4 right-4 bg-indigo-600/90 backdrop-blur text-white px-4 py-2 rounded-xl text-xs font-bold shadow-[0_0_15px_rgba(99,102,241,0.5)] hover:bg-indigo-500 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 z-20 border border-indigo-400/30">
+                    <i class="ph-fill ph-magic-wand text-base"></i> AI Edit Code
+                  </button>
                 </div>
                 <div class="w-full h-1/2 lg:h-full lg:w-1/2 relative bg-white">
                   <div class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 text-slate-400 font-bold" id="ide-preview-placeholder">
@@ -1594,6 +1619,11 @@
                     btn.disabled = false;
                     btn.innerHTML = 'Generate Code';
                 }
+                const editBtn = document.querySelector('[data-click="promptAiEdit"]');
+                if (editBtn) {
+                    editBtn.disabled = false;
+                    editBtn.innerHTML = '<i class="ph-fill ph-magic-wand text-base"></i> AI Edit Code';
+                }
             }
         } else if (action === 'error') {
             console.error("AI Worker Error:", error);
@@ -1617,6 +1647,11 @@
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = 'Error - Try Again';
+                }
+                const editBtn = document.querySelector('[data-click="promptAiEdit"]');
+                if (editBtn) {
+                    editBtn.disabled = false;
+                    editBtn.innerHTML = '<i class="ph-fill ph-magic-wand text-base"></i> AI Edit Code';
                 }
                 const inputEl = document.getElementById('app-code');
                 if (inputEl) inputEl.value = `<!-- AI Engine Error: ${error} -->`;
@@ -2142,7 +2177,8 @@
       admin: document.getElementById('view-admin'),
       profile: document.getElementById('view-profile'),
       faq: document.getElementById('view-faq'),
-      leaderboard: document.getElementById('view-leaderboard')
+      leaderboard: document.getElementById('view-leaderboard'),
+      discover: document.getElementById('view-discover')
     };
     const searchContainer = document.getElementById('search-container');
     const searchInput = document.getElementById('search-input');
@@ -2540,7 +2576,9 @@
       } else {
         if (window.adRotationInterval) clearInterval(window.adRotationInterval);
         
-        if (viewName === 'details' && targetData) {
+        if (viewName === 'discover') {
+          renderDiscover();
+        } else if (viewName === 'details' && targetData) {
           window.selectedAppVersion = null; // Reset version selection
           renderDetails(targetData);
         } else if (viewName === 'profile' && targetData) {
@@ -6109,6 +6147,9 @@
       else if (action === 'adminToggleVIP') window.adminToggleVIP(arg1);
       else if (action === 'adminToggleNexusPlus') window.adminToggleNexusPlus(arg1);
       else if (action === 'generateAiApp') window.generateAiApp();
+      else if (action === 'generateAiBanner') window.generateAiBanner();
+      else if (action === 'generateAiIcon') window.generateAiIcon();
+      else if (action === 'promptAiEdit') window.promptAiEdit();
     });
 
     document.addEventListener('submit', (e) => {
@@ -6568,6 +6609,189 @@
         });
         
         logActivity('UPLOAD', 'AI Forge', `Requested AI generation: ${prompt.substring(0, 30)}...`);
+    };
+
+    window.promptAiEdit = () => {
+        if (!window.aiReady) return showModal('Not Ready', 'The AI engine is still booting up. Please wait.');
+        const code = document.getElementById('app-code').value;
+        if (!code || code.trim() === '' || code.includes('<!-- Write your HTML/CSS/JS app here -->')) {
+            return showModal('No Code', 'You need to write or generate an app first before the AI can edit it!');
+        }
+        
+        showPromptModal(
+            'AI Code Copilot', 
+            'What should the AI change or add to this code?', 
+            'e.g. Make the background red, add a jump sound...', 
+            'Execute Edit', 
+            'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/30 text-white', 
+            (val, modalId) => {
+                if (!val) { document.getElementById(modalId).remove(); return; }
+                document.getElementById(modalId).remove();
+                
+                const btn = document.querySelector('[data-click="promptAiEdit"]');
+                if (btn) {
+                    btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-base"></i> Editing...';
+                    btn.disabled = true;
+                }
+                
+                // Hide preview while generating
+                const frame = document.getElementById('ide-preview-frame');
+                const placeholder = document.getElementById('ide-preview-placeholder');
+                if (frame && placeholder) {
+                    frame.srcdoc = '';
+                    placeholder.classList.remove('hidden');
+                    placeholder.classList.add('flex');
+                    placeholder.innerHTML = '<i class="ph-fill ph-magic-wand mb-2 text-4xl text-indigo-500 animate-bounce"></i><span class="text-indigo-400">AI Rewriting Code...</span><span class="text-xs font-normal opacity-70 mt-1">Applying your modifications</span>';
+                }
+
+                window.aiWorker.postMessage({
+                    action: 'generate_app',
+                    prompt: `Modify the following HTML/JS code exactly according to this request: "${val}". ONLY output the modified complete raw HTML code. Do NOT wrap in markdown blocks.\n\nCode to modify:\n${code}`,
+                    id: Date.now() + '_edit'
+                });
+                
+                logActivity('UPLOAD', 'AI Copilot Edit', `AI edit requested: ${val.substring(0, 30)}...`);
+        });
+    };
+
+    window.generateAiBanner = async () => {
+        const promptInput = document.getElementById('ai-banner-prompt');
+        const prompt = promptInput ? promptInput.value.trim() : '';
+        if (!prompt) return showModal('Missing Prompt', 'Please describe the banner you want the AI to create!');
+        
+        const btn = document.querySelector('[data-click="generateAiBanner"]');
+        if (btn) {
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Gen...';
+            btn.disabled = true;
+        }
+        
+        try {
+            const seed = Math.floor(Math.random() * 1000000);
+            const fullPrompt = `${prompt}, high quality masterpiece, wide banner landscape wallpaper`;
+            const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=1200&height=400&nologo=true&seed=${seed}`;
+            
+            const res = await fetch(url);
+            if (!res.ok) throw new Error("Image server failed");
+            const blob = await res.blob();
+            
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                editCustomBannerBase64 = reader.result; // Data URL for saving to Firestore
+                document.getElementById('custom-banner-preview').src = editCustomBannerBase64;
+                document.getElementById('custom-banner-preview').classList.remove('hidden');
+                if (btn) {
+                    btn.innerHTML = '<i class="ph-fill ph-sparkle text-lg"></i> AI Gen';
+                    btn.disabled = false;
+                }
+            };
+            reader.readAsDataURL(blob);
+        } catch(e) {
+            console.error(e);
+            if (btn) {
+                btn.innerHTML = '<i class="ph-fill ph-sparkle text-lg"></i> AI Gen';
+                btn.disabled = false;
+            }
+            showModal('Error', 'AI Image generation failed. Please try again.');
+        }
+    };
+
+    window.generateAiIcon = async () => {
+        const title = document.getElementById('app-title').value.trim() || 'Awesome App';
+        const cat = document.getElementById('app-category').value;
+        const btn = document.querySelector('[data-click="generateAiIcon"]');
+        
+        if (btn) {
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-sm"></i> Generating...';
+            btn.disabled = true;
+        }
+        
+        try {
+            const prompt = `Minimalist flat 2d mobile app icon for a ${cat} named "${title}", clean vector art style, colorful, isolated on a solid dark background, symmetrical, masterpiece`;
+            const seed = Math.floor(Math.random() * 1000000);
+            const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=400&height=400&nologo=true&seed=${seed}`;
+            
+            const res = await fetch(url);
+            if (!res.ok) throw new Error("Image server failed");
+            const blob = await res.blob();
+            
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                iconPreviewBase64 = reader.result;
+                document.getElementById('icon-preview').src = iconPreviewBase64;
+                document.getElementById('icon-preview').classList.remove('hidden');
+                document.getElementById('icon-placeholder').classList.add('hidden');
+                if (btn) {
+                    btn.innerHTML = '<i class="ph-fill ph-sparkle text-sm"></i> Auto-Gen AI Icon';
+                    btn.disabled = false;
+                }
+            };
+            reader.readAsDataURL(blob);
+        } catch(e) {
+            console.error(e);
+            if (btn) {
+                btn.innerHTML = '<i class="ph-fill ph-warning-circle text-red-500 text-sm"></i> Failed';
+                setTimeout(() => { 
+                    btn.innerHTML = '<i class="ph-fill ph-sparkle text-sm"></i> Auto-Gen AI Icon'; 
+                    btn.disabled = false; 
+                }, 2000);
+            }
+        }
+    };
+
+    window.renderDiscover = () => {
+        const container = document.getElementById('discover-feed-container');
+        // Filter out private apps and randomize order for fun discovery
+        let discoverApps = window.apps.filter(a => a.visibility !== 'private');
+        discoverApps.sort(() => Math.random() - 0.5); // Shuffle
+        
+        if (discoverApps.length === 0) {
+            container.innerHTML = '<div class="flex items-center justify-center h-full text-white">No apps found.</div>';
+            return;
+        }
+
+        container.innerHTML = discoverApps.map(app => {
+            const bgElement = app.icon 
+                ? `<img src="${app.icon}" class="absolute inset-0 w-full h-full object-cover opacity-20 blur-3xl scale-125">` 
+                : `<div class="absolute inset-0 w-full h-full opacity-20 blur-3xl scale-125 ${app.bgClass || 'bg-indigo-600'}"></div>`;
+
+            const iconElement = app.icon
+                ? `<img src="${app.icon}" class="w-32 h-32 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-4 border-white/10 mb-6 object-cover animate-zoom-in">`
+                : `<div class="w-32 h-32 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-4 border-white/10 mb-6 ${app.bgClass || 'bg-slate-600'} flex items-center justify-center text-white animate-zoom-in"><i class="${app.iconClass || 'ph-app-window'} text-[4rem]"></i></div>`;
+
+            let finalPrice = app.price;
+            let isFree = finalPrice === 0 || (currentUser && systemUsers.find(u => u.uid === currentUser.uid)?.isNexusPlus);
+
+            return `
+            <div class="h-screen w-full snap-start snap-always relative overflow-hidden flex flex-col justify-end pb-24 group">
+                ${bgElement}
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+                
+                <div class="relative z-10 px-8 flex flex-col items-center text-center">
+                    ${iconElement}
+                    <h2 class="text-4xl sm:text-5xl font-black text-white tracking-tight mb-2 drop-shadow-lg">${sanitizeHTML(app.title)}</h2>
+                    <p class="text-indigo-400 font-bold text-lg mb-6 drop-shadow-md">By ${sanitizeHTML(app.developer)}</p>
+                    
+                    <p class="text-slate-200/90 text-base sm:text-lg mb-8 line-clamp-3 max-w-md mx-auto leading-relaxed">
+                        ${sanitizeHTML(app.description)}
+                    </p>
+
+                    <div class="flex items-center gap-4 w-full max-w-sm mx-auto">
+                        <button data-click="navigate" data-arg="details" data-arg2="${app.id}" class="flex-1 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-6 py-4 rounded-2xl font-bold transition-all duration-300">
+                            View Details
+                        </button>
+                        <button data-click="${isFree ? 'runApp' : 'buyApp'}" data-arg="${app.id}" class="flex-1 ${isFree ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-yellow-500 hover:bg-yellow-400 text-slate-900'} text-white px-6 py-4 rounded-2xl font-black shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                            ${isFree ? '<i class="ph-fill ph-play text-xl"></i> Play' : '<i class="ph-fill ph-coin text-xl"></i> ' + finalPrice}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/40 animate-bounce flex flex-col items-center pointer-events-none opacity-100 transition-opacity">
+                    <span class="text-[10px] font-bold uppercase tracking-widest mb-1">Swipe</span>
+                    <i class="ph-bold ph-caret-down text-xl"></i>
+                </div>
+            </div>
+            `;
+        }).join('');
     };
 
     document.getElementById('ad-image-input').addEventListener('change', async (e) => {
