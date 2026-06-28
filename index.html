@@ -3369,14 +3369,18 @@
 
       const editBtn = document.getElementById('edit-profile-btn');
       const devActions = document.getElementById('developer-actions');
+      const wrappedSection = document.getElementById('wrapped-section');
       
       const isMyProfile = devUser && currentUser && devUser.uid === currentUser.uid;
 
       if (isMyProfile) {
         if(editBtn) editBtn.classList.remove('hidden');
         if(devActions) devActions.innerHTML = '';
+        if(wrappedSection) wrappedSection.classList.remove('hidden');
       } else {
         if(editBtn) editBtn.classList.add('hidden');
+        if(wrappedSection) wrappedSection.classList.add('hidden');
+        
         if (currentUser) {
             const me = systemUsers.find(u => u.uid === currentUser.uid);
             const isFollowing = (me?.following || []).includes(developerName);
@@ -4806,6 +4810,7 @@
         document.getElementById('screenshots-placeholder').classList.remove('hidden');
         payloadType = 'code';
         updatePayloadToggleUI();
+        document.getElementById('app-dynamic-pricing').checked = false;
         
         window.navigate(isFromAdmin ? 'admin' : 'home');
       } catch (err) {
