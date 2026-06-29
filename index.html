@@ -524,7 +524,7 @@
         <i class="ph-fill ph-trophy text-2xl"></i>
         <span class="text-[10px] font-bold mt-0.5">Top</span>
       </button>
-      <button data-click="handlePublishClick" class="flex flex-col items-center justify-center w-full h-full text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 transition-colors relative -top-3">
+      <button data-click="handlePublishClick" class="flex flex-col items-center justify-center w-full h-full text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 transition-colors relative -top-3 z-10">
         <div class="bg-white dark:bg-slate-900 rounded-full p-1.5 shadow-md border border-slate-100 dark:border-slate-800">
            <div class="bg-indigo-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-indigo-500/30 shadow-lg">
              <i class="ph-bold ph-plus text-2xl"></i>
@@ -534,6 +534,10 @@
       <button data-click="showThemeModal" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
         <i class="ph-fill ph-palette text-2xl"></i>
         <span class="text-[10px] font-bold mt-0.5">Theme</span>
+      </button>
+      <button data-click="profileLink" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
+        <i class="ph-fill ph-user text-2xl"></i>
+        <span class="text-[10px] font-bold mt-0.5">Profile</span>
       </button>
     </div>
   </nav>
@@ -932,7 +936,42 @@
         <form id="upload-form" class="p-8 sm:p-12 space-y-10">
           <div>
             <h3 class="text-2xl font-black mb-6 tracking-tight text-slate-900 dark:text-white">1. Basic Info</h3>
+            
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">App Name</label>
+                <input required id="app-title" type="text" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" placeholder="e.g. Flappy Bird clone">
+              </div>
+              <div>
+                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Developer</label>
+                <input required id="app-developer" type="text" class="w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-500 dark:focus:bg-slate-800" placeholder="Your name or studio">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
+              <div>
+                <label class="block text-sm font-bold mb-2 uppercase tracking-wide text-slate-700 dark:text-slate-400">Category</label>
+                <div class="relative">
+                  <select id="app-category" class="appearance-none w-full border-2 rounded-2xl px-5 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-lg bg-slate-50 border-slate-200 text-slate-900 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:bg-slate-800">
+                    <option>Games</option>
+                    <option>Productivity</option>
+                    <option>Education</option>
+                    <option>Social</option>
+                    <option>Utilities</option>
+                    <option>AI Tool</option>
+                    <option>Video</option>
+                    <option>Editor</option>
+                    <option>Arcade</option>
+                    <option>Strategy</option>
+                    <option>Survival</option>
+                    <option>Sim</option>
+                    <option>Racing</option>
+                  </select>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 text-slate-400">
+                    <i class="ph ph-caret-down"></i>
+                  </div>
+                </div>
+              </div>
               <div>
                 <label class="block text-sm font-bold mb-2 flex items-center gap-1 uppercase tracking-wide text-slate-700 dark:text-slate-400">Visibility</label>
                 <div class="relative">
@@ -6305,6 +6344,9 @@
       else if (action === 'profileLink') {
         if (currentUser) {
             window.navigate('profile', currentUser.uid);
+        } else {
+            document.getElementById('auth-modal').classList.remove('hidden');
+            document.getElementById('auth-modal').classList.add('flex');
         }
       }
       else if (action === 'navigateFromAdmin') {
