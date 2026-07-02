@@ -544,7 +544,7 @@
 
   <!-- Header -->
   <header class="fixed top-0 inset-x-0 z-40 backdrop-blur-xl border-b shadow-[0_4px_30px_rgba(0,0,0,0.03)] bg-white/70 border-black/5 dark:bg-slate-950/70 dark:border-white/5 transition-colors duration-300">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-6">
+    <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-6">
       <div class="flex items-center gap-2 sm:gap-3 cursor-pointer group" data-click="navigate" data-arg="home">
         <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 group-hover:scale-105 group-hover:rotate-3 transition-all duration-300">
           <i class="ph-fill ph-play text-xl sm:text-2xl ml-1"></i>
@@ -606,7 +606,7 @@
   </header>
 
   <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-24 sm:py-28 min-h-screen">
+  <main class="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 pt-24 pb-24 sm:py-28 min-h-screen">
     
     <!-- HOME VIEW -->
     <div id="view-home" class="view-section block animate-fade-in">
@@ -664,7 +664,7 @@
           <i class="ph-fill ph-clock-counter-clockwise text-indigo-500 text-2xl font-bold"></i>
           <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Continue Playing</h2>
         </div>
-        <div id="recent-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8"></div>
+        <div id="recent-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-6 sm:gap-8"></div>
       </section>
 
       <!-- AI Smart Match Section -->
@@ -674,7 +674,7 @@
           <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Your Daily Mix</h2>
           <span class="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ml-2 border border-purple-200 dark:border-purple-800/50 shadow-sm">AI Curated</span>
         </div>
-        <div id="smart-match-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div id="smart-match-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6"></div>
       </section>
 
       <!-- Bottom Section: Trending Now grid (Full Width) -->
@@ -683,13 +683,13 @@
           <i class="ph ph-stack text-indigo-500 text-2xl font-bold"></i>
           <h2 id="grid-title" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Trending Now</h2>
         </div>
-        <div id="grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8"></div>
+        <div id="grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-6 sm:gap-8"></div>
       </section>
     </div>
 
     <!-- LEADERBOARD VIEW -->
     <div id="view-leaderboard" class="view-section hidden animate-fade-in">
-      <div class="max-w-6xl mx-auto pb-20">
+      <div class="w-full mx-auto pb-20">
         <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-sm w-fit hover:shadow-md bg-white text-slate-50 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-100 dark:border-slate-800">
           <i class="ph ph-caret-left text-xl group-hover:-translate-x-1 transition-transform"></i> Back
         </button>
@@ -721,7 +721,7 @@
 
     <!-- FAQ & SUPPORT VIEW -->
     <div id="view-faq" class="view-section hidden animate-fade-in">
-      <div class="max-w-4xl mx-auto pb-20">
+      <div class="max-w-5xl mx-auto pb-20">
         <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-sm w-fit hover:shadow-md bg-white text-slate-50 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-100 dark:border-slate-800">
           <i class="ph ph-caret-left text-xl group-hover:-translate-x-1 transition-transform"></i> Back
         </button>
@@ -763,7 +763,7 @@
 
     <!-- PROFILE VIEW -->
     <div id="view-profile" class="view-section hidden animate-fade-in relative pb-12">
-      <div class="max-w-7xl mx-auto relative z-10 pt-6">
+      <div class="w-full mx-auto relative z-10 pt-6">
         <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-md w-fit bg-white/90 text-slate-700 hover:text-indigo-600 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:text-white border border-slate-200 dark:border-slate-700 backdrop-blur-md">
           <i class="ph ph-caret-left text-xl group-hover:-translate-x-1 transition-transform"></i> Back
         </button>
@@ -794,14 +794,14 @@
           <i class="ph-fill ph-squares-four text-indigo-500 text-3xl"></i>
           Published Apps
         </h2>
-        <div id="profile-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8"></div>
+        <div id="profile-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-6 sm:gap-8"></div>
 
         <div id="favorites-section" class="hidden mt-16 border-t border-slate-200/10 dark:border-slate-800/10 pt-12">
           <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-8 flex items-center gap-3">
             <i class="ph-fill ph-heart text-pink-500 text-3xl"></i>
             My Favorites
           </h2>
-          <div id="favorites-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8"></div>
+          <div id="favorites-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-6 sm:gap-8"></div>
         </div>
 
         <div id="analytics-section" class="hidden mt-16 border-t border-slate-200/10 dark:border-slate-800/10 pt-12 animate-fade-in">
@@ -1181,7 +1181,7 @@
 
     <!-- ADMIN VIEW -->
     <div id="view-admin" class="view-section hidden animate-zoom-in">
-      <div class="max-w-6xl mx-auto pb-20">
+      <div class="w-full mx-auto pb-20">
         <div class="flex items-center justify-between mb-8">
           <h2 class="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3">
             <i class="ph-fill ph-shield-check text-indigo-500 text-4xl"></i> Admin Control Panel
@@ -3771,7 +3771,7 @@
         : { icon: 'ph-code', title: 'Executable Code Payload', desc: "This version includes an executable HTML/JS payload. Clicking 'Open App' will run it dynamically in a secure, isolated Blob tab." };
 
       const detailsHtml = `
-        <div class="max-w-5xl mx-auto">
+        <div class="w-full mx-auto">
           <button data-click="navigate" data-arg="home" class="mb-8 flex items-center gap-2 transition-colors font-bold group px-4 py-2 rounded-full shadow-sm w-fit hover:shadow-md bg-white text-slate-50 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-100 dark:border-slate-800">
             <i class="ph ph-caret-left text-xl group-hover:-translate-x-1 transition-transform"></i> Back
           </button>
@@ -4005,7 +4005,7 @@
                   <i class="ph-fill ph-squares-four text-indigo-500 text-3xl"></i>
                   You Might Also Like
                 </h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-6 sm:gap-8">
                   ${generateGridHtml(relatedApps)}
                 </div>
               </div>
