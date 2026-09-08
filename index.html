@@ -11,12 +11,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="NexusStore">
-  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22NexusStore%22%2C%22short_name%22%3A%22Nexus%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%2C%22background_color%22%3A%22%23080b11%22%2C%22theme_color%22%3A%22%2300f2fe%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1YiIgcng9IjYwIiBmaWxsPSIjMDgwYjExIiAvPjxwYXRoIGQ9Ik0xOTQuODYsMTEzLjQzbC05Ni02NEExNS45MywxNS45MywwLDAsMCw3NC41LDQ5VjIwN2ExNiwxNiwwLDAsMCwyNC43NiwxMy3M2w5Ni02NGExNiwxNiwwLDAsMCwwLTI2LjY2WiIgZmlsbD0iIzAwZjJmZSIgLz48L3N2Zz4=%22%2C%22sizes%22%3A%22256x256%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22NexusStore%22%2C%22short_name%22%3A%22Nexus%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%2C%22background_color%22%3A%22%23080b11%22%2C%22theme_color%22%3A%22%2300f2fe%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Butf8%2C%253CSVG%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20256%20256%27%253E%253Crect%20width%3D%27256%27%20height%3D%27256%27%20rx%3D%2760%27%20fill%3D%27%23080b11%27%2F%253E%253Cpath%20d%3D%27M194.86%20113.43l-96-64A15.93%2015.93%200%200074.5%2049v158a16%2016%200%200024.36%2013.33l96-64a16%2016%200%20000-26.9z%27%20fill%3D%27%2300f2fe%27%2F%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22256x256%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
   
   <title>NexusStore</title>
   
-  <!-- Nexus Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgcng9IjYwIiBmaWxsPSIjMDgwYjExIiAvPjxwYXRoIGQ9Ik0xOTQuODYsMTEzLjQzbC05Ni02NEExNS45MywxNS45MywwLDAsMCw3NC41LDQ5VjIwN2ExNiwxNiwwLDAsMCwyNC43NiwxMy.z3w5Ni02NGExNiwxNiwwLDAsMCwwLTI2LjY6WiIgZmlsbD0iIzAwZjJmZSIgLz48L3N2Zz4=">
+  <!-- Nexus Favicon (Clean SVG Data URI) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Crect width='256' height='256' rx='60' fill='%23080b11'/%3E%3Cpath d='M194.86 113.43l-96-64A15.93 15.93 0 0074.5 49v158a16 16 0 0024.36 13.33l96-64a16 16 0 000-26.9z' fill='%2300f2fe'/%3E%3C/svg%3E">
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -76,7 +76,7 @@
     }
 
     .glass-panel {
-      background: rgba(15, 21, 34, 0.75);
+      background: rgba(15, 21, 34, 0.85);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.07);
@@ -700,12 +700,12 @@
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="max-w-[100rem] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-[124px] pb-20 sm:pb-24 min-h-screen">
+  <!-- Main Content Container with Increased Top Clearance (pt-[148px]) -->
+  <main class="max-w-[100rem] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-[148px] pb-20 sm:pb-24 min-h-screen">
     
     <!-- HOME VIEW -->
     <div id="view-home" class="view-section block animate-fade-in">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-2 mb-8">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div id="category-filters" class="flex gap-2 overflow-x-auto hide-scrollbar pb-1 w-full sm:flex-1">
           <!-- Populated by JS -->
         </div>
@@ -728,8 +728,8 @@
         <p class="text-slate-500 text-sm max-w-sm mt-1">Try searching for different keywords or categories.</p>
       </div>
 
-      <!-- Hero & Sponsored Layout Section -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch mb-12">
+      <!-- Hero & Sponsored Layout Section with mb-16 spacing -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch mb-16">
         <!-- Recommended Hero Card -->
         <section id="home-picks" class="lg:col-span-2 w-full hidden flex-col">
           <div class="flex items-center justify-between mb-4 pr-2">
@@ -755,8 +755,8 @@
         </section>
       </div>
 
-      <!-- Continue Playing -->
-      <section id="home-recent-section" class="hidden mb-12 pt-4 animate-fade-in">
+      <!-- Continue Playing Section with Clear Spacing (pt-8 mt-6 mb-14) -->
+      <section id="home-recent-section" class="hidden pt-8 mt-6 mb-14 animate-fade-in">
         <div class="flex items-center justify-between mb-5">
           <h2 class="text-xl font-bold text-white flex items-center gap-2">
             <i class="ph-fill ph-clock-counter-clockwise text-cyan-400"></i> Continue playing
