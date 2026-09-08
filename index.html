@@ -293,37 +293,6 @@
       grid-column: 1 / -1;
     }
 
-    /* MAKE ANY IMAGE COVER THE ENTIRE HERO/CARD BACKGROUND PERFECTLY */
-    #picks-container img, 
-    #picks-container div > img,
-    #sponsored-container img,
-    #sponsored-container div > img {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: cover !important;
-        object-position: center !important;
-        z-index: -2 !important;
-        border-radius: inherit !important;
-        pointer-events: none !important;
-    }
-
-    /* Dark Overlay Gradient over Background Images to Keep Text Legible */
-    #picks-container > *::before,
-    #sponsored-container > *::before {
-        content: "" !important;
-        position: absolute !important;
-        inset: 0 !important;
-        background: linear-gradient(180deg, rgba(15, 21, 34, 0.35) 0%, rgba(15, 21, 34, 0.92) 100%) !important;
-        z-index: -1 !important;
-        border-radius: inherit !important;
-        pointer-events: none !important;
-    }
-
     /* Icon & Grid Image Adjustments */
     #grid-container img, 
     #recent-container img,
@@ -7268,26 +7237,35 @@
     window.renderConsoleApps = () => {
         const carousel = document.getElementById('console-carousel');
         
-        // Grab real apps from the database, or use stunning mockups if the store is empty
-        const displayApps = (window.apps && window.apps.length > 0) ? window.apps : [
-            { id: 'mock1', title: 'Cyber Drift', description: 'Neon soaked 3D street racing.', banner: 'https://images.unsplash.com/photo-1614729939124-032f0b56c9ce?auto=format&fit=crop&w=800&q=80' },
-            { id: 'mock2', title: 'Retro Quest', description: 'Classic 8-bit dungeon crawler.', banner: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80' },
-            { id: 'mock3', title: 'Space Miner', description: 'Extract resources in zero gravity.', banner: 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?auto=format&fit=crop&w=800&q=80' }
-        ];
+        // Grab real apps from the database
+        const displayApps = (window.apps && window.apps.length > 0) ? window.apps : [];
 
-        carousel.innerHTML = displayApps.map((app, index) => `
+        carousel.innerHTML = displayApps.map((app, index) => {
+            let bgHtml = '';
+            if (app.banner) {
+                bgHtml = `<img src="${app.banner}" class="w-full h-[65%] object-cover absolute top-0 left-0 z-0" />`;
+            } else if (app.icon) {
+                // If they have an icon but no banner, use the icon for the background!
+                bgHtml = `<img src="${app.icon}" class="w-full h-[65%] object-cover absolute top-0 left-0 z-0 opacity-80" />`;
+            } else {
+                // Fallback to beautiful CSS gradients with Phosphor icons
+                bgHtml = `<div class="w-full h-[65%] absolute top-0 left-0 z-0 ${app.bgClass || 'bg-slate-800'} flex items-center justify-center"><i class="${app.iconClass || 'ph-app-window'} text-[8rem] text-white opacity-40"></i></div>`;
+            }
+            
+            return `
             <div id="console-app-${index}" class="console-item flex-shrink-0 w-[450px] h-[600px] mx-6 rounded-[2rem] bg-slate-900 border-[6px] border-transparent opacity-50 scale-90 transition-all duration-300 flex flex-col overflow-hidden snap-center cursor-pointer shadow-2xl relative" onclick="window.consoleSelectedIndex=${index}; window.updateConsoleSelection();">
-                <img src="${app.banner || 'https://via.placeholder.com/600x400'}" class="w-full h-[65%] object-cover absolute top-0 left-0 z-0" onerror="this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80'" />
+                ${bgHtml}
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/90 to-transparent z-10"></div>
                 <div class="relative z-20 p-8 flex-1 flex flex-col justify-end">
-                    <h3 class="text-4xl font-black mb-3 text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">${app.title || 'Unknown App'}</h3>
-                    <p class="text-lg text-slate-300 line-clamp-2 drop-shadow-md">${app.description || 'No description provided.'}</p>
+                    <h3 class="text-4xl font-black mb-3 text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">${sanitizeHTML(app.title) || 'Unknown App'}</h3>
+                    <p class="text-lg text-slate-300 line-clamp-2 drop-shadow-md">${sanitizeHTML(app.description) || 'No description provided.'}</p>
                     <div class="mt-6 flex items-center gap-3">
                        <div class="bg-indigo-600 text-white px-6 py-3 rounded-full font-bold text-sm tracking-widest shadow-lg shadow-indigo-500/30">PRESS START</div>
                     </div>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
         
         setTimeout(window.updateConsoleSelection, 50);
     };
