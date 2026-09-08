@@ -7253,14 +7253,14 @@
             }
             
             return `
-            <div id="console-app-${index}" class="console-item flex-shrink-0 w-[450px] h-[600px] mx-6 rounded-[2rem] bg-slate-900 border-[6px] border-transparent opacity-50 scale-90 transition-all duration-300 flex flex-col overflow-hidden snap-center cursor-pointer shadow-2xl relative" onclick="window.consoleSelectedIndex=${index}; window.updateConsoleSelection();">
+            <div id="console-app-${index}" class="console-item flex-shrink-0 w-[450px] h-[600px] mx-6 rounded-[2rem] bg-slate-900 border-[6px] border-transparent opacity-50 scale-90 transition-all duration-300 flex flex-col overflow-hidden snap-center cursor-pointer shadow-2xl relative" onclick="if(window.consoleSelectedIndex===${index}) { window.toggleConsoleMode(); window.navigate('details', '${app.id}'); } else { window.consoleSelectedIndex=${index}; window.updateConsoleSelection(); }">
                 ${bgHtml}
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/90 to-transparent z-10"></div>
                 <div class="relative z-20 p-8 flex-1 flex flex-col justify-end">
                     <h3 class="text-4xl font-black mb-3 text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">${sanitizeHTML(app.title) || 'Unknown App'}</h3>
                     <p class="text-lg text-slate-300 line-clamp-2 drop-shadow-md">${sanitizeHTML(app.description) || 'No description provided.'}</p>
                     <div class="mt-6 flex items-center gap-3">
-                       <div class="bg-indigo-600 text-white px-6 py-3 rounded-full font-bold text-sm tracking-widest shadow-lg shadow-indigo-500/30">PRESS START</div>
+                       <div class="bg-indigo-600 text-white px-6 py-3 rounded-full font-bold text-sm tracking-widest shadow-lg shadow-indigo-500/30 group-hover:bg-indigo-500 transition-colors">PRESS START</div>
                     </div>
                 </div>
             </div>
@@ -7303,7 +7303,7 @@
             const displayApps = (window.apps && window.apps.length > 0) ? window.apps : null;
             if(displayApps && displayApps[window.consoleSelectedIndex]) {
                 window.toggleConsoleMode();
-                window.navigate('play', displayApps[window.consoleSelectedIndex].id); // Launch the app!
+                window.navigate('details', displayApps[window.consoleSelectedIndex].id);
             } else {
                 window.showToast('Test App Selected', 'Load real apps to play!', 'ph-info', 'indigo');
             }
@@ -7340,7 +7340,7 @@
                 const displayApps = (window.apps && window.apps.length > 0) ? window.apps : null;
                 if(displayApps && displayApps[window.consoleSelectedIndex]) {
                     window.toggleConsoleMode();
-                    window.navigate('play', displayApps[window.consoleSelectedIndex].id);
+                    window.navigate('details', displayApps[window.consoleSelectedIndex].id);
                 }
             }
             
