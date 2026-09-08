@@ -11,13 +11,14 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="NexusStore">
-  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22NexusStore%22%2C%22short_name%22%3A%22Nexus%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%2C%22background_color%22%3A%22%23080b11%22%2C%22theme_color%22%3A%22%2300f2fe%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Butf8%2C%253CSVG%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20256%20256%27%253E%253Crect%20width%3D%27256%27%20height%3D%27256%27%20rx%3D%2760%27%20fill%3D%27%23080b11%27%2F%253E%253Cpath%20d%3D%27M194.86%20113.43l-96-64A15.93%2015.93%200%200074.5%2049v158a16%2016%200%200024.36%2013.33l96-64a16%2016%200%20000-26.9z%27%20fill%3D%27%2300f2fe%27%2F%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22256x256%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22NexusStore%22%2C%22short_name%22%3A%22Nexus%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%2C%22background_color%22%3A%22%23080b11%22%2C%22theme_color%22%3A%22%2300f2fe%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgcng9IjYwIiBmaWxsPSIjMDgwYjExIiAvPjxwYXRoIGQ9Ik0xOTQuODYsMTEzLjQzbC05Ni02NEExNS45MywxNS45MywwLDAsMCw3NC41LDQ5VjIwN2ExNiwxNiwwLDAsMCwyNC43NiwxMy4zM2w5Ni02NGExNiwxNiwwLDAsMCwwLTI2LjY2WiIgZmlsbD0iIzAwZjJmZSIgLz48L3N2Zz4%3D%22%2C%22sizes%22%3A%22256x256%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
   
   <title>NexusStore</title>
   
-  <!-- Nexus Favicon (Clean SVG Data URI) -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Crect width='256' height='256' rx='60' fill='%23080b11'/%3E%3Cpath d='M194.86 113.43l-96-64A15.93 15.93 0 0074.5 49v158a16 16 0 0024.36 13.33l96-64a16 16 0 000-26.9z' fill='%2300f2fe'/%3E%3C/svg%3E">
-  
+  <!-- Nexus Favicon (Base64 SVG for universal browser pickup) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgcng9IjYwIiBmaWxsPSIjMDgwYjExIiAvPjxwYXRoIGQ9Ik0xOTQuODYsMTEzLjQzbC05Ni02NEExNS45MywxNS45MywwLDAsMCw3NC41LDQ5VjIwN2ExNiwxNiwwLDAsMCwyNC43NiwxMy4zM2w5Ni02NGExNiwxNiwwLDAsMCwwLTI2LjY6WiIgZmlsbD0iIzAwZjJmZSIgLz48L3N2Zz4=">
+  <link rel="shortcut icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgcng9IjYwIiBmaWxsPSIjMDgwYjExIiAvPjxwYXRoIGQ9Ik0xOTQuODYsMTEzLjQzbC05Ni02NEExNS45MywxNS45MywwLDAsMCw3NC41LDQ5VjIwN2ExNiwxNiwwLDAsMCwyNC43NiwxMy4zM2w5Ni02NGExNiwxNiwwLDAsMCwwLTI2LjY6WiIgZmlsbD0iIzAwZjJmZSIgLz48L3N2Zz4=">
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -28,6 +29,7 @@
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'Roboto', 'system-ui', '-apple-system', 'sans-serif'],
             mono: ['"Fira Code"', 'Consolas', 'monospace'],
+            pixel: ['"Press Start 2P"', 'monospace'],
           },
           colors: {
             cyber: {
@@ -61,12 +63,12 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Fira+Code:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Fira+Code:wght@400;600&family=Press+Start+2P&display=swap');
 
     :root {
       --accent-color: #00f2fe;
       --bg-color: #080b11;
-      --card-bg: rgba(15, 21, 34, 0.75);
+      --card-bg: rgba(15, 21, 34, 0.85);
       --card-border: rgba(255, 255, 255, 0.07);
       --text-main: #f8fafc;
       --glow-color: rgba(0, 242, 254, 0.25);
@@ -80,30 +82,55 @@
         radial-gradient(at 0% 0%, var(--glow-color) 0px, transparent 50%),
         radial-gradient(at 100% 100%, var(--glow-color) 0px, transparent 50%);
       background-attachment: fixed;
-      transition: background-color 0.4s ease, color 0.4s ease;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    /* RETRO ARCADE THEME 🕹️ */
+    /* 🕹️ RETRO ARCADE PIXELATED THEME */
     body.theme-retro {
-      --bg-color: #120024;
-      --card-bg: rgba(32, 5, 58, 0.85);
-      --card-border: rgba(255, 0, 127, 0.3);
+      --bg-color: #0d001a;
+      --card-bg: #1c0330;
+      --card-border: #ff007f;
       --accent-color: #ff007f;
-      --glow-color: rgba(255, 0, 127, 0.35);
+      --glow-color: rgba(255, 0, 127, 0.4);
       --text-main: #ffe6f2;
+      font-family: 'Press Start 2P', monospace !important;
       background-image: 
-        linear-gradient(rgba(255, 0, 127, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 0, 127, 0.05) 1px, transparent 1px);
-      background-size: 30px 30px;
+        linear-gradient(rgba(255, 0, 127, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 0, 127, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    body.theme-retro h1, 
+    body.theme-retro h2, 
+    body.theme-retro h3, 
+    body.theme-retro button, 
+    body.theme-retro input,
+    body.theme-retro select,
+    body.theme-retro textarea,
+    body.theme-retro .nav-tab-btn {
+      font-family: 'Press Start 2P', monospace !important;
+      letter-spacing: -0.5px;
+    }
+
+    body.theme-retro .glass-card,
+    body.theme-retro .glass-panel {
+      border-radius: 6px !important;
+      border: 2px solid #ff007f !important;
+      box-shadow: 4px 4px 0px #00f2fe, -2px -2px 0px #ffe600 !important;
+      background: #1c0330 !important;
+    }
+
+    body.theme-retro button {
+      border-radius: 4px !important;
     }
 
     /* SYNTHWAVE / SUNSET VAPORWAVE 🌅 */
     body.theme-sunset {
       --bg-color: #18081f;
-      --card-bg: rgba(42, 14, 52, 0.8);
-      --card-border: rgba(249, 115, 22, 0.3);
+      --card-bg: rgba(42, 14, 52, 0.85);
+      --card-border: rgba(249, 115, 22, 0.35);
       --accent-color: #f97316;
-      --glow-color: rgba(249, 115, 22, 0.3);
+      --glow-color: rgba(249, 115, 22, 0.35);
       --text-main: #fff7ed;
       background-image: 
         radial-gradient(at 50% 0%, rgba(249, 115, 22, 0.2) 0px, transparent 60%),
@@ -113,13 +140,14 @@
     /* MATRIX / HACKER TERMINAL 📟 */
     body.theme-matrix {
       --bg-color: #020d06;
-      --card-bg: rgba(4, 28, 14, 0.85);
-      --card-border: rgba(0, 255, 102, 0.25);
+      --card-bg: rgba(4, 28, 14, 0.9);
+      --card-border: rgba(0, 255, 102, 0.3);
       --accent-color: #00ff66;
-      --glow-color: rgba(0, 255, 102, 0.2);
+      --glow-color: rgba(0, 255, 102, 0.25);
       --text-main: #d1fae5;
+      font-family: 'Fira Code', monospace !important;
       background-image: 
-        linear-gradient(0deg, rgba(0, 255, 102, 0.03) 50%, transparent 50%);
+        linear-gradient(0deg, rgba(0, 255, 102, 0.04) 50%, transparent 50%);
       background-size: 100% 4px;
     }
 
@@ -129,7 +157,7 @@
       --card-bg: #303134;
       --card-border: #3c4043;
       --accent-color: #01875f;
-      --glow-color: rgba(1, 135, 95, 0.2);
+      --glow-color: rgba(1, 135, 95, 0.25);
       --text-main: #ffffff;
       background-image: none;
     }
@@ -137,10 +165,10 @@
     /* DEEP SPACE 🌌 */
     body.theme-space {
       --bg-color: #030712;
-      --card-bg: rgba(15, 23, 42, 0.85);
-      --card-border: rgba(99, 102, 241, 0.25);
+      --card-bg: rgba(15, 23, 42, 0.9);
+      --card-border: rgba(99, 102, 241, 0.3);
       --accent-color: #6366f1;
-      --glow-color: rgba(99, 102, 241, 0.3);
+      --glow-color: rgba(99, 102, 241, 0.35);
       --text-main: #f1f5f9;
     }
 
@@ -161,7 +189,7 @@
       --card-bg: #ffffff;
       --card-border: #e2e8f0;
       --accent-color: #0284c7;
-      --glow-color: rgba(2, 132, 199, 0.1);
+      --glow-color: rgba(2, 132, 199, 0.15);
       --text-main: #0f172a;
       background-image: none;
     }
@@ -809,7 +837,7 @@
       </div>
     </div>
     
-    <!-- Desktop Tabs Navigation -->
+    <!-- Desktop Tabs Navigation (pt-3 pb-2.5 to avoid top/bottom clipping) -->
     <div class="hidden sm:flex max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 border-t border-cyber-border">
         <div class="flex items-center gap-8 overflow-x-auto hide-scrollbar text-sm font-medium pt-3 pb-2.5">
             <button id="nav-btn-home" data-click="navigate" data-arg="home" class="nav-tab-btn text-theme-accent border-b-2 border-theme-accent pb-2 font-bold whitespace-nowrap flex items-center gap-2">
@@ -825,7 +853,7 @@
     </div>
   </header>
 
-  <!-- Main Content Container -->
+  <!-- Main Content Container with pt-[148px] to keep category chips clear -->
   <main class="max-w-[100rem] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-[148px] pb-20 sm:pb-24 min-h-screen">
     
     <!-- HOME VIEW -->
@@ -880,7 +908,7 @@
         </section>
       </div>
 
-      <!-- Continue Playing Section -->
+      <!-- Continue Playing Section with pt-8 mt-6 mb-14 spacing -->
       <section id="home-recent-section" class="hidden pt-8 mt-6 mb-14 animate-fade-in">
         <div class="flex items-center justify-between mb-5">
           <h2 class="text-xl font-bold flex items-center gap-2">
@@ -1077,7 +1105,7 @@
         </div>
 
         <div class="flex justify-center border-b border-cyber-border bg-black/20">
-          <button type="button" id="tab-publish-app" data-click="switchUploadTab" data-arg="app" class="px-6 py-3 font-bold text-sm text-theme-accent border-b-2 border-theme-accent flex items-center gap-2 bg-slate-900/40">
+          <button type="button" id="tab-publish-app" data-click="switchUploadTab" data-arg="app" class="px-6 py-3 font-bold text-sm text-cyan-400 border-b-2 border-cyan-400 flex items-center gap-2 bg-slate-900/40">
             <i class="ph-fill ph-app-window"></i> App
           </button>
           <button type="button" id="tab-publish-ad" data-click="switchUploadTab" data-arg="ad" class="px-6 py-3 font-bold text-sm text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-2">
@@ -1341,26 +1369,45 @@
     // Theme Engine Handler
     function applyTheme(theme) {
       document.body.className = ''; // Reset theme classes
-      const activeTabs = document.querySelectorAll('.nav-tab-btn.border-b-2');
       
-      if (theme === 'retro') {
-        document.body.classList.add('theme-retro');
-      } else if (theme === 'sunset') {
-        document.body.classList.add('theme-sunset');
-      } else if (theme === 'matrix') {
-        document.body.classList.add('theme-matrix');
-      } else if (theme === 'google') {
-        document.body.classList.add('theme-google');
-      } else if (theme === 'space') {
-        document.body.classList.add('theme-space');
-      } else if (theme === 'oled') {
-        document.body.classList.add('theme-oled');
-      } else if (theme === 'light') {
-        document.body.classList.add('theme-light');
-      } else {
-        // Default Dark / Cyberpunk
-        document.body.classList.add('dark');
+      const themeColors = {
+        dark: { accent: '#00f2fe', bg: '#080b11', card: 'rgba(15, 21, 34, 0.85)', border: 'rgba(255, 255, 255, 0.07)', glow: 'rgba(0, 242, 254, 0.25)', text: '#f8fafc', isDark: true },
+        retro: { accent: '#ff007f', bg: '#0d001a', card: '#1c0330', border: '#ff007f', glow: 'rgba(255, 0, 127, 0.4)', text: '#ffe6f2', isDark: true },
+        sunset: { accent: '#f97316', bg: '#18081f', card: 'rgba(42, 14, 52, 0.85)', border: 'rgba(249, 115, 22, 0.35)', glow: 'rgba(249, 115, 22, 0.35)', text: '#fff7ed', isDark: true },
+        matrix: { accent: '#00ff66', bg: '#020d06', card: 'rgba(4, 28, 14, 0.9)', border: 'rgba(0, 255, 102, 0.3)', glow: 'rgba(0, 255, 102, 0.25)', text: '#d1fae5', isDark: true },
+        google: { accent: '#01875f', bg: '#202124', card: '#303134', border: '#3c4043', glow: 'rgba(1, 135, 95, 0.25)', text: '#ffffff', isDark: true },
+        space: { accent: '#6366f1', bg: '#030712', card: 'rgba(15, 23, 42, 0.9)', border: 'rgba(99, 102, 241, 0.3)', glow: 'rgba(99, 102, 241, 0.35)', text: '#f1f5f9', isDark: true },
+        oled: { accent: '#38bdf8', bg: '#000000', card: '#09090b', border: '#27272a', glow: 'rgba(56, 189, 248, 0.15)', text: '#ffffff', isDark: true },
+        light: { accent: '#0284c7', bg: '#f8fafc', card: '#ffffff', border: '#e2e8f0', glow: 'rgba(2, 132, 199, 0.15)', text: '#0f172a', isDark: false }
+      };
+
+      const t = themeColors[theme] || themeColors.dark;
+
+      if (theme !== 'dark') {
+        document.body.classList.add(`theme-${theme}`);
       }
+
+      if (t.isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+
+      document.documentElement.style.setProperty('--accent-color', t.accent);
+      document.documentElement.style.setProperty('--bg-color', t.bg);
+      document.documentElement.style.setProperty('--card-bg', t.card);
+      document.documentElement.style.setProperty('--card-border', t.border);
+      document.documentElement.style.setProperty('--glow-color', t.glow);
+      document.documentElement.style.setProperty('--text-main', t.text);
+
+      // Update active tab styling
+      const activeTabs = document.querySelectorAll('.nav-tab-btn.border-b-2');
+      activeTabs.forEach(tab => {
+        tab.style.borderColor = t.accent;
+        tab.style.color = t.accent;
+      });
+
+      localStorage.setItem('nexus_theme_mode', theme);
     }
 
     // Comprehensive UI Event Handler: Tab Switcher, Theme Control & Modal Manager
@@ -1373,8 +1420,12 @@
         tabBtns.forEach(tab => {
           if (tab.getAttribute('data-arg') === arg || (arg === 'home' && tab.innerText.includes('For you'))) {
             tab.className = "nav-tab-btn text-theme-accent border-b-2 border-theme-accent pb-2 font-bold whitespace-nowrap flex items-center gap-2";
+            tab.style.borderColor = "var(--accent-color)";
+            tab.style.color = "var(--accent-color)";
           } else {
             tab.className = "nav-tab-btn text-slate-400 hover:text-white pb-2 border-b-2 border-transparent whitespace-nowrap transition-colors flex items-center gap-2";
+            tab.style.borderColor = "transparent";
+            tab.style.color = "";
           }
         });
       }
@@ -1422,8 +1473,19 @@
         };
         if (colors[accent]) {
           document.documentElement.style.setProperty('--accent-color', colors[accent]);
+          const activeTabs = document.querySelectorAll('.nav-tab-btn.border-b-2');
+          activeTabs.forEach(t => {
+            t.style.borderColor = colors[accent];
+            t.style.color = colors[accent];
+          });
         }
       }
+    });
+
+    // On Load: Restore saved theme
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('nexus_theme_mode') || 'dark';
+      applyTheme(savedTheme);
     });
   </script>
   
