@@ -389,11 +389,6 @@
         <span id="unread-badge" class="absolute -top-2.5 -right-2.5 bg-red-500 text-white text-[9px] font-extrabold rounded-full w-4 h-4 flex items-center justify-center border border-black">0</span>
       </div>
     </button>
-
-    <!-- Desktop Mode Bookmark -->
-    <button id="desktop-bookmark" data-click="toggleDesktopMode" class="hidden pointer-events-auto bg-slate-800 text-slate-200 border border-slate-700 p-3 rounded-l-2xl shadow-xl transition-all hover:-translate-x-1.5 flex items-center justify-center">
-      <i class="ph-fill ph-desktop text-xl"></i>
-    </button>
   </div>
 
   <!-- News Sidebar Panel -->
@@ -657,7 +652,7 @@
     <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-cyber-border animate-zoom-in max-h-[90vh] overflow-y-auto custom-scrollbar">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-xl font-bold text-white flex items-center gap-2">
-          <i class="ph-fill ph-paint-brush text-theme-accent"></i> UI Theme Studio
+          <i class="ph-fill ph-paint-brush text-theme-accent"></i> UI & Experience Studio
         </h2>
         <button data-click="closeModal" data-arg="theme-modal" class="p-2 text-slate-400 hover:text-white rounded-full">
           <i class="ph-bold ph-x text-lg"></i>
@@ -711,7 +706,7 @@
       </div>
 
       <!-- Custom Accent Palette Color Picker -->
-      <div class="mb-6">
+      <div class="mb-2">
         <label class="block text-xs font-bold mb-3 uppercase tracking-wider text-slate-400">Accent Colors</label>
         <div class="flex gap-3 justify-between">
           <button data-click="setThemeAccent" data-arg="cyan" class="accent-btn w-9 h-9 rounded-full bg-[#00f2fe] hover:scale-110 transition-all shadow-md"></button>
@@ -790,7 +785,7 @@
           <span id="user-name" class="hidden"></span>
         </div>
         
-        <button data-click="showThemeModal" class="hidden sm:block p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-full transition-colors" title="Settings">
+        <button data-click="showThemeModal" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-full transition-colors" title="Settings & Experience">
           <i class="ph-fill ph-gear text-xl"></i>
         </button>
         <button data-click="handleSignOut" class="hidden sm:block p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-full transition-colors" title="Sign Out">
@@ -1338,10 +1333,32 @@
   <!-- Toast Notification Container -->
   <div id="toast-container" class="fixed bottom-16 sm:bottom-6 right-4 sm:right-6 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
   
-  <!-- Quick Toggle for Console Mode -->
-  <button data-click="toggleConsoleMode" class="fixed bottom-6 left-6 z-[9900] bg-indigo-600 hover:bg-indigo-500 text-white p-4 rounded-full shadow-[0_0_20px_rgba(99,102,241,0.6)] flex items-center justify-center transition-transform hover:scale-110 group">
-     <i class="ph-fill ph-game-controller text-3xl"></i>
-     <span class="absolute left-16 bg-slate-800 border border-slate-700 text-sm font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">Enter Console Mode</span>
+  <!-- Quick Launcher (Console & Desktop) -->
+  <!-- Pop-up Menu -->
+  <div id="quick-launcher-menu" class="hidden fixed bottom-[9.5rem] sm:bottom-24 left-4 sm:left-6 z-[9899] pointer-events-auto bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-2xl p-2 shadow-2xl animate-zoom-in flex-col gap-2 min-w-[200px] sm:min-w-[220px] origin-bottom-left">
+      <button data-click="toggleConsoleMode" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 transition-colors text-left group pointer-events-auto cursor-pointer">
+          <div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0 pointer-events-none">
+              <i class="ph-fill ph-game-controller text-2xl group-hover:scale-110 transition-transform"></i>
+          </div>
+          <div class="pointer-events-none">
+              <div class="font-bold text-sm text-white">Console Mode</div>
+              <div class="text-[10px] text-indigo-400/70">Cinematic UI</div>
+          </div>
+      </button>
+      <button data-click="toggleDesktopMode" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-slate-700/50 text-slate-300 hover:text-white transition-colors text-left group pointer-events-auto cursor-pointer">
+          <div class="w-10 h-10 rounded-full bg-slate-700/50 flex items-center justify-center flex-shrink-0 pointer-events-none">
+              <i class="ph-fill ph-desktop text-2xl group-hover:scale-110 transition-transform"></i>
+          </div>
+          <div class="pointer-events-none">
+              <div class="font-bold text-sm text-white">Nexus OS</div>
+              <div class="text-[10px] text-slate-400">Desktop Env</div>
+          </div>
+      </button>
+  </div>
+  
+  <!-- Main Toggle Button -->
+  <button id="quick-launcher-btn" data-click="toggleLauncherMenu" class="fixed bottom-20 sm:bottom-6 left-4 sm:left-6 z-[9900] pointer-events-auto bg-indigo-600 hover:bg-indigo-500 text-white w-14 h-14 rounded-full shadow-[0_0_20px_rgba(99,102,241,0.6)] flex items-center justify-center transition-transform hover:scale-110 group border border-indigo-400/30">
+    <i class="ph-fill ph-game-controller text-3xl group-hover:scale-110 transition-transform pointer-events-none"></i>
   </button>
 
   <!-- Console Mode Cinematic Overlay -->
@@ -1353,7 +1370,7 @@
         <h1 class="text-5xl font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]">Nexus Console</h1>
         <div class="text-slate-300 text-lg flex gap-6 font-bold bg-black/60 px-6 py-2 rounded-full border border-slate-700/50 backdrop-blur-md shadow-xl">
            <span class="flex items-center gap-2"><span class="flex items-center justify-center w-8 h-8 bg-green-500 text-white rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]">A</span> / <span class="flex items-center justify-center px-2 h-8 bg-slate-700 text-white rounded shadow-sm border border-slate-500 text-sm">↵</span> Play</span>
-           <span class="flex items-center gap-2"><span class="flex items-center justify-center w-8 h-8 bg-red-500 text-white rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)] border border-red-400">B</span> / <span class="flex items-center justify-center px-2 h-8 bg-slate-700 text-white rounded shadow-sm border border-slate-500 text-sm">ESC</span> Exit</span>
+           <span class="flex items-center gap-2"><span class="flex items-center justify-center w-8 h-8 bg-red-500 text-white rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)] border border-red-400">B</span> / <span class="flex items-center justify-center px-2 h-8 bg-slate-700 text-white rounded shadow-sm border border-slate-500 text-sm font-black">M</span> Menu/Back</span>
         </div>
      </div>
 
@@ -6002,6 +6019,18 @@
       }
     };
 
+    window.toggleDesktopMode = () => {
+      window.closeModal('theme-modal');
+      window.isLauncherMenuOpen = false;
+      const launcherMenu = document.getElementById('quick-launcher-menu');
+      if(launcherMenu) { launcherMenu.classList.add('hidden'); launcherMenu.classList.remove('flex'); }
+
+      window.showToast('Desktop Mode', 'Booting Nexus OS...', 'ph-desktop', 'indigo');
+      setTimeout(() => {
+        window.location.href = 'https://bex-creator.github.io/Nexus-OS/';
+      }, 800);
+    };
+
     window.toggleInboxPanel = () => {
       isInboxOpen = !isInboxOpen;
       const panel = document.getElementById('inbox-panel');
@@ -6267,8 +6296,29 @@
         modal.classList.add('flex');
     };
 
+    window.closeModal = (modalId) => {
+        const el = document.getElementById(modalId);
+        if (el) {
+            if (['ai-modal', 'theme-modal', 'create-ad-modal', 'monthly-feedback-modal', 'edit-profile-modal', 'auth-modal'].includes(modalId)) {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            } else {
+                el.remove();
+            }
+        }
+    };
+
     // WAF Bypass: Global Event Delegation
     document.addEventListener('click', (e) => {
+      // Close quick launcher menu if clicked outside
+      if (window.isLauncherMenuOpen) {
+          const menu = document.getElementById('quick-launcher-menu');
+          const btn = document.getElementById('quick-launcher-btn');
+          if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+              window.toggleLauncherMenu();
+          }
+      }
+
       const target = e.target.closest('[data-click]');
       if (!target || target.disabled) return;
       if (target.dataset.stop === 'true') {
@@ -6286,6 +6336,7 @@
       else if (action === 'showCreateAdModal') window.showCreateAdModal(arg1);
       else if (action === 'toggleNewsPanel') window.toggleNewsPanel();
       else if (action === 'toggleInboxPanel') window.toggleInboxPanel();
+      else if (action === 'toggleDesktopMode') window.toggleDesktopMode();
       else if (action === 'switchAdminTab') window.switchAdminTab(arg1);
       else if (action === 'installApp') window.installApp(arg1);
       else if (action === 'embedApp') window.embedApp(arg1);
@@ -6294,6 +6345,7 @@
       else if (action === 'downloadApp') window.downloadApp(arg1);
       else if (action === 'shareApp') window.shareApp(arg1);
       else if (action === 'toggleFavorite') window.toggleFavorite(arg1);
+      else if (action === 'toggleLauncherMenu') window.toggleLauncherMenu();
       else if (action === 'toggleConsoleMode') window.toggleConsoleMode();
       else if (action === 'toggleConsoleMenu') window.toggleConsoleMenu();
       else if (action === 'exitConsoleGame') window.exitConsoleGame();
@@ -6312,17 +6364,7 @@
       else if (action === 'replyToMessage') window.replyToMessage(arg1, arg2);
       else if (action === 'showEditProfile') window.showEditProfile();
       else if (action === 'closeProfileModal') window.closeProfileModal();
-      else if (action === 'closeModal') {
-          const el = document.getElementById(arg1);
-          if (el) {
-              if (['ai-modal', 'theme-modal', 'create-ad-modal', 'monthly-feedback-modal'].includes(arg1)) {
-                  el.classList.add('hidden');
-                  el.classList.remove('flex');
-              } else {
-                  el.remove();
-              }
-          }
-      }
+      else if (action === 'closeModal') window.closeModal(arg1);
       else if (action === 'profileLink') {
         if (currentUser) {
             window.navigate('profile', currentUser.uid);
@@ -7223,6 +7265,60 @@
       window.showToast(`Switched to ${themeName}`, '', 'ph-palette', 'cyan');
     };
 
+    window.submitCoinRequest = async (amountStr, modalId, e) => {
+        if (e) e.preventDefault();
+        if (!currentUser) return;
+        const amt = parseInt(amountStr);
+        if (isNaN(amt) || amt <= 0) return;
+        
+        try {
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'coin_requests'), {
+                uid: currentUser.uid,
+                username: currentUser.customDisplayName || 'User',
+                amount: amt,
+                timestamp: Date.now()
+            });
+            showToast('Request Sent!', `Admins will review your request for ${amt} coins.`, 'ph-coin', 'yellow');
+            const modalEl = document.getElementById(modalId);
+            if (modalEl) modalEl.remove();
+        } catch(err) {
+            console.error(err);
+            showModal('Error', 'Failed to send coin request.');
+        }
+    };
+
+    window.forgotPassword = async () => {
+        const email = document.getElementById('auth-email').value.trim();
+        if (!email) {
+            showModal('Email Required', 'Please enter your email address in the field above first to reset your password.');
+            return;
+        }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            showToast('Reset Link Sent', 'Check your email to reset your password.', 'ph-envelope', 'indigo');
+        } catch (err) {
+            console.error(err);
+            showModal('Error', 'Failed to send password reset email.');
+        }
+    };
+
+    // --- QUICK LAUNCHER LOGIC ---
+    window.isLauncherMenuOpen = false;
+    window.toggleLauncherMenu = () => {
+        window.isLauncherMenuOpen = !window.isLauncherMenuOpen;
+        const menu = document.getElementById('quick-launcher-menu');
+        const btn = document.getElementById('quick-launcher-btn');
+        if (window.isLauncherMenuOpen) {
+            menu.classList.remove('hidden');
+            menu.classList.add('flex');
+            if (btn) btn.classList.add('scale-110', 'bg-indigo-500');
+        } else {
+            menu.classList.add('hidden');
+            menu.classList.remove('flex');
+            if (btn) btn.classList.remove('scale-110', 'bg-indigo-500');
+        }
+    };
+
     // --- CONSOLE MODE LOGIC ---
     window.isConsoleMode = false;
     window.consoleSelectedIndex = 0;
@@ -7237,6 +7333,11 @@
     window.toggleConsoleMode = () => {
         const consoleEl = document.getElementById('console-mode');
         window.isConsoleMode = !window.isConsoleMode;
+        
+        window.closeModal('theme-modal');
+        window.isLauncherMenuOpen = false;
+        const launcherMenu = document.getElementById('quick-launcher-menu');
+        if(launcherMenu) { launcherMenu.classList.add('hidden'); launcherMenu.classList.remove('flex'); }
 
         if (window.isConsoleMode) {
             // Request full screen for maximum immersion
@@ -7414,6 +7515,8 @@
             window.isConsoleGameRunning = true;
             window.isConsoleMenuOpen = false;
             
+            window.showToast('Game Started', 'Press "M" to open the Nexus Menu', 'ph-game-controller', 'indigo');
+            
             // Re-use standard live presence tracker
             if (currentUser) {
                const me = systemUsers.find(u => u.uid === currentUser.uid);
@@ -7438,8 +7541,11 @@
         
         // Intercept while playing a game
         if (window.isConsoleGameRunning) {
-            if (e.key === 'Escape') {
+            if (e.key === 'm' || e.key === 'M' || e.key === 'Backspace') {
                 e.preventDefault();
+                window.toggleConsoleMenu();
+            } else if (e.key === 'Escape') {
+                // Browser forces exit full screen, but we can at least open the menu to pause the game
                 window.toggleConsoleMenu();
             } else if (window.isConsoleMenuOpen) {
                 if (e.key === 'ArrowUp' || e.key === 'w') {
@@ -7479,7 +7585,7 @@
             } else {
                 window.showToast('Test App Selected', 'Load real apps to play!', 'ph-info', 'indigo');
             }
-        } else if (e.key === 'Escape') {
+        } else if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'm' || e.key === 'M') {
             window.toggleConsoleMode();
         }
     });
