@@ -1363,6 +1363,29 @@
      </div>
   </div>
 
+  <!-- Console Game Player Overlay -->
+  <div id="console-player" class="hidden fixed inset-0 z-[10010] bg-black">
+      <iframe id="console-player-frame" class="w-full h-full border-0" sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock"></iframe>
+      
+      <!-- Floating Nexus Menu Button (For keyboard users who lose focus to the iframe) -->
+      <button data-click="toggleConsoleMenu" class="absolute top-6 left-6 z-[10015] w-14 h-14 bg-black/50 hover:bg-black/90 rounded-full flex items-center justify-center text-white/50 hover:text-white backdrop-blur border border-white/10 transition-all group shadow-xl">
+          <i class="ph-fill ph-game-controller text-3xl group-hover:scale-110 transition-transform"></i>
+      </button>
+
+      <!-- Console Pause Menu -->
+      <div id="console-pause-menu" class="absolute inset-0 bg-black/80 backdrop-blur-md hidden flex-col items-center justify-center z-[10020] animate-zoom-in">
+          <h2 class="text-6xl font-black text-white mb-12 tracking-[0.2em] uppercase drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">Nexus Menu</h2>
+          <div class="flex flex-col gap-5 w-80">
+              <button data-click="toggleConsoleMenu" id="console-btn-resume" class="console-menu-btn border-4 border-indigo-500 bg-indigo-500/20 text-white font-black py-4 rounded-2xl text-xl transition-all shadow-[0_0_30px_rgba(99,102,241,0.5)]">Resume Game</button>
+              <button data-click="exitConsoleGame" id="console-btn-exit" class="console-menu-btn border-4 border-transparent bg-slate-800 text-slate-400 hover:text-white font-black py-4 rounded-2xl text-xl transition-all">Exit to Library</button>
+          </div>
+          <div class="absolute bottom-10 flex gap-6 text-slate-400 font-bold tracking-widest uppercase">
+             <span><i class="ph-fill ph-caret-up text-indigo-400"></i><i class="ph-fill ph-caret-down text-indigo-400"></i> Navigate</span>
+             <span><span class="text-emerald-400">A</span> / <span class="text-emerald-400 text-xl leading-none">↵</span> Select</span>
+          </div>
+      </div>
+  </div>
+
   </div> <!-- END APP ROOT -->
 
   <!-- Include Transformers.js Local AI Web Worker Script inline -->
@@ -6272,6 +6295,8 @@
       else if (action === 'shareApp') window.shareApp(arg1);
       else if (action === 'toggleFavorite') window.toggleFavorite(arg1);
       else if (action === 'toggleConsoleMode') window.toggleConsoleMode();
+      else if (action === 'toggleConsoleMenu') window.toggleConsoleMenu();
+      else if (action === 'exitConsoleGame') window.exitConsoleGame();
       else if (action === 'deleteApp') window.deleteApp(arg1);
       else if (action === 'setReviewRating') window.setReviewRating(parseInt(arg1));
       else if (action === 'adminToggleVerify') window.adminToggleVerify(arg1);
@@ -7201,6 +7226,11 @@
     // --- CONSOLE MODE LOGIC ---
     window.isConsoleMode = false;
     window.consoleSelectedIndex = 0;
+    window.isConsoleGameRunning = false;
+    window.isConsoleMenuOpen = false;
+    window.consoleMenuIndex = 0;
+    window.consoleLaunchUrl = null;
+    window.consoleLaunchBlob = false;
     let gamepadLoopId;
     let lastButtonState = {};
 
@@ -7222,6 +7252,8 @@
             gamepadLoopId = requestAnimationFrame(gamepadLoop);
             window.showToast('Console Mode Activated', 'Connect a Gamepad or use Arrow Keys!', 'ph-game-controller', 'indigo');
         } else {
+            // Exit Console Mode
+            if (window.isConsoleGameRunning) window.exitConsoleGame();
             if (document.exitFullscreen && document.fullscreenElement) {
                 document.exitFullscreen().catch(e => {});
             }
@@ -7232,6 +7264,61 @@
             }, 500);
             cancelAnimationFrame(gamepadLoopId);
         }
+    };
+
+    window.toggleConsoleMenu = () => {
+        window.isConsoleMenuOpen = !window.isConsoleMenuOpen;
+        const menu = document.getElementById('console-pause-menu');
+        
+        if (window.isConsoleMenuOpen) {
+            menu.classList.remove('hidden');
+            menu.classList.add('flex');
+            window.consoleMenuIndex = 0;
+            window.updateConsoleMenuUI();
+        } else {
+            menu.classList.add('hidden');
+            menu.classList.remove('flex');
+        }
+    };
+
+    window.updateConsoleMenuUI = () => {
+        const resumeBtn = document.getElementById('console-btn-resume');
+        const exitBtn = document.getElementById('console-btn-exit');
+        
+        const activeClasses = ['border-indigo-500', 'bg-indigo-500/20', 'text-white', 'shadow-[0_0_30px_rgba(99,102,241,0.5)]'];
+        const inactiveClasses = ['border-transparent', 'bg-slate-800', 'text-slate-400'];
+        
+        if (window.consoleMenuIndex === 0) {
+            resumeBtn.classList.add(...activeClasses);
+            resumeBtn.classList.remove(...inactiveClasses);
+            exitBtn.classList.add(...inactiveClasses);
+            exitBtn.classList.remove(...activeClasses);
+        } else {
+            exitBtn.classList.add(...activeClasses);
+            exitBtn.classList.remove(...inactiveClasses);
+            resumeBtn.classList.add(...inactiveClasses);
+            resumeBtn.classList.remove(...activeClasses);
+        }
+    };
+
+    window.exitConsoleGame = () => {
+        window.isConsoleGameRunning = false;
+        window.isConsoleMenuOpen = false;
+        
+        const player = document.getElementById('console-player');
+        const iframe = document.getElementById('console-player-frame');
+        const menu = document.getElementById('console-pause-menu');
+        
+        player.classList.add('hidden');
+        menu.classList.add('hidden');
+        menu.classList.remove('flex');
+        iframe.src = 'about:blank';
+        
+        if (window.consoleLaunchUrl && window.consoleLaunchBlob) {
+            URL.revokeObjectURL(window.consoleLaunchUrl);
+        }
+        window.consoleLaunchUrl = null;
+        window.consoleLaunchBlob = false;
     };
 
     window.renderConsoleApps = () => {
@@ -7303,7 +7390,41 @@
         
         // Launch or prompt purchase
         if (hasAccess) {
-            window.runApp(app.id); // Launch the game directly!
+            let history = app.versionHistory && app.versionHistory.length > 0 ? app.versionHistory : [{ version: app.version, payloadType: app.payloadType, code: app.code, appUrl: app.appUrl }];
+            const selectedVersionStr = window.selectedAppVersion || history[0].version;
+            const activeVersionObj = history.find(v => v.version === selectedVersionStr) || history[0];
+
+            let launchUrl = '';
+            if (activeVersionObj.payloadType === 'url' && activeVersionObj.appUrl) {
+                launchUrl = activeVersionObj.appUrl.startsWith('http') ? activeVersionObj.appUrl : 'https://' + activeVersionObj.appUrl;
+            } else if (activeVersionObj.payloadType === 'code' && activeVersionObj.code) {
+                const blob = new Blob([activeVersionObj.code], { type: 'text/html' });
+                launchUrl = URL.createObjectURL(blob);
+                window.consoleLaunchBlob = true;
+            }
+
+            window.consoleLaunchUrl = launchUrl;
+            
+            const player = document.getElementById('console-player');
+            const iframe = document.getElementById('console-player-frame');
+            
+            iframe.src = launchUrl;
+            player.classList.remove('hidden');
+            
+            window.isConsoleGameRunning = true;
+            window.isConsoleMenuOpen = false;
+            
+            // Re-use standard live presence tracker
+            if (currentUser) {
+               const me = systemUsers.find(u => u.uid === currentUser.uid);
+               let recent = me?.recentApps || [];
+               recent = [app.id, ...recent.filter(id => id !== app.id)].slice(0, 10);
+               updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), {
+                   currentActivity: { appId: app.id, title: app.title, timestamp: Date.now() },
+                   recentApps: recent
+               });
+            }
+
         } else {
             window.showToast('Premium App', 'Opening store page to purchase...', 'ph-lock-key', 'amber');
             window.toggleConsoleMode();
@@ -7314,6 +7435,31 @@
     // Console Mode Keyboard Navigation
     document.addEventListener('keydown', (e) => {
         if (!window.isConsoleMode) return;
+        
+        // Intercept while playing a game
+        if (window.isConsoleGameRunning) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                window.toggleConsoleMenu();
+            } else if (window.isConsoleMenuOpen) {
+                if (e.key === 'ArrowUp' || e.key === 'w') {
+                    e.preventDefault();
+                    window.consoleMenuIndex = 0;
+                    window.updateConsoleMenuUI();
+                } else if (e.key === 'ArrowDown' || e.key === 's') {
+                    e.preventDefault();
+                    window.consoleMenuIndex = 1;
+                    window.updateConsoleMenuUI();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (window.consoleMenuIndex === 0) window.toggleConsoleMenu();
+                    else window.exitConsoleGame();
+                }
+            }
+            return; // Stop standard library navigation while in game
+        }
+
+        // Library Navigation
         const appsCount = document.querySelectorAll('.console-item').length;
         if (appsCount === 0) return;
 
@@ -7349,32 +7495,71 @@
             // Support D-Pad or Left Joystick
             const rightPressed = pad.buttons[15]?.pressed || pad.axes[0] > axesThreshold;
             const leftPressed = pad.buttons[14]?.pressed || pad.axes[0] < -axesThreshold;
+            const upPressed = pad.buttons[12]?.pressed || pad.axes[1] < -axesThreshold;
+            const downPressed = pad.buttons[13]?.pressed || pad.axes[1] > axesThreshold;
+            
             const aPressed = pad.buttons[0]?.pressed; // 'A' button on Xbox, 'Cross' on PS
             const bPressed = pad.buttons[1]?.pressed; // 'B' button on Xbox, 'Circle' on PS
+            const startPressed = pad.buttons[9]?.pressed; // Menu/Start button
+            const selectPressed = pad.buttons[8]?.pressed; // View/Select button
             
-            const appsCount = document.querySelectorAll('.console-item').length;
+            const menuTogglePressed = startPressed || selectPressed;
 
-            if (rightPressed && !lastButtonState.right) {
-                window.consoleSelectedIndex = Math.min(window.consoleSelectedIndex + 1, appsCount - 1);
-                window.updateConsoleSelection();
-            } else if (leftPressed && !lastButtonState.left) {
-                window.consoleSelectedIndex = Math.max(window.consoleSelectedIndex - 1, 0);
-                window.updateConsoleSelection();
-            }
-
-            if (aPressed && !lastButtonState.a) {
-                const displayApps = (window.apps && window.apps.length > 0) ? window.apps : null;
-                if(displayApps && displayApps[window.consoleSelectedIndex]) {
-                    window.consoleLaunchApp(displayApps[window.consoleSelectedIndex].id);
+            if (window.isConsoleGameRunning) {
+                // In-Game Menu Controls
+                if (menuTogglePressed && !lastButtonState.menuToggle) {
+                    window.toggleConsoleMenu();
                 }
-            }
-            
-            if (bPressed && !lastButtonState.b) {
-                window.toggleConsoleMode();
+
+                if (window.isConsoleMenuOpen) {
+                    if (upPressed && !lastButtonState.up) {
+                        window.consoleMenuIndex = 0;
+                        window.updateConsoleMenuUI();
+                    } else if (downPressed && !lastButtonState.down) {
+                        window.consoleMenuIndex = 1;
+                        window.updateConsoleMenuUI();
+                    }
+
+                    if (aPressed && !lastButtonState.a) {
+                        if (window.consoleMenuIndex === 0) window.toggleConsoleMenu();
+                        else window.exitConsoleGame();
+                    }
+
+                    if (bPressed && !lastButtonState.b) {
+                        window.toggleConsoleMenu(); // "B" backs out of the pause menu (resumes)
+                    }
+                }
+            } else {
+                // Library Cover Flow Controls
+                const appsCount = document.querySelectorAll('.console-item').length;
+
+                if (rightPressed && !lastButtonState.right) {
+                    window.consoleSelectedIndex = Math.min(window.consoleSelectedIndex + 1, appsCount - 1);
+                    window.updateConsoleSelection();
+                } else if (leftPressed && !lastButtonState.left) {
+                    window.consoleSelectedIndex = Math.max(window.consoleSelectedIndex - 1, 0);
+                    window.updateConsoleSelection();
+                }
+
+                if (aPressed && !lastButtonState.a) {
+                    const displayApps = (window.apps && window.apps.length > 0) ? window.apps : null;
+                    if(displayApps && displayApps[window.consoleSelectedIndex]) {
+                        window.consoleLaunchApp(displayApps[window.consoleSelectedIndex].id);
+                    }
+                }
+                
+                if (bPressed && !lastButtonState.b) {
+                    window.toggleConsoleMode();
+                }
             }
 
             // Save state to prevent multi-firing
-            lastButtonState = { right: rightPressed, left: leftPressed, a: aPressed, b: bPressed };
+            lastButtonState = { 
+                right: rightPressed, left: leftPressed, 
+                up: upPressed, down: downPressed,
+                a: aPressed, b: bPressed, 
+                menuToggle: menuTogglePressed 
+            };
         }
         
         gamepadLoopId = requestAnimationFrame(gamepadLoop);
