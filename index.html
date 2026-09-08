@@ -27,6 +27,7 @@
         extend: {
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'Roboto', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['"Fira Code"', 'Consolas', 'monospace'],
           },
           colors: {
             cyber: {
@@ -60,41 +61,142 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Fira+Code:wght@400;600&display=swap');
 
     :root {
       --accent-color: #00f2fe;
+      --bg-color: #080b11;
+      --card-bg: rgba(15, 21, 34, 0.75);
+      --card-border: rgba(255, 255, 255, 0.07);
+      --text-main: #f8fafc;
+      --glow-color: rgba(0, 242, 254, 0.25);
     }
 
+    /* THEME PRESET STYLES */
     body {
-      background-color: #080b11;
+      background-color: var(--bg-color);
+      color: var(--text-main);
       background-image: 
-        radial-gradient(at 0% 0%, rgba(0, 242, 254, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%),
-        radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.06) 0px, transparent 50%);
+        radial-gradient(at 0% 0%, var(--glow-color) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, var(--glow-color) 0px, transparent 50%);
       background-attachment: fixed;
+      transition: background-color 0.4s ease, color 0.4s ease;
+    }
+
+    /* RETRO ARCADE THEME 🕹️ */
+    body.theme-retro {
+      --bg-color: #120024;
+      --card-bg: rgba(32, 5, 58, 0.85);
+      --card-border: rgba(255, 0, 127, 0.3);
+      --accent-color: #ff007f;
+      --glow-color: rgba(255, 0, 127, 0.35);
+      --text-main: #ffe6f2;
+      background-image: 
+        linear-gradient(rgba(255, 0, 127, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 0, 127, 0.05) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+
+    /* SYNTHWAVE / SUNSET VAPORWAVE 🌅 */
+    body.theme-sunset {
+      --bg-color: #18081f;
+      --card-bg: rgba(42, 14, 52, 0.8);
+      --card-border: rgba(249, 115, 22, 0.3);
+      --accent-color: #f97316;
+      --glow-color: rgba(249, 115, 22, 0.3);
+      --text-main: #fff7ed;
+      background-image: 
+        radial-gradient(at 50% 0%, rgba(249, 115, 22, 0.2) 0px, transparent 60%),
+        radial-gradient(at 50% 100%, rgba(236, 72, 153, 0.2) 0px, transparent 60%);
+    }
+
+    /* MATRIX / HACKER TERMINAL 📟 */
+    body.theme-matrix {
+      --bg-color: #020d06;
+      --card-bg: rgba(4, 28, 14, 0.85);
+      --card-border: rgba(0, 255, 102, 0.25);
+      --accent-color: #00ff66;
+      --glow-color: rgba(0, 255, 102, 0.2);
+      --text-main: #d1fae5;
+      background-image: 
+        linear-gradient(0deg, rgba(0, 255, 102, 0.03) 50%, transparent 50%);
+      background-size: 100% 4px;
+    }
+
+    /* GOOGLE PLAY MATERIAL 🟢 */
+    body.theme-google {
+      --bg-color: #202124;
+      --card-bg: #303134;
+      --card-border: #3c4043;
+      --accent-color: #01875f;
+      --glow-color: rgba(1, 135, 95, 0.2);
+      --text-main: #ffffff;
+      background-image: none;
+    }
+
+    /* DEEP SPACE 🌌 */
+    body.theme-space {
+      --bg-color: #030712;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --card-border: rgba(99, 102, 241, 0.25);
+      --accent-color: #6366f1;
+      --glow-color: rgba(99, 102, 241, 0.3);
+      --text-main: #f1f5f9;
+    }
+
+    /* PURE OLED DARK 🖤 */
+    body.theme-oled {
+      --bg-color: #000000;
+      --card-bg: #09090b;
+      --card-border: #27272a;
+      --accent-color: #38bdf8;
+      --glow-color: rgba(56, 189, 248, 0.15);
+      --text-main: #ffffff;
+      background-image: none;
+    }
+
+    /* CLEAN LIGHT ☀️ */
+    body.theme-light {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --accent-color: #0284c7;
+      --glow-color: rgba(2, 132, 199, 0.1);
+      --text-main: #0f172a;
+      background-image: none;
     }
 
     .glass-panel {
-      background: rgba(15, 21, 34, 0.85);
+      background: var(--card-bg);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--card-border);
     }
 
     .glass-card {
-      background: rgba(15, 21, 34, 0.6);
+      background: var(--card-bg);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .glass-card:hover {
-      background: rgba(22, 29, 47, 0.85);
-      border-color: rgba(0, 242, 254, 0.3);
-      box-shadow: 0 12px 32px -8px rgba(0, 242, 254, 0.15);
+      border-color: var(--accent-color);
+      box-shadow: 0 12px 32px -8px var(--glow-color);
       transform: translateY(-2px);
+    }
+
+    .text-theme-accent {
+      color: var(--accent-color) !important;
+    }
+
+    .bg-theme-accent {
+      background-color: var(--accent-color) !important;
+    }
+
+    .border-theme-accent {
+      border-color: var(--accent-color) !important;
     }
 
     .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -102,7 +204,7 @@
     
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 242, 254, 0.2); border-radius: 99px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 99px; opacity: 0.3; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -211,7 +313,7 @@
     }
   </style>
 </head>
-<body class="bg-cyber-bg text-slate-100 transition-colors duration-200 min-h-screen font-sans selection:bg-cyan-500 selection:text-black">
+<body class="transition-colors duration-300 min-h-screen font-sans selection:bg-cyan-500 selection:text-black">
 
   <!-- APP ROOT -->
   <div id="app-root">
@@ -225,7 +327,7 @@
           <h3 id="app-viewer-title" class="font-bold text-sm tracking-wide truncate max-w-[200px] sm:max-w-md"></h3>
         </div>
         <div class="flex items-center gap-2">
-          <div id="reward-timer-container" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-xs font-bold mr-2 transition-all">
+          <div id="reward-timer-container" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/10 text-theme-accent border border-cyan-500/30 text-xs font-bold mr-2 transition-all">
             <i class="ph-fill ph-timer animate-pulse"></i> <span id="reward-timer-text">02:00</span>
           </div>
           <button data-click="openViewerInNewTab" class="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-300 hover:text-white" title="Open in New Tab"><i class="ph ph-arrow-square-out text-lg"></i></button>
@@ -241,7 +343,7 @@
     <div id="spectator-sidebar" class="hidden w-80 bg-[#0b0f19] border-l border-cyber-border flex-col h-full z-20 shadow-2xl flex-shrink-0">
        <div class="p-4 border-b border-cyber-border flex items-center justify-between bg-black/40">
           <div class="flex items-center gap-2">
-             <div class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></div>
+             <div class="w-2.5 h-2.5 rounded-full bg-theme-accent animate-pulse"></div>
              <span class="font-bold text-white uppercase tracking-widest text-xs">Live Spectator</span>
           </div>
           <div id="spectator-count" class="text-xs font-bold text-slate-400 flex items-center gap-1"></div>
@@ -251,7 +353,7 @@
        </div>
        <form data-submit="submitSpectatorChat" class="p-3 border-t border-cyber-border bg-black/40 flex gap-2">
           <input type="text" id="spectator-chat-input" autocomplete="off" placeholder="Say something..." class="flex-1 bg-slate-900 border border-slate-700 text-white px-3.5 py-2 rounded-full text-sm outline-none focus:border-cyan-400">
-          <button type="submit" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold p-2.5 rounded-full transition-all shadow-md"><i class="ph-bold ph-paper-plane-tilt"></i></button>
+          <button type="submit" class="bg-theme-accent text-black font-bold p-2.5 rounded-full transition-all shadow-md"><i class="ph-bold ph-paper-plane-tilt"></i></button>
        </form>
     </div>
   </div>
@@ -270,7 +372,7 @@
   <!-- Floating Right Action Bookmarks -->
   <div class="fixed top-1/3 right-0 z-50 flex flex-col gap-2.5 pointer-events-none">
     <!-- News Bookmark -->
-    <button data-click="toggleNewsPanel" class="pointer-events-auto bg-gradient-to-l from-cyan-500 to-blue-600 text-black p-3 rounded-l-2xl shadow-xl transition-all hover:-translate-x-1.5 flex items-center justify-center">
+    <button data-click="toggleNewsPanel" class="pointer-events-auto bg-theme-accent text-black p-3 rounded-l-2xl shadow-xl transition-all hover:-translate-x-1.5 flex items-center justify-center">
       <div class="relative flex items-center justify-center">
         <i class="ph-fill ph-newspaper text-xl"></i>
         <span id="news-badge" class="absolute -top-2.5 -right-2.5 bg-red-500 text-white text-[9px] font-extrabold rounded-full w-4 h-4 flex items-center justify-center border border-black">1</span>
@@ -296,7 +398,7 @@
   <div id="news-panel" class="fixed inset-y-0 right-0 z-[110] w-full max-w-sm glass-panel shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col border-l border-cyber-border">
     <div class="p-4 border-b border-cyber-border flex items-center justify-between bg-black/40">
       <h2 class="text-lg font-bold text-white flex items-center gap-2">
-        <i class="ph-fill ph-newspaper text-cyan-400"></i> Updates & News
+        <i class="ph-fill ph-newspaper text-theme-accent"></i> Updates & News
       </h2>
       <button data-click="toggleNewsPanel" class="p-2 hover:bg-slate-800/60 rounded-full transition-colors text-slate-400 hover:text-white">
         <i class="ph ph-x text-xl"></i>
@@ -326,7 +428,7 @@
   <!-- Monthly Feedback Modal -->
   <div id="monthly-feedback-modal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/70 backdrop-blur-md px-4">
     <div class="glass-panel rounded-3xl p-6 max-w-md w-full shadow-2xl border border-cyber-border animate-zoom-in text-center">
-        <div class="w-16 h-16 mx-auto bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center mb-4 border border-cyan-500/20">
+        <div class="w-16 h-16 mx-auto bg-cyan-500/10 text-theme-accent rounded-2xl flex items-center justify-center mb-4 border border-cyan-500/20">
           <i class="ph-fill ph-chat-circle-text text-3xl"></i>
         </div>
         <h2 class="text-xl font-bold text-white mb-2">NexusStore Feedback</h2>
@@ -334,7 +436,7 @@
         <textarea id="monthly-feedback-text" class="w-full border border-slate-700/80 rounded-2xl px-4 py-3 mb-4 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none text-sm bg-slate-900/80 text-white resize-none" rows="3" placeholder="I'd love to see..."></textarea>
         <div class="flex gap-3">
             <button data-click="skipMonthlyFeedback" class="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full font-bold text-sm transition-colors">Skip</button>
-            <button data-click="submitMonthlyFeedback" class="flex-1 py-2.5 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold text-sm rounded-full transition-all shadow-md">Submit Idea</button>
+            <button data-click="submitMonthlyFeedback" class="flex-1 py-2.5 px-4 bg-theme-accent text-black font-bold text-sm rounded-full transition-all shadow-md">Submit Idea</button>
         </div>
     </div>
   </div>
@@ -345,7 +447,7 @@
       <div class="flex items-center justify-between mb-4 border-b border-cyber-border pb-4">
          <div>
              <h3 class="text-lg font-bold text-white flex items-center gap-2">
-               <i class="ph-fill ph-sparkle text-cyan-400"></i> AI Assistant
+               <i class="ph-fill ph-sparkle text-theme-accent"></i> AI Assistant
              </h3>
              <p id="ai-modal-status" class="text-xs text-slate-400 mt-0.5">Connecting...</p>
          </div>
@@ -354,14 +456,14 @@
          </button>
       </div>
       <div id="ai-progress-container" class="w-full bg-slate-800/80 rounded-full h-1.5 mb-4 overflow-hidden">
-        <div id="ai-progress-bar" class="bg-gradient-to-r from-cyan-400 to-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+        <div id="ai-progress-bar" class="bg-theme-accent h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
       </div>
       <div id="ai-chat-history" class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4 flex flex-col">
          <div class="bg-slate-800/80 border border-slate-700/60 text-slate-200 p-3.5 rounded-2xl rounded-tl-none max-w-[85%] self-start text-sm leading-relaxed shadow-sm">Hello! I'm the Nexus AI. How can I help you discover or generate apps today?</div>
       </div>
       <form data-submit="submitAiChat" class="mt-4 flex gap-2">
          <input type="text" id="ai-chat-input" disabled placeholder="Ask something..." class="flex-1 border border-slate-700/80 rounded-full px-4 py-2.5 focus:border-cyan-400 outline-none bg-slate-900/90 text-sm text-white disabled:opacity-50">
-         <button type="submit" id="ai-chat-submit" disabled class="bg-gradient-to-r from-cyan-500 to-blue-600 disabled:opacity-40 text-black font-bold w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-md flex-shrink-0">
+         <button type="submit" id="ai-chat-submit" disabled class="bg-theme-accent disabled:opacity-40 text-black font-bold w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-md flex-shrink-0">
            <i class="ph-bold ph-paper-plane-tilt"></i>
          </button>
       </form>
@@ -372,7 +474,7 @@
   <div id="auth-modal" class="fixed inset-0 z-[150] hidden items-center justify-center bg-black/75 backdrop-blur-md px-4">
     <div class="glass-panel rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-cyber-border animate-zoom-in">
       <div class="text-center mb-6">
-        <div class="w-14 h-14 mx-auto bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center text-cyan-400 mb-3 shadow-inner">
+        <div class="w-14 h-14 mx-auto bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center text-theme-accent mb-3 shadow-inner">
           <i class="ph-fill ph-lock-key text-2xl"></i>
         </div>
         <h2 id="auth-title" class="text-2xl font-bold text-white">Sign In</h2>
@@ -387,15 +489,15 @@
           <label class="block text-xs font-bold mb-1 text-slate-300">Password</label>
           <input type="password" id="auth-password" required minlength="6" class="w-full border border-slate-700/80 rounded-xl px-4 py-2.5 focus:border-cyan-400 outline-none bg-slate-900/90 text-white text-sm">
           <div class="flex justify-end mt-1.5">
-            <button type="button" data-click="forgotPassword" id="auth-forgot-btn" class="text-xs font-bold text-cyan-400 hover:text-cyan-300">Forgot Password?</button>
+            <button type="button" data-click="forgotPassword" id="auth-forgot-btn" class="text-xs font-bold text-theme-accent hover:underline">Forgot Password?</button>
           </div>
         </div>
-        <button type="submit" id="auth-submit-btn" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold py-3 rounded-full text-sm transition-all shadow-md mt-2">
+        <button type="submit" id="auth-submit-btn" class="w-full bg-theme-accent text-black font-bold py-3 rounded-full text-sm transition-all shadow-md mt-2">
           Log In
         </button>
       </form>
       <div class="mt-5 text-center">
-        <button data-click="toggleAuthMode" id="auth-toggle-btn" class="text-cyan-400 hover:text-cyan-300 font-bold text-sm">
+        <button data-click="toggleAuthMode" id="auth-toggle-btn" class="text-theme-accent hover:underline font-bold text-sm">
           Create account
         </button>
       </div>
@@ -405,7 +507,7 @@
   <!-- Username Onboarding Overlay -->
   <div id="view-onboarding" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/85 backdrop-blur-md px-4">
     <div class="glass-panel rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-cyber-border text-center">
-      <div class="w-16 h-16 mx-auto bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center mb-4 text-cyan-400">
+      <div class="w-16 h-16 mx-auto bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center mb-4 text-theme-accent">
         <i class="ph-fill ph-user-circle text-3xl"></i>
       </div>
       <h2 class="text-2xl font-bold mb-2 text-white">Profile Setup</h2>
@@ -413,7 +515,7 @@
       
       <form data-submit="submitUsername">
         <input type="text" id="onboarding-username" required minlength="3" maxlength="50" placeholder="Username" class="w-full border border-slate-700/80 rounded-xl px-4 py-3 mb-4 focus:border-cyan-400 outline-none text-center bg-slate-900/90 text-white" />
-        <button type="submit" id="onboarding-submit-btn" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold py-3 rounded-full transition-all shadow-md">
+        <button type="submit" id="onboarding-submit-btn" class="w-full bg-theme-accent text-black font-bold py-3 rounded-full transition-all shadow-md">
           Continue
         </button>
       </form>
@@ -455,7 +557,7 @@
             <input type="file" accept="image/*" id="custom-banner-input" class="w-full text-xs text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer">
             <div class="flex gap-2 mt-2">
                 <input type="text" id="ai-banner-prompt" placeholder="AI generation prompt..." class="flex-1 border border-slate-700 rounded-lg px-2 py-1 bg-slate-950 text-xs text-white outline-none focus:border-cyan-400">
-                <button type="button" data-click="generateAiBanner" class="bg-cyan-500 text-black font-bold px-3 py-1 rounded-lg text-xs">AI Gen</button>
+                <button type="button" data-click="generateAiBanner" class="bg-theme-accent text-black font-bold px-3 py-1 rounded-lg text-xs">AI Gen</button>
             </div>
             <img id="custom-banner-preview" class="w-full h-20 object-cover mt-2 rounded-xl hidden border border-slate-700" />
         </div>
@@ -465,7 +567,7 @@
             <textarea id="edit-bio" rows="2" maxlength="200" placeholder="Bio..." class="w-full border border-slate-700/80 rounded-xl px-4 py-2 focus:border-cyan-400 outline-none text-sm bg-slate-900/90 text-white resize-none"></textarea>
         </div>
         
-        <button type="submit" id="edit-profile-submit-btn" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold py-2.5 rounded-full text-sm transition-all shadow-md">
+        <button type="submit" id="edit-profile-submit-btn" class="w-full bg-theme-accent text-black font-bold py-2.5 rounded-full text-sm transition-all shadow-md">
           Save Profile
         </button>
 
@@ -487,7 +589,7 @@
           <i class="ph-bold ph-x"></i>
         </button>
       </div>
-      <p class="text-slate-400 text-sm mb-4">Ads cost <span class="font-bold text-cyan-400">10,000 Coins</span>.</p>
+      <p class="text-slate-400 text-sm mb-4">Ads cost <span class="font-bold text-theme-accent">10,000 Coins</span>.</p>
       
       <form data-submit="submitCreateAd" id="create-ad-form" class="space-y-4">
         <input type="hidden" id="ad-target-app-id">
@@ -508,7 +610,7 @@
             </div>
         </div>
 
-        <button type="submit" id="create-ad-submit-btn" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold py-2.5 rounded-full text-sm transition-all shadow-md mt-2">
+        <button type="submit" id="create-ad-submit-btn" class="w-full bg-theme-accent text-black font-bold py-2.5 rounded-full text-sm transition-all shadow-md mt-2">
           Pay 10k & Publish
         </button>
       </form>
@@ -518,7 +620,7 @@
   <!-- Nexus+ (Play Pass) Modal -->
   <div id="nexus-plus-modal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/75 backdrop-blur-md px-4">
     <div class="glass-panel rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-cyber-border text-center animate-zoom-in">
-      <div class="w-14 h-14 mx-auto bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center text-cyan-400 mb-4">
+      <div class="w-14 h-14 mx-auto bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center text-theme-accent mb-4">
         <i class="ph-fill ph-ticket text-3xl"></i>
       </div>
       
@@ -527,70 +629,93 @@
       
       <div class="space-y-3 text-left mb-6">
          <div class="flex items-center gap-3">
-            <i class="ph-bold ph-check text-cyan-400 text-lg"></i>
+            <i class="ph-bold ph-check text-theme-accent text-lg"></i>
             <span class="text-sm font-medium text-slate-200">All Apps Free</span>
          </div>
          <div class="flex items-center gap-3">
-            <i class="ph-bold ph-check text-cyan-400 text-lg"></i>
+            <i class="ph-bold ph-check text-theme-accent text-lg"></i>
             <span class="text-sm font-medium text-slate-200">Exclusive Avatar Badge</span>
          </div>
          <div class="flex items-center gap-3">
-            <i class="ph-bold ph-check text-cyan-400 text-lg"></i>
+            <i class="ph-bold ph-check text-theme-accent text-lg"></i>
             <span class="text-sm font-medium text-slate-200">Daily Coin Boost</span>
          </div>
       </div>
       
-      <button data-click="subscribeNexusPlus" id="nexus-plus-submit-btn" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold py-2.5 rounded-full text-sm transition-all shadow-md mb-2">
+      <button data-click="subscribeNexusPlus" id="nexus-plus-submit-btn" class="w-full bg-theme-accent text-black font-bold py-2.5 rounded-full text-sm transition-all shadow-md mb-2">
         Join for 25,000 Coins
       </button>
-      <button data-click="closeModal" data-arg="nexus-plus-modal" class="text-cyan-400 hover:text-cyan-300 font-bold text-sm py-2">Not Now</button>
+      <button data-click="closeModal" data-arg="nexus-plus-modal" class="text-theme-accent hover:underline font-bold text-sm py-2">Not Now</button>
     </div>
   </div>
 
-  <!-- Theme Selection Modal -->
+  <!-- Extended Multi-Theme Selection Modal -->
   <div id="theme-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/75 backdrop-blur-md px-4">
-    <div class="glass-panel rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-cyber-border animate-zoom-in">
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-cyber-border animate-zoom-in max-h-[90vh] overflow-y-auto custom-scrollbar">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-lg font-bold text-white">Settings</h2>
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="ph-fill ph-paint-brush text-theme-accent"></i> UI Theme Studio
+        </h2>
         <button data-click="closeModal" data-arg="theme-modal" class="p-2 text-slate-400 hover:text-white rounded-full">
           <i class="ph-bold ph-x text-lg"></i>
         </button>
       </div>
 
-      <div class="mb-6 hidden">
-        <input type="text" id="ai-theme-prompt">
-        <button type="button" data-click="generateAiTheme"></button>
-      </div>
-
+      <!-- Complete Preset Themes Grid -->
       <div class="mb-6">
-        <label class="block text-xs font-bold mb-3 uppercase tracking-wider text-slate-400">Theme Accent</label>
-        <div class="flex gap-3">
-          <button data-click="setThemeAccent" data-arg="emerald" class="accent-btn w-8 h-8 rounded-full bg-[#00f2fe] ring-[#00f2fe] hover:scale-110 transition-all"></button>
-          <button data-click="setThemeAccent" data-arg="indigo" class="accent-btn w-8 h-8 rounded-full bg-[#6366f1] ring-[#6366f1] hover:scale-110 transition-all"></button>
-          <button data-click="setThemeAccent" data-arg="rose" class="accent-btn w-8 h-8 rounded-full bg-[#f43f5e] ring-[#f43f5e] hover:scale-110 transition-all"></button>
-          <button data-click="setThemeAccent" data-arg="amber" class="accent-btn w-8 h-8 rounded-full bg-[#f59e0b] ring-[#f59e0b] hover:scale-110 transition-all"></button>
-          <button data-click="setThemeAccent" data-arg="cyan" class="accent-btn w-8 h-8 rounded-full bg-[#06b6d4] ring-[#06b6d4] hover:scale-110 transition-all"></button>
+        <label class="block text-xs font-bold mb-3 uppercase tracking-wider text-slate-400">Theme Presets</label>
+        <div class="grid grid-cols-2 gap-3">
+          <button data-click="setThemeMode" data-arg="dark" class="p-3 rounded-2xl border border-slate-700/80 bg-slate-900 text-left hover:border-cyan-400 transition-all flex flex-col justify-between">
+            <span class="text-xs font-bold text-cyan-400">⚡ Cyberpunk</span>
+            <span class="text-[10px] text-slate-400 mt-1">Deep space & glowing cyan</span>
+          </button>
+          
+          <button data-click="setThemeMode" data-arg="retro" class="p-3 rounded-2xl border border-pink-500/40 bg-[#120024] text-left hover:border-pink-500 transition-all flex flex-col justify-between">
+            <span class="text-xs font-bold text-pink-500">🕹️ Retro Arcade</span>
+            <span class="text-[10px] text-pink-200/70 mt-1">80s Neon CRT & Arcade</span>
+          </button>
+
+          <button data-click="setThemeMode" data-arg="sunset" class="p-3 rounded-2xl border border-orange-500/40 bg-[#18081f] text-left hover:border-orange-500 transition-all flex flex-col justify-between">
+            <span class="text-xs font-bold text-orange-400">🌅 Vaporwave</span>
+            <span class="text-[10px] text-orange-200/70 mt-1">Warm sunset & neon coral</span>
+          </button>
+
+          <button data-click="setThemeMode" data-arg="matrix" class="p-3 rounded-2xl border border-emerald-500/40 bg-[#020d06] text-left hover:border-emerald-500 transition-all flex flex-col justify-between">
+            <span class="text-xs font-bold text-emerald-400">📟 Matrix Code</span>
+            <span class="text-[10px] text-emerald-200/70 mt-1">Terminal green scanlines</span>
+          </button>
+
+          <button data-click="setThemeMode" data-arg="google" class="p-3 rounded-2xl border border-emerald-600/40 bg-[#202124] text-left hover:border-emerald-500 transition-all flex flex-col justify-between">
+            <span class="text-xs font-bold text-emerald-500">🟢 Play Store</span>
+            <span class="text-[10px] text-slate-300 mt-1">Google Material Green</span>
+          </button>
+
+          <button data-click="setThemeMode" data-arg="space" class="p-3 rounded-2xl border border-indigo-500/40 bg-[#030712] text-left hover:border-indigo-500 transition-all flex flex-col justify-between">
+            <span class="text-xs font-bold text-indigo-400">🌌 Deep Space</span>
+            <span class="text-[10px] text-slate-400 mt-1">Cosmic indigo backdrop</span>
+          </button>
+
+          <button data-click="setThemeMode" data-arg="oled" class="p-3 rounded-2xl border border-zinc-800 bg-black text-left hover:border-sky-400 transition-all flex flex-col justify-between">
+            <span class="text-xs font-bold text-sky-400">🖤 Pure OLED</span>
+            <span class="text-[10px] text-slate-400 mt-1">Pitch black high contrast</span>
+          </button>
+
+          <button data-click="setThemeMode" data-arg="light" class="p-3 rounded-2xl border border-slate-200 bg-slate-100 text-left hover:border-sky-500 transition-all flex flex-col justify-between">
+            <span class="text-xs font-bold text-sky-600">☀️ Clean Light</span>
+            <span class="text-[10px] text-slate-600 mt-1">Bright minimalist surface</span>
+          </button>
         </div>
       </div>
 
+      <!-- Custom Accent Palette Color Picker -->
       <div class="mb-6">
-        <label class="block text-xs font-bold mb-3 uppercase tracking-wider text-slate-400">Appearance</label>
-        <div class="grid grid-cols-2 gap-2">
-          <button data-click="setThemeMode" data-arg="light" class="mode-btn p-2 rounded-xl border border-slate-700/80 text-sm font-medium text-slate-300 hover:bg-slate-800">Light</button>
-          <button data-click="setThemeMode" data-arg="dark" class="mode-btn p-2 rounded-xl border border-slate-700/80 text-sm font-medium text-slate-300 hover:bg-slate-800">Dark</button>
-          <button data-click="setThemeMode" data-arg="oled" class="mode-btn p-2 rounded-xl border border-slate-700/80 text-sm font-medium text-slate-300 hover:bg-slate-800">OLED</button>
-          <button data-click="setThemeMode" data-arg="space" class="mode-btn p-2 rounded-xl border border-slate-700/80 text-sm font-medium text-slate-300 hover:bg-slate-800">Space</button>
-        </div>
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold mb-3 uppercase tracking-wider text-slate-400">Cursor</label>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <button data-click="setCursorStyle" data-arg="modern" class="cursor-btn p-2 text-xs rounded-xl border border-slate-700/80 text-slate-300 hover:bg-slate-800">Modern</button>
-          <button data-click="setCursorStyle" data-arg="spaceship" class="cursor-btn p-2 text-xs rounded-xl border border-slate-700/80 text-slate-300 hover:bg-slate-800">Ship</button>
-          <button data-click="setCursorStyle" data-arg="minimal" class="cursor-btn p-2 text-xs rounded-xl border border-slate-700/80 text-slate-300 hover:bg-slate-800">Minimal</button>
-          <button data-click="setCursorStyle" data-arg="retro" class="cursor-btn p-2 text-xs rounded-xl border border-slate-700/80 text-slate-300 hover:bg-slate-800">Retro</button>
-          <button data-click="setCursorStyle" data-arg="magic" class="cursor-btn p-2 text-xs rounded-xl border border-slate-700/80 text-slate-300 hover:bg-slate-800">Magic</button>
+        <label class="block text-xs font-bold mb-3 uppercase tracking-wider text-slate-400">Accent Colors</label>
+        <div class="flex gap-3 justify-between">
+          <button data-click="setThemeAccent" data-arg="cyan" class="accent-btn w-9 h-9 rounded-full bg-[#00f2fe] hover:scale-110 transition-all shadow-md"></button>
+          <button data-click="setThemeAccent" data-arg="rose" class="accent-btn w-9 h-9 rounded-full bg-[#ff007f] hover:scale-110 transition-all shadow-md"></button>
+          <button data-click="setThemeAccent" data-arg="emerald" class="accent-btn w-9 h-9 rounded-full bg-[#00ff66] hover:scale-110 transition-all shadow-md"></button>
+          <button data-click="setThemeAccent" data-arg="amber" class="accent-btn w-9 h-9 rounded-full bg-[#f97316] hover:scale-110 transition-all shadow-md"></button>
+          <button data-click="setThemeAccent" data-arg="indigo" class="accent-btn w-8 h-8 rounded-full bg-[#6366f1] hover:scale-110 transition-all shadow-md"></button>
         </div>
       </div>
     </div>
@@ -598,26 +723,26 @@
 
   <!-- Vault Bookmark Toggle -->
   <button id="vault-mode-toggle" data-click="toggleVaultMode" class="fixed bottom-20 sm:bottom-6 left-4 sm:left-6 z-40 glass-panel text-white px-4 py-2 rounded-full font-bold shadow-xl text-sm hidden items-center gap-2 border border-cyber-border hover:border-cyan-400 transition-all">
-    <i class="ph-fill ph-vault text-cyan-400"></i> Vault Mode
+    <i class="ph-fill ph-vault text-theme-accent"></i> Vault Mode
   </button>
 
   <!-- Mobile Bottom Navigation Dock -->
   <nav class="sm:hidden fixed bottom-0 inset-x-0 z-50 glass-panel border-t border-cyber-border pb-2 pt-1 shadow-2xl">
     <div class="flex items-center justify-around h-14">
-      <button data-click="navigate" data-arg="home" class="flex flex-col items-center justify-center w-full h-full text-cyan-400">
+      <button data-click="navigate" data-arg="home" class="flex flex-col items-center justify-center w-full h-full text-theme-accent">
         <i class="ph-fill ph-game-controller text-xl"></i>
         <span class="text-[10px] font-bold mt-0.5">Games</span>
       </button>
-      <button data-click="navigate" data-arg="leaderboard" class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-cyan-400">
+      <button data-click="navigate" data-arg="leaderboard" class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-theme-accent">
         <i class="ph-fill ph-trophy text-xl"></i>
         <span class="text-[10px] font-bold mt-0.5">Top Charts</span>
       </button>
-      <button data-click="handlePublishClick" class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-cyan-400">
-         <div class="bg-gradient-to-r from-cyan-500 to-blue-600 text-black w-9 h-9 rounded-full flex items-center justify-center shadow-lg font-bold">
+      <button data-click="handlePublishClick" class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-theme-accent">
+         <div class="bg-theme-accent text-black w-9 h-9 rounded-full flex items-center justify-center shadow-lg font-bold">
            <i class="ph-bold ph-plus text-lg"></i>
          </div>
       </button>
-      <button data-click="profileLink" class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-cyan-400">
+      <button data-click="profileLink" class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-theme-accent">
         <i class="ph-fill ph-user text-xl"></i>
         <span class="text-[10px] font-bold mt-0.5">Profile</span>
       </button>
@@ -629,13 +754,13 @@
     <div class="max-w-[100rem] w-full mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
       <div class="flex items-center gap-3 cursor-pointer group" data-click="navigate" data-arg="home">
         <!-- Logo Emblem -->
-        <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-cyan-500 via-teal-400 to-indigo-500 p-0.5 shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
+        <div class="w-9 h-9 rounded-2xl bg-theme-accent p-0.5 shadow-lg group-hover:scale-105 transition-transform flex items-center justify-center">
           <div class="w-full h-full bg-cyber-bg rounded-[14px] flex items-center justify-center">
-            <i class="ph-bold ph-play text-cyan-400 text-base"></i>
+            <i class="ph-bold ph-play text-theme-accent text-base"></i>
           </div>
         </div>
         <span class="text-xl font-bold tracking-tight hidden sm:block text-white">
-          Nexus<span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-300">Store</span>
+          Nexus<span class="text-theme-accent">Store</span>
         </span>
       </div>
 
@@ -648,7 +773,7 @@
           <button id="clear-search-btn" data-click="clearSearch" class="hidden h-8 w-8 text-slate-400 hover:text-white flex items-center justify-center rounded-full transition-colors" title="Clear Search">
             <i class="ph-bold ph-x"></i>
           </button>
-          <button id="ask-ai-btn" data-click="openAiModal" disabled class="hidden h-8 w-8 text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 rounded-full items-center justify-center">
+          <button id="ask-ai-btn" data-click="openAiModal" disabled class="hidden h-8 w-8 text-theme-accent bg-cyan-500/10 hover:bg-cyan-500/20 rounded-full items-center justify-center">
              <i id="ai-btn-icon" class="ph-fill ph-sparkle text-sm"></i>
              <span id="ai-btn-text" class="hidden"></span>
           </button>
@@ -677,7 +802,7 @@
           <i class="ph ph-download-simple text-lg"></i>
           <span class="hidden lg:inline">Install</span>
         </button>
-        <button data-click="handlePublishClick" class="hidden sm:flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black text-sm font-bold rounded-full transition-all shadow-md">
+        <button data-click="handlePublishClick" class="hidden sm:flex items-center gap-1.5 px-4 py-2 bg-theme-accent text-black font-bold text-sm rounded-full transition-all shadow-md hover:brightness-110">
           <i class="ph ph-plus font-bold"></i>
           <span>Publish</span>
         </button>
@@ -687,7 +812,7 @@
     <!-- Desktop Tabs Navigation -->
     <div class="hidden sm:flex max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 border-t border-cyber-border">
         <div class="flex items-center gap-8 overflow-x-auto hide-scrollbar text-sm font-medium pt-3 pb-2.5">
-            <button id="nav-btn-home" data-click="navigate" data-arg="home" class="nav-tab-btn text-cyan-400 border-b-2 border-cyan-400 pb-2 font-bold whitespace-nowrap flex items-center gap-2">
+            <button id="nav-btn-home" data-click="navigate" data-arg="home" class="nav-tab-btn text-theme-accent border-b-2 border-theme-accent pb-2 font-bold whitespace-nowrap flex items-center gap-2">
               <i class="ph-fill ph-sparkle text-xs"></i> For you
             </button>
             <button id="nav-btn-leaderboard" data-click="navigate" data-arg="leaderboard" class="nav-tab-btn text-slate-400 hover:text-white pb-2 border-b-2 border-transparent whitespace-nowrap transition-colors flex items-center gap-2">
@@ -700,7 +825,7 @@
     </div>
   </header>
 
-  <!-- Main Content Container with Increased Top Clearance (pt-[148px]) -->
+  <!-- Main Content Container -->
   <main class="max-w-[100rem] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-[148px] pb-20 sm:pb-24 min-h-screen">
     
     <!-- HOME VIEW -->
@@ -728,15 +853,15 @@
         <p class="text-slate-500 text-sm max-w-sm mt-1">Try searching for different keywords or categories.</p>
       </div>
 
-      <!-- Hero & Sponsored Layout Section with mb-16 spacing -->
+      <!-- Hero & Sponsored Layout Section -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch mb-16">
         <!-- Recommended Hero Card -->
         <section id="home-picks" class="lg:col-span-2 w-full hidden flex-col">
           <div class="flex items-center justify-between mb-4 pr-2">
-            <h2 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <h2 class="text-xl font-bold tracking-tight flex items-center gap-2">
                Recommended for you
             </h2>
-            <span class="text-sm font-bold text-cyan-400 hover:underline cursor-pointer">Explore All</span>
+            <span class="text-sm font-bold text-theme-accent hover:underline cursor-pointer">Explore All</span>
           </div>
           <div id="picks-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 min-h-[280px]">
             <!-- Hero items injected here by JS -->
@@ -746,8 +871,8 @@
         <!-- Sponsored Card -->
         <section id="home-sponsored-sidebar" class="w-full hidden flex-col">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Sponsored</h2>
-            <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">AD</span>
+            <h2 class="text-xl font-bold tracking-tight">Sponsored</h2>
+            <span class="text-[10px] font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded">AD</span>
           </div>
           <div id="sponsored-container" class="flex flex-col gap-4 flex-1 min-h-[280px]">
             <!-- Sponsored item injected here by JS -->
@@ -755,11 +880,11 @@
         </section>
       </div>
 
-      <!-- Continue Playing Section with Clear Spacing (pt-8 mt-6 mb-14) -->
+      <!-- Continue Playing Section -->
       <section id="home-recent-section" class="hidden pt-8 mt-6 mb-14 animate-fade-in">
         <div class="flex items-center justify-between mb-5">
-          <h2 class="text-xl font-bold text-white flex items-center gap-2">
-            <i class="ph-fill ph-clock-counter-clockwise text-cyan-400"></i> Continue playing
+          <h2 class="text-xl font-bold flex items-center gap-2">
+            <i class="ph-fill ph-clock-counter-clockwise text-theme-accent"></i> Continue playing
           </h2>
           <i class="ph ph-caret-right text-slate-500"></i>
         </div>
@@ -769,8 +894,8 @@
       <!-- AI Smart Match Section -->
       <section id="home-smart-match-section" class="hidden mb-12 animate-fade-in">
         <div class="flex items-center mb-4 gap-2">
-          <h2 class="text-lg font-bold text-white">Suggested for you</h2>
-          <span class="bg-cyan-500/10 text-cyan-400 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border border-cyan-500/30">AI MATCH</span>
+          <h2 class="text-lg font-bold">Suggested for you</h2>
+          <span class="bg-cyan-500/10 text-theme-accent px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border border-cyan-500/30">AI MATCH</span>
         </div>
         <div id="smart-match-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
       </section>
@@ -778,7 +903,7 @@
       <!-- Main App Catalog Grid -->
       <section id="home-grid-section" class="hidden pb-10">
         <div class="flex items-center mb-4">
-          <h2 id="grid-title" class="text-lg font-bold text-white">Top Rated Apps & Games</h2>
+          <h2 id="grid-title" class="text-lg font-bold">Top Rated Apps & Games</h2>
         </div>
         <div id="grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4"></div>
       </section>
@@ -788,16 +913,16 @@
     <div id="view-leaderboard" class="view-section hidden animate-fade-in">
       <div class="max-w-4xl mx-auto">
         <div class="flex items-center gap-4 mb-8 pt-2">
-           <h1 class="text-2xl font-bold text-white">Top Charts</h1>
+           <h1 class="text-2xl font-bold">Top Charts</h1>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
            <div class="glass-panel rounded-3xl p-6 shadow-xl border border-cyber-border">
-              <h3 class="font-bold text-white mb-4 flex items-center gap-2"><i class="ph-fill ph-users text-cyan-400"></i> Top Users</h3>
+              <h3 class="font-bold mb-4 flex items-center gap-2"><i class="ph-fill ph-users text-theme-accent"></i> Top Users</h3>
               <div id="leaderboard-users" class="space-y-3"></div>
            </div>
            <div class="glass-panel rounded-3xl p-6 shadow-xl border border-cyber-border">
-              <h3 class="font-bold text-white mb-4 flex items-center gap-2"><i class="ph-fill ph-chart-line-up text-emerald-400"></i> Top Grossing</h3>
+              <h3 class="font-bold mb-4 flex items-center gap-2"><i class="ph-fill ph-chart-line-up text-emerald-400"></i> Top Grossing</h3>
               <div id="leaderboard-apps" class="space-y-3"></div>
            </div>
         </div>
@@ -810,26 +935,26 @@
     <!-- FAQ & SUPPORT VIEW -->
     <div id="view-faq" class="view-section hidden animate-fade-in">
       <div class="max-w-3xl mx-auto pt-2">
-        <h1 class="text-2xl font-bold text-white mb-6">Support & Help</h1>
+        <h1 class="text-2xl font-bold mb-6">Support & Help</h1>
         
         <div class="glass-panel rounded-3xl p-6 sm:p-8 shadow-xl border border-cyber-border mb-8">
           <div class="space-y-6">
              <div>
-               <h3 class="font-bold text-white mb-1">How do I publish my app?</h3>
+               <h3 class="font-bold mb-1">How do I publish my app?</h3>
                <p class="text-slate-400 text-sm">Click "Publish" in the header to launch the Creator Studio.</p>
              </div>
              <div>
-               <h3 class="font-bold text-white mb-1">Play Protect Verification</h3>
+               <h3 class="font-bold mb-1">Play Protect Verification</h3>
                <p class="text-slate-400 text-sm">Apps are scanned and verified by administrators to ensure user safety.</p>
              </div>
           </div>
         </div>
 
         <div class="glass-panel rounded-3xl p-6 shadow-xl border border-cyber-border">
-          <h2 class="text-lg font-bold text-white mb-4">Send Feedback</h2>
+          <h2 class="text-lg font-bold mb-4">Send Feedback</h2>
           <form data-submit="submitFeedback">
              <textarea id="feedback-input" required rows="4" class="w-full border border-slate-700/80 rounded-2xl px-4 py-3 mb-4 focus:border-cyan-400 outline-none text-sm bg-slate-900/90 text-white resize-none" placeholder="Describe your issue or suggestion..."></textarea>
-             <button type="submit" id="feedback-submit-btn" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold px-6 py-2.5 rounded-full text-sm transition-all shadow-md">
+             <button type="submit" id="feedback-submit-btn" class="bg-theme-accent text-black font-bold px-6 py-2.5 rounded-full text-sm transition-all shadow-md">
                Submit Feedback
              </button>
           </form>
@@ -846,12 +971,12 @@
         </div>
 
         <div id="wrapped-section" class="hidden mb-8">
-           <div class="bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-600 rounded-3xl p-6 text-black shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+           <div class="bg-theme-accent rounded-3xl p-6 text-black shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
                   <h2 class="text-lg font-bold flex items-center gap-2"><i class="ph-fill ph-sparkle text-black"></i> Nexus Recap</h2>
                   <p class="text-sm text-slate-900 font-medium">AI summary of your monthly activity.</p>
               </div>
-              <button data-click="generateNexusWrapped" id="btn-generate-wrapped" class="bg-black text-cyan-400 px-5 py-2.5 rounded-full font-bold text-sm shadow-md hover:bg-slate-900 transition-colors whitespace-nowrap">
+              <button data-click="generateNexusWrapped" id="btn-generate-wrapped" class="bg-black text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-md hover:bg-slate-900 transition-colors whitespace-nowrap">
                  Reveal Recap
               </button>
            </div>
@@ -860,40 +985,40 @@
            </div>
         </div>
         
-        <h2 class="text-lg font-bold text-white mb-4">Published Apps</h2>
+        <h2 class="text-lg font-bold mb-4">Published Apps</h2>
         <div id="profile-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"></div>
 
         <div id="favorites-section" class="hidden mt-10">
-          <h2 class="text-lg font-bold text-white mb-4">Wishlist & Favorites</h2>
+          <h2 class="text-lg font-bold mb-4">Wishlist & Favorites</h2>
           <div id="favorites-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"></div>
         </div>
 
         <div id="analytics-section" class="hidden mt-10 border-t border-cyber-border pt-8 animate-fade-in">
-          <h2 class="text-lg font-bold text-white mb-6">Developer Console</h2>
+          <h2 class="text-lg font-bold mb-6">Developer Console</h2>
 
           <!-- KPI Cards -->
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div class="glass-panel rounded-2xl p-4 shadow-lg border border-cyber-border">
                <div class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Revenue</div>
-               <div class="text-2xl font-bold text-white flex items-center gap-1"><i class="ph-fill ph-coin text-amber-400 text-xl"></i> <span id="stat-revenue">0</span></div>
+               <div class="text-2xl font-bold flex items-center gap-1"><i class="ph-fill ph-coin text-amber-400 text-xl"></i> <span id="stat-revenue">0</span></div>
             </div>
             <div class="glass-panel rounded-2xl p-4 shadow-lg border border-cyber-border">
                <div class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Installs</div>
-               <div class="text-2xl font-bold text-white"><span id="stat-downloads">0</span></div>
+               <div class="text-2xl font-bold"><span id="stat-downloads">0</span></div>
             </div>
             <div class="glass-panel rounded-2xl p-4 shadow-lg border border-cyber-border">
                <div class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Avg Rating</div>
-               <div class="text-2xl font-bold text-white"><span id="stat-rating">0.0</span> <span class="text-xs text-slate-500" id="stat-rating-count">(0)</span></div>
+               <div class="text-2xl font-bold"><span id="stat-rating">0.0</span> <span class="text-xs text-slate-500" id="stat-rating-count">(0)</span></div>
             </div>
             <div class="glass-panel rounded-2xl p-4 shadow-lg border border-cyber-border">
                <div class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Store Views</div>
-               <div class="text-2xl font-bold text-white"><span id="stat-views">0</span></div>
+               <div class="text-2xl font-bold"><span id="stat-views">0</span></div>
             </div>
           </div>
 
           <div class="mb-8">
              <div class="flex items-center justify-between mb-2">
-                 <button data-click="generateDevInsights" id="btn-generate-insights" class="bg-cyan-500/10 text-cyan-400 px-4 py-2 rounded-full font-bold text-xs transition-colors flex items-center gap-1.5 border border-cyan-500/30">
+                 <button data-click="generateDevInsights" id="btn-generate-insights" class="bg-cyan-500/10 text-theme-accent px-4 py-2 rounded-full font-bold text-xs transition-colors flex items-center gap-1.5 border border-cyan-500/30">
                      <i class="ph-fill ph-sparkle"></i> AI Insights
                  </button>
              </div>
@@ -905,7 +1030,7 @@
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
              <div class="lg:col-span-2 glass-panel rounded-2xl p-5 shadow-lg border border-cyber-border flex flex-col">
                 <div class="flex items-center justify-between mb-4">
-                   <h3 class="font-bold text-white text-sm">Performance</h3>
+                   <h3 class="font-bold text-sm">Performance</h3>
                    <select id="analytics-timeframe" onchange="window.updateAnalyticsChart(this.value)" class="bg-slate-900 border border-slate-700 text-slate-300 text-xs font-bold px-3 py-1 rounded-lg outline-none">
                        <option value="7d">7 Days</option>
                        <option value="30d">30 Days</option>
@@ -917,7 +1042,7 @@
              </div>
              
              <div class="glass-panel rounded-2xl p-5 shadow-lg border border-cyber-border h-64 flex flex-col">
-                <h3 class="font-bold text-white text-sm mb-3">Recent Transactions</h3>
+                <h3 class="font-bold text-sm mb-3">Recent Transactions</h3>
                 <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2" id="analytics-sales-feed"></div>
              </div>
           </div>
@@ -945,14 +1070,14 @@
       <div class="max-w-3xl mx-auto rounded-3xl shadow-2xl border glass-panel border-cyber-border overflow-hidden">
         
         <div class="p-6 border-b border-cyber-border flex items-center justify-between bg-black/30">
-            <h1 id="upload-title" class="text-xl font-bold text-white">Publish App</h1>
+            <h1 id="upload-title" class="text-xl font-bold">Publish App</h1>
             <button data-click="navigateFromAdmin" class="text-slate-400 hover:text-white p-1 rounded-full">
               <i class="ph-bold ph-x text-lg"></i>
             </button>
         </div>
 
         <div class="flex justify-center border-b border-cyber-border bg-black/20">
-          <button type="button" id="tab-publish-app" data-click="switchUploadTab" data-arg="app" class="px-6 py-3 font-bold text-sm text-cyan-400 border-b-2 border-cyan-400 flex items-center gap-2 bg-slate-900/40">
+          <button type="button" id="tab-publish-app" data-click="switchUploadTab" data-arg="app" class="px-6 py-3 font-bold text-sm text-theme-accent border-b-2 border-theme-accent flex items-center gap-2 bg-slate-900/40">
             <i class="ph-fill ph-app-window"></i> App
           </button>
           <button type="button" id="tab-publish-ad" data-click="switchUploadTab" data-arg="ad" class="px-6 py-3 font-bold text-sm text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-2">
@@ -1030,7 +1155,7 @@
                 <img id="icon-preview" class="w-full h-full object-cover hidden" />
                 <div id="icon-placeholder" class="text-slate-400 text-center"><i class="ph ph-image text-xl"></i></div>
               </div>
-              <button type="button" data-click="generateAiIcon" class="mt-2 w-24 text-[10px] font-bold text-cyan-400 bg-cyan-500/10 py-1 rounded-lg hover:bg-cyan-500/20 transition-colors">AI Generate</button>
+              <button type="button" data-click="generateAiIcon" class="mt-2 w-24 text-[10px] font-bold text-theme-accent bg-cyan-500/10 py-1 rounded-lg hover:bg-cyan-500/20 transition-colors">AI Generate</button>
             </div>
 
             <div class="flex-1">
@@ -1047,7 +1172,7 @@
 
           <div>
             <div class="flex gap-2 mb-4">
-              <button type="button" id="btn-payload-code" class="px-4 py-1.5 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Code</button>
+              <button type="button" id="btn-payload-code" class="px-4 py-1.5 rounded-full text-xs font-bold bg-cyan-500/20 text-theme-accent border border-cyan-500/30">Code</button>
               <button type="button" id="btn-payload-url" class="px-4 py-1.5 rounded-full text-xs font-bold text-slate-400 hover:bg-slate-800">URL</button>
             </div>
 
@@ -1061,11 +1186,11 @@
               </div>
               <div class="flex items-center gap-2 p-2.5 bg-slate-900/60 border-b border-slate-700/80">
                  <input type="text" id="ai-forge-input" placeholder="AI Prompt..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-400">
-                 <button type="button" id="ai-forge-btn" data-click="generateAiApp" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-black px-3.5 py-1.5 rounded-lg text-xs font-bold">Gen</button>
+                 <button type="button" id="ai-forge-btn" data-click="generateAiApp" class="bg-theme-accent text-black px-3.5 py-1.5 rounded-lg text-xs font-bold">Gen</button>
               </div>
               <div class="flex flex-col sm:flex-row h-64">
                 <div class="w-full sm:w-1/2 border-b sm:border-b-0 sm:border-r border-slate-700/80 relative">
-                  <textarea id="app-code" class="absolute inset-0 w-full h-full bg-slate-950 text-cyan-400 font-mono text-xs p-3 outline-none resize-none" spellcheck="false"></textarea>
+                  <textarea id="app-code" class="absolute inset-0 w-full h-full bg-slate-950 text-theme-accent font-mono text-xs p-3 outline-none resize-none" spellcheck="false"></textarea>
                   <button type="button" data-click="promptAiEdit" class="absolute bottom-2 right-2 bg-slate-800 text-slate-200 px-2.5 py-1 rounded text-[10px] opacity-80 hover:opacity-100 z-20">AI Edit</button>
                 </div>
                 <div class="w-full sm:w-1/2 relative bg-white">
@@ -1087,7 +1212,7 @@
 
           <div class="flex justify-end gap-3 pt-6">
             <button type="button" data-click="navigateFromAdmin" class="px-6 py-2 rounded-full font-bold text-sm text-slate-400 hover:bg-slate-800">Cancel</button>
-            <button type="submit" id="btn-submit" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold px-8 py-2 rounded-full text-sm shadow-md">Publish</button>
+            <button type="submit" id="btn-submit" class="bg-theme-accent text-black font-bold px-8 py-2 rounded-full text-sm shadow-md">Publish</button>
           </div>
         </form>
 
@@ -1120,7 +1245,7 @@
         </div>
 
         <div class="flex gap-1 mb-4 border-b border-cyber-border overflow-x-auto hide-scrollbar">
-          <button data-click="switchAdminTab" data-arg="apps" id="tab-btn-apps" class="px-4 py-2 text-sm font-bold text-cyan-400 border-b-2 border-cyan-400 whitespace-nowrap">Apps</button>
+          <button data-click="switchAdminTab" data-arg="apps" id="tab-btn-apps" class="px-4 py-2 text-sm font-bold text-theme-accent border-b-2 border-cyan-400 whitespace-nowrap">Apps</button>
           <button data-click="switchAdminTab" data-arg="users" id="tab-btn-users" class="px-4 py-2 text-sm font-bold text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap">Users</button>
           <button data-click="switchAdminTab" data-arg="logs" id="tab-btn-logs" class="px-4 py-2 text-sm font-bold text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap">Logs</button>
           <button data-click="switchAdminTab" data-arg="news" id="tab-btn-news" class="px-4 py-2 text-sm font-bold text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap">News</button>
@@ -1169,7 +1294,7 @@
             <div class="p-4 border-b border-cyber-border">
               <form data-submit="adminCreateNews" class="flex gap-2">
                 <input type="text" id="admin-news-input" required placeholder="Announcement..." class="flex-1 border border-slate-700/80 rounded-full px-4 py-1.5 text-sm outline-none bg-slate-900/90 text-white">
-                <button type="submit" id="admin-news-submit" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-black px-5 py-1.5 rounded-full text-sm font-bold shadow-md">Post</button>
+                <button type="submit" id="admin-news-submit" class="bg-theme-accent text-black px-5 py-1.5 rounded-full text-sm font-bold shadow-md">Post</button>
               </form>
             </div>
             <table class="w-full text-left text-sm">
@@ -1193,7 +1318,7 @@
             <div>
               <form data-submit="adminAddDevUid" class="flex gap-2 mb-4">
                  <input type="text" id="admin-new-dev-uid" required placeholder="Add Developer by Email" class="flex-1 border border-slate-700/80 rounded-full px-4 py-1.5 text-sm bg-slate-900/90 text-white">
-                 <button type="submit" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-black px-4 py-1.5 rounded-full text-sm font-bold shadow-md">Add</button>
+                 <button type="submit" class="bg-theme-accent text-black px-4 py-1.5 rounded-full text-sm font-bold shadow-md">Add</button>
               </form>
               <h3 class="font-bold text-sm mb-3 text-white">Approved Developers</h3>
               <div id="admin-allowed-devs" class="space-y-2"></div>
@@ -1213,6 +1338,31 @@
   </main>
 
   <script>
+    // Theme Engine Handler
+    function applyTheme(theme) {
+      document.body.className = ''; // Reset theme classes
+      const activeTabs = document.querySelectorAll('.nav-tab-btn.border-b-2');
+      
+      if (theme === 'retro') {
+        document.body.classList.add('theme-retro');
+      } else if (theme === 'sunset') {
+        document.body.classList.add('theme-sunset');
+      } else if (theme === 'matrix') {
+        document.body.classList.add('theme-matrix');
+      } else if (theme === 'google') {
+        document.body.classList.add('theme-google');
+      } else if (theme === 'space') {
+        document.body.classList.add('theme-space');
+      } else if (theme === 'oled') {
+        document.body.classList.add('theme-oled');
+      } else if (theme === 'light') {
+        document.body.classList.add('theme-light');
+      } else {
+        // Default Dark / Cyberpunk
+        document.body.classList.add('dark');
+      }
+    }
+
     // Comprehensive UI Event Handler: Tab Switcher, Theme Control & Modal Manager
     document.addEventListener('click', (e) => {
       // 1. Navigation Tab Switching & Indicator Highlight
@@ -1222,7 +1372,7 @@
         const tabBtns = document.querySelectorAll('.nav-tab-btn');
         tabBtns.forEach(tab => {
           if (tab.getAttribute('data-arg') === arg || (arg === 'home' && tab.innerText.includes('For you'))) {
-            tab.className = "nav-tab-btn text-cyan-400 border-b-2 border-cyan-400 pb-2 font-bold whitespace-nowrap flex items-center gap-2";
+            tab.className = "nav-tab-btn text-theme-accent border-b-2 border-theme-accent pb-2 font-bold whitespace-nowrap flex items-center gap-2";
           } else {
             tab.className = "nav-tab-btn text-slate-400 hover:text-white pb-2 border-b-2 border-transparent whitespace-nowrap transition-colors flex items-center gap-2";
           }
@@ -1252,48 +1402,26 @@
         }
       }
 
-      // 4. Theme Mode Switcher (Light / Dark / OLED / Space)
+      // 4. Full Theme Mode Switcher
       const modeBtn = e.target.closest('[data-click="setThemeMode"]');
       if (modeBtn) {
         const mode = modeBtn.getAttribute('data-arg');
-        const html = document.documentElement;
-        if (mode === 'light') {
-          html.classList.remove('dark');
-          document.body.style.backgroundColor = '#f8fafc';
-          document.body.style.color = '#0f172a';
-        } else if (mode === 'dark') {
-          html.classList.add('dark');
-          document.body.style.backgroundColor = '#080b11';
-          document.body.style.color = '#f8fafc';
-        } else if (mode === 'oled') {
-          html.classList.add('dark');
-          document.body.style.backgroundColor = '#000000';
-          document.body.style.color = '#ffffff';
-        } else if (mode === 'space') {
-          html.classList.add('dark');
-          document.body.style.backgroundColor = '#030712';
-          document.body.style.color = '#f3f4f6';
-        }
+        applyTheme(mode);
       }
 
       // 5. Theme Accent Switcher
       const accentBtn = e.target.closest('[data-click="setThemeAccent"]');
       if (accentBtn) {
         const accent = accentBtn.getAttribute('data-arg');
-        const activeTabs = document.querySelectorAll('.nav-tab-btn.border-b-2');
         const colors = {
-          emerald: '#10b981',
+          emerald: '#00ff66',
           indigo: '#6366f1',
-          rose: '#f43f5e',
-          amber: '#f59e0b',
+          rose: '#ff007f',
+          amber: '#f97316',
           cyan: '#00f2fe'
         };
         if (colors[accent]) {
           document.documentElement.style.setProperty('--accent-color', colors[accent]);
-          activeTabs.forEach(t => {
-            t.style.borderColor = colors[accent];
-            t.style.color = colors[accent];
-          });
         }
       }
     });
