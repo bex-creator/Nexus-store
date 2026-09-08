@@ -755,11 +755,6 @@
     </div>
   </div>
 
-  <!-- Vault Bookmark Toggle -->
-  <button id="vault-mode-toggle" data-click="toggleVaultMode" class="fixed bottom-20 sm:bottom-6 left-4 sm:left-6 z-40 glass-panel text-white px-4 py-2 rounded-full font-bold shadow-xl text-sm hidden items-center gap-2 border border-cyber-border hover:border-cyan-400 transition-all">
-    <i class="ph-fill ph-vault text-theme-accent"></i> Vault Mode
-  </button>
-
   <!-- Mobile Bottom Navigation Dock -->
   <nav class="sm:hidden fixed bottom-0 inset-x-0 z-50 glass-panel border-t border-cyber-border pb-2 pt-1 shadow-2xl">
     <div class="flex items-center justify-around h-14">
@@ -1948,10 +1943,6 @@
     let promotedAds = [];
     let currentAdImageBase64 = null;
     
-    // VAULT LOGIC
-    let userVault = [];
-    let isVaultMode = false;
-
     const handleUserStatus = (status) => {
       currentUserStatus = status;
       const bannedOverlay = document.getElementById('banned-overlay');
@@ -2159,12 +2150,10 @@
           currentUser = user;
           const balContainer = document.getElementById('coin-balance-container');
           const profileEl = document.getElementById('user-profile');
-          const vaultToggle = document.getElementById('vault-mode-toggle');
 
           if (!user) {
               if (balContainer) { balContainer.classList.add('hidden'); balContainer.classList.remove('flex'); }
               if (profileEl) { profileEl.classList.add('hidden'); profileEl.classList.remove('flex'); }
-              if (vaultToggle) { vaultToggle.classList.add('hidden'); vaultToggle.classList.remove('flex'); }
               
               window.isAuthorizedAdmin = false;
               
@@ -2175,7 +2164,6 @@
               privateUnsubs.forEach(unsub => unsub());
               privateUnsubs = [];
               myFavorites.clear();
-              userVault = [];
               userMessages = [];
               updateInboxBookmark();
 
@@ -2187,7 +2175,6 @@
 
           // User is Authenticated
           if (profileEl) { profileEl.classList.remove('hidden'); profileEl.classList.add('flex'); }
-          if (vaultToggle) { vaultToggle.classList.remove('hidden'); vaultToggle.classList.add('flex'); }
 
           if (localStorage.getItem('nexus_admin_verified') === 'true' && user && user.email === 'bexlebeau30@students.cumberlandschools.org') {
               window.isAuthorizedAdmin = true;
@@ -2279,18 +2266,8 @@
           }, (error) => console.warn("Firestore favorites error:", error));
           privateUnsubs.push(favsUnsub);
           
-          // SETUP PREFERENCES (VAULT + MONTHLY FEEDBACK)
+          // SETUP PREFERENCES & MONTHLY FEEDBACK CHECK
           const userPrefsRef = doc(db, 'artifacts', appId, 'users', user.uid, 'preferences', 'general');
-          const prefsUnsub = onSnapshot(userPrefsRef, (docSnap) => {
-              if (docSnap.exists()) {
-                  userVault = docSnap.data().vault || [];
-                  if (currentView === 'home') renderHome();
-                  if (currentView === 'details' && selectedAppId) renderDetails(selectedAppId);
-              }
-          });
-          privateUnsubs.push(prefsUnsub);
-
-          // MONTHLY FEEDBACK CHECK
           try {
               const currentMonth = new Date().toISOString().slice(0, 7); // e.g., "2023-10"
               const prefSnap = await getDoc(userPrefsRef);
@@ -3152,52 +3129,13 @@
       `}).join('');
     };
 
-    window.toggleVaultMode = () => {
-        isVaultMode = !isVaultMode;
-        
-        const vaultToggle = document.getElementById('vault-mode-toggle');
-        if (vaultToggle) {
-            vaultToggle.innerHTML = isVaultMode ? 
-                '<i class="ph-fill ph-vault"></i> Exit Vault' : 
-                '<i class="ph-fill ph-vault"></i> Enter Vault';
-            vaultToggle.className = isVaultMode ?
-                'fixed bottom-6 left-6 z-40 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-emerald-500/30 transition-transform transform hover:scale-105 flex items-center gap-2' :
-                'fixed bottom-6 left-6 z-40 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white px-6 py-3 rounded-full font-bold shadow-lg transition-transform transform hover:scale-105 flex items-center gap-2';
-        }
-        
-        if(currentView === 'home') {
-            renderHome();
-        }
-    };
-
-    window.toggleVault = async (targetAppId) => {
-        if (!currentUser) {
-            showModal('Not Logged In', 'You must create an account or sign in to use the Vault.');
-            return;
-        }
-        const userPrefsRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'preferences', 'general');
-        try {
-            if (userVault.includes(targetAppId)) {
-                await setDoc(userPrefsRef, { vault: arrayRemove(targetAppId) }, { merge: true });
-                showToast('Removed from Vault', 'App removed from your offline Vault.', 'ph-vault', 'slate');
-            } else {
-                await setDoc(userPrefsRef, { vault: arrayUnion(targetAppId) }, { merge: true });
-                showToast('Added to Vault', 'App saved to your Vault!', 'ph-vault', 'emerald');
-            }
-        } catch (err) {
-            console.error("Error toggling vault:", err);
-        }
-    };
-
     function renderHome() {
       const me = currentUser ? systemUsers.find(u => u.uid === currentUser.uid) : null;
       const purchasedApps = me?.purchasedApps || [];
 
       const filtered = window.apps.filter(app => {
-        if (isVaultMode && !userVault.includes(app.id)) return false;
-        
         // FIX: Prevent private (locked) apps from appearing in the general storefront tabs
-        if (app.visibility === 'private' && selectedCategory !== 'Library' && !isVaultMode) {
+        if (app.visibility === 'private' && selectedCategory !== 'Library') {
             return false;
         }
         
@@ -3257,7 +3195,7 @@
 
       if (window.adRotationInterval) clearInterval(window.adRotationInterval);
 
-      if (!searchQuery && !isVaultMode && promotedAds.length > 0 && sponsoredSidebar) {
+      if (!searchQuery && promotedAds.length > 0 && sponsoredSidebar) {
           sponsoredSidebar.classList.remove('hidden');
           
           sponsoredSidebar.innerHTML = `
@@ -3324,7 +3262,7 @@
           todaysPicks = [filtered[pickIndex]];
       }
 
-      if (!searchQuery && !isVaultMode && todaysPicks.length > 0 && picksSection) {
+      if (!searchQuery && todaysPicks.length > 0 && picksSection) {
         picksSection.classList.remove('hidden');
         const picksHtml = todaysPicks.map((app, idx) => `
           <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col justify-center min-h-[300px] shadow-lg transition-all duration-300 hover:-translate-y-1 bg-black dark:bg-slate-900 border border-slate-800 h-full">
@@ -3379,7 +3317,7 @@
               .filter(a => a && (a.visibility !== 'private' || (currentUser && a.authorId === currentUser.uid)))
               .slice(0, 6);
               
-          if (recentAppsToRender.length > 0 && !searchQuery && !isVaultMode && selectedCategory === 'All') {
+          if (recentAppsToRender.length > 0 && !searchQuery && selectedCategory === 'All') {
               recentSection.classList.remove('hidden');
               document.getElementById('recent-container').innerHTML = generateGridHtml(recentAppsToRender);
           } else {
@@ -3388,8 +3326,8 @@
       }
 
       // SMART MATCH LOGIC
-      if (currentUser && window.aiReady && !window.smartMatchRequested && !isVaultMode && !searchQuery && selectedCategory === 'All') {
-          const historyApps = [...(me?.recentApps || []), ...(me?.purchasedApps || []), ...userVault];
+      if (currentUser && window.aiReady && !window.smartMatchRequested && !searchQuery && selectedCategory === 'All') {
+          const historyApps = [...(me?.recentApps || []), ...(me?.purchasedApps || [])];
           if (historyApps.length > 0) {
               window.smartMatchRequested = true;
               // Extract titles of games they know for context
@@ -3400,7 +3338,7 @@
 
       const smartMatchSection = document.getElementById('home-smart-match-section');
       if (smartMatchSection) {
-          if (window.smartMatchResults && window.smartMatchResults.length > 0 && !searchQuery && !isVaultMode && selectedCategory === 'All') {
+          if (window.smartMatchResults && window.smartMatchResults.length > 0 && !searchQuery && selectedCategory === 'All') {
               smartMatchSection.classList.remove('hidden');
               
               document.getElementById('smart-match-container').innerHTML = window.smartMatchResults.map(match => {
@@ -3424,9 +3362,7 @@
           }
       }
 
-      if (isVaultMode) {
-          document.getElementById('grid-title').textContent = 'My Vault';
-      } else if (window.isSemanticSearchActive) {
+      if (window.isSemanticSearchActive) {
           document.getElementById('grid-title').innerHTML = `AI Search Results <i class="ph-fill ph-sparkle text-indigo-500 animate-pulse"></i>`;
       } else {
           document.getElementById('grid-title').innerHTML = searchQuery ? 'Search Results' : (isMidnightHour() ? 'Trending Now <span class="ml-3 inline-flex items-center gap-1.5 bg-indigo-500 text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-indigo-500/30 animate-pulse"><i class="ph-fill ph-moon-stars"></i> Midnight Hour: 25% Off!</span>' : 'Trending Now');
@@ -3779,7 +3715,6 @@
       if (!app) return;
 
       const isInstalled = installedApps.has(app.id);
-      const isInVault = userVault.includes(app.id);
       const stats = getAppStats(app);
       const isAuthorizedAdmin = window.isAuthorizedAdmin;
       
@@ -3926,10 +3861,6 @@
                           <i class="ph ph-code text-2xl"></i>
                         </button>
                       ` : ''}
-                      
-                      <button data-click="toggleVault" data-arg="${app.id}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center ${isInVault ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40' : 'bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white'}" title="${isInVault ? 'Remove from Vault' : 'Add to Vault'}">
-                        <i class="${isInVault ? 'ph-fill' : 'ph'} ph-vault text-2xl"></i>
-                      </button>
 
                       <button data-click="shareApp" data-arg="${sanitizeHTML(app.title)}" class="w-14 h-14 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 active:translate-y-0 flex-shrink-0 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" title="Share App">
                         <i class="ph ph-share-network text-2xl"></i>
@@ -6371,8 +6302,7 @@
       else if (action === 'downloadApp') window.downloadApp(arg1);
       else if (action === 'shareApp') window.shareApp(arg1);
       else if (action === 'toggleFavorite') window.toggleFavorite(arg1);
-      else if (action === 'toggleVault') window.toggleVault(arg1);
-      else if (action === 'toggleVaultMode') window.toggleVaultMode();
+      else if (action === 'toggleConsoleMode') window.toggleConsoleMode();
       else if (action === 'deleteApp') window.deleteApp(arg1);
       else if (action === 'setReviewRating') window.setReviewRating(parseInt(arg1));
       else if (action === 'adminToggleVerify') window.adminToggleVerify(arg1);
