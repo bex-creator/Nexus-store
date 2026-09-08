@@ -1385,7 +1385,8 @@
 
     // Theme Engine Handler
     function applyTheme(theme) {
-      document.body.className = ''; // Reset theme classes
+      // Preserve essential layout classes while resetting themes!
+      document.body.className = 'transition-colors duration-300 min-h-screen font-sans selection:bg-cyan-500 selection:text-black';
       
       const themeColors = {
         dark: { accent: '#00f2fe', bg: '#080b11', card: 'rgba(15, 21, 34, 0.85)', border: 'rgba(255, 255, 255, 0.07)', glow: 'rgba(0, 242, 254, 0.25)', text: '#f8fafc', isDark: true, name: 'Cyberpunk' },
