@@ -1371,161 +1371,6 @@
 
   </main>
 
-  <script>
-    // Show toast message
-    function showToastMsg(msg) {
-      const container = document.getElementById('toast-container');
-      if (!container) return;
-      const toast = document.createElement('div');
-      toast.className = 'px-4 py-2.5 rounded-full text-xs font-bold text-white bg-slate-800 shadow-xl border border-slate-700 pointer-events-auto animate-fade-in';
-      toast.innerText = msg;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    }
-
-    // Theme Engine Handler
-    function applyTheme(theme) {
-      // Preserve essential layout classes while resetting themes!
-      document.body.className = 'transition-colors duration-300 min-h-screen font-sans selection:bg-cyan-500 selection:text-black';
-      
-      const themeColors = {
-        dark: { accent: '#00f2fe', bg: '#080b11', card: 'rgba(15, 21, 34, 0.85)', border: 'rgba(255, 255, 255, 0.07)', glow: 'rgba(0, 242, 254, 0.25)', text: '#f8fafc', isDark: true, name: 'Cyberpunk' },
-        retro: { accent: '#ff007f', bg: '#0d001a', card: '#1c0330', border: '#ff007f', glow: 'rgba(255, 0, 127, 0.4)', text: '#ffe6f2', isDark: true, name: 'Retro Arcade 🕹️' },
-        sunset: { accent: '#f97316', bg: '#18081f', card: 'rgba(42, 14, 52, 0.85)', border: 'rgba(249, 115, 22, 0.35)', glow: 'rgba(249, 115, 22, 0.35)', text: '#fff7ed', isDark: true, name: 'Vaporwave 🌅' },
-        matrix: { accent: '#00ff66', bg: '#020d06', card: 'rgba(4, 28, 14, 0.9)', border: 'rgba(0, 255, 102, 0.3)', glow: 'rgba(0, 255, 102, 0.25)', text: '#d1fae5', isDark: true, name: 'Matrix Code 📟' },
-        google: { accent: '#01875f', bg: '#202124', card: '#303134', border: '#3c4043', glow: 'rgba(1, 135, 95, 0.25)', text: '#ffffff', isDark: true, name: 'Play Store 🟢' },
-        space: { accent: '#6366f1', bg: '#030712', card: 'rgba(15, 23, 42, 0.9)', border: 'rgba(99, 102, 241, 0.3)', glow: 'rgba(99, 102, 241, 0.35)', text: '#f1f5f9', isDark: true, name: 'Deep Space 🌌' },
-        oled: { accent: '#38bdf8', bg: '#000000', card: '#09090b', border: '#27272a', glow: 'rgba(56, 189, 248, 0.15)', text: '#ffffff', isDark: true, name: 'Pure OLED 🖤' },
-        light: { accent: '#0284c7', bg: '#f8fafc', card: '#ffffff', border: '#e2e8f0', glow: 'rgba(2, 132, 199, 0.15)', text: '#0f172a', isDark: false, name: 'Clean Light ☀️' }
-      };
-
-      const t = themeColors[theme] || themeColors.dark;
-
-      if (theme !== 'dark') {
-        document.body.classList.add(`theme-${theme}`);
-      }
-
-      if (t.isDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-
-      document.documentElement.style.setProperty('--accent-color', t.accent);
-      document.documentElement.style.setProperty('--bg-color', t.bg);
-      document.documentElement.style.setProperty('--card-bg', t.card);
-      document.documentElement.style.setProperty('--card-border', t.border);
-      document.documentElement.style.setProperty('--glow-color', t.glow);
-      document.documentElement.style.setProperty('--text-main', t.text);
-
-      // Update active tab styling
-      const activeTabs = document.querySelectorAll('.nav-tab-btn.border-b-2');
-      activeTabs.forEach(tab => {
-        tab.style.borderColor = t.accent;
-        tab.style.color = t.accent;
-      });
-
-      localStorage.setItem('nexus_theme_mode', theme);
-      return t.name;
-    }
-
-    // Comprehensive UI Event Handler: Tab Switcher, Theme Control & Modal Manager
-    document.addEventListener('click', (e) => {
-      // 1. Navigation Tab Switching & Indicator Highlight
-      const navBtn = e.target.closest('[data-click="navigate"]');
-      if (navBtn && navBtn.hasAttribute('data-arg')) {
-        const arg = navBtn.getAttribute('data-arg');
-        const tabBtns = document.querySelectorAll('.nav-tab-btn');
-        tabBtns.forEach(tab => {
-          if (tab.getAttribute('data-arg') === arg || (arg === 'home' && tab.innerText.includes('For you'))) {
-            tab.className = "nav-tab-btn text-theme-accent border-b-2 border-theme-accent pb-2 font-bold whitespace-nowrap flex items-center gap-2";
-            tab.style.borderColor = "var(--accent-color)";
-            tab.style.color = "var(--accent-color)";
-          } else {
-            tab.className = "nav-tab-btn text-slate-400 hover:text-white pb-2 border-b-2 border-transparent whitespace-nowrap transition-colors flex items-center gap-2";
-            tab.style.borderColor = "transparent";
-            tab.style.color = "";
-          }
-        });
-      }
-
-      // 2. Open Theme Modal
-      const openModalBtn = e.target.closest('[data-click="showThemeModal"]');
-      if (openModalBtn) {
-        const modal = document.getElementById('theme-modal');
-        if (modal) {
-          modal.classList.remove('hidden');
-          modal.classList.add('flex');
-        }
-      }
-
-      // 3. Close Modals
-      const closeModalBtn = e.target.closest('[data-click="closeModal"]');
-      if (closeModalBtn) {
-        const modalId = closeModalBtn.getAttribute('data-arg');
-        if (modalId) {
-          const modal = document.getElementById(modalId);
-          if (modal) {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-          }
-        }
-      }
-
-      // 4. Full Theme Mode Switcher
-      const modeBtn = e.target.closest('[data-click="setThemeMode"]');
-      if (modeBtn) {
-        const mode = modeBtn.getAttribute('data-arg');
-        const themeName = applyTheme(mode);
-        
-        // Close modal automatically so user sees immediate results
-        const modal = document.getElementById('theme-modal');
-        if (modal) {
-          modal.classList.add('hidden');
-          modal.classList.remove('flex');
-        }
-        
-        showToastMsg(`Switched to ${themeName}`);
-      }
-
-      // 5. Theme Accent Switcher
-      const accentBtn = e.target.closest('[data-click="setThemeAccent"]');
-      if (accentBtn) {
-        const accent = accentBtn.getAttribute('data-arg');
-        const colors = {
-          emerald: '#00ff66',
-          indigo: '#6366f1',
-          rose: '#ff007f',
-          amber: '#f97316',
-          cyan: '#00f2fe'
-        };
-        if (colors[accent]) {
-          document.documentElement.style.setProperty('--accent-color', colors[accent]);
-          const activeTabs = document.querySelectorAll('.nav-tab-btn.border-b-2');
-          activeTabs.forEach(t => {
-            t.style.borderColor = colors[accent];
-            t.style.color = colors[accent];
-          });
-          
-          // Close modal automatically
-          const modal = document.getElementById('theme-modal');
-          if (modal) {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-          }
-          
-          showToastMsg(`Accent color updated!`);
-        }
-      }
-    });
-
-    // On Load: Restore saved theme
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedTheme = localStorage.getItem('nexus_theme_mode') || 'dark';
-      applyTheme(savedTheme);
-    });
-  </script>
-  
   <!-- Toast Notification Container -->
   <div id="toast-container" class="fixed bottom-16 sm:bottom-6 right-4 sm:right-6 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
   
@@ -7301,61 +7146,66 @@
 
     // Theme Management Logic
     const accents = {
-      indigo: { 400: '129 140 248', 500: '99 102 241', 600: '79 70 229' },
-      rose: { 400: '251 113 133', 500: '244 63 94', 600: '225 29 72' },
-      emerald: { 400: '52 211 153', 500: '16 185 129', 600: '5 150 105' },
-      amber: { 400: '251 191 36', 500: '245 158 11', 600: '217 119 6' },
-      cyan: { 400: '34 211 238', 500: '6 182 212', 600: '8 145 178' }
+      indigo: { 500: '99 102 241', hex: '#6366f1' },
+      rose: { 500: '244 63 94', hex: '#ff007f' },
+      emerald: { 500: '16 185 129', hex: '#00ff66' },
+      amber: { 500: '245 158 11', hex: '#f97316' },
+      cyan: { 500: '6 182 212', hex: '#00f2fe' }
     };
     
-    let currentAccent = localStorage.getItem('nexus_accent') || 'indigo';
+    let currentAccent = localStorage.getItem('nexus_accent') || 'cyan';
     let currentMode = localStorage.getItem('nexus_mode') || 'dark';
     let currentCursor = localStorage.getItem('nexus_cursor') || 'modern';
 
     window.applyTheme = () => {
       const root = document.documentElement;
       
-      const colors = accents[currentAccent] || accents.indigo;
-      root.style.setProperty('--theme-accent-400', colors[400]);
-      root.style.setProperty('--theme-accent-500', colors[500]);
-      root.style.setProperty('--theme-accent-600', colors[600]);
-      root.style.setProperty('--theme-bg-50', '244 244 246');
+      const themeColors = {
+        dark: { bg: '#080b11', card: 'rgba(15, 21, 34, 0.85)', border: 'rgba(255, 255, 255, 0.07)', glow: 'rgba(0, 242, 254, 0.25)', text: '#f8fafc', isDark: true, name: 'Cyberpunk' },
+        retro: { bg: '#0d001a', card: '#1c0330', border: '#ff007f', glow: 'rgba(255, 0, 127, 0.4)', text: '#ffe6f2', isDark: true, name: 'Retro Arcade 🕹️' },
+        sunset: { bg: '#18081f', card: 'rgba(42, 14, 52, 0.85)', border: 'rgba(249, 115, 22, 0.35)', glow: 'rgba(249, 115, 22, 0.35)', text: '#fff7ed', isDark: true, name: 'Vaporwave 🌅' },
+        matrix: { bg: '#020d06', card: 'rgba(4, 28, 14, 0.9)', border: 'rgba(0, 255, 102, 0.3)', glow: 'rgba(0, 255, 102, 0.25)', text: '#d1fae5', isDark: true, name: 'Matrix Code 📟' },
+        google: { bg: '#202124', card: '#303134', border: '#3c4043', glow: 'rgba(1, 135, 95, 0.25)', text: '#ffffff', isDark: true, name: 'Play Store 🟢' },
+        space: { bg: '#030712', card: 'rgba(15, 23, 42, 0.9)', border: 'rgba(99, 102, 241, 0.3)', glow: 'rgba(99, 102, 241, 0.35)', text: '#f1f5f9', isDark: true, name: 'Deep Space 🌌' },
+        oled: { bg: '#000000', card: '#09090b', border: '#27272a', glow: 'rgba(56, 189, 248, 0.15)', text: '#ffffff', isDark: true, name: 'Pure OLED 🖤' },
+        light: { bg: '#f8fafc', card: '#ffffff', border: '#e2e8f0', glow: 'rgba(2, 132, 199, 0.15)', text: '#0f172a', isDark: false, name: 'Clean Light ☀️' }
+      };
 
-      // Reset backgrounds
-      document.body.style.backgroundImage = 'none';
-      document.body.classList.remove('bg-transparent');
-      document.body.classList.add('bg-slate-50', 'dark:bg-slate-950');
+      const t = themeColors[currentMode] || themeColors.dark;
 
-      if (currentMode === 'light') {
-        root.classList.remove('dark');
-      } else if (currentMode === 'space') {
-        root.classList.add('dark');
-        document.body.classList.remove('bg-slate-50', 'dark:bg-slate-950');
-        document.body.classList.add('bg-transparent');
-        document.body.style.backgroundImage = 'url("https://t4.ftcdn.net/jpg/13/80/07/97/360_F_1380079720_ezzVCiKuoGr5vObzznpje5gdkaIIKMsI.jpg")';
-        document.body.style.backgroundSize = 'cover';
-        document.body.style.backgroundPosition = 'center';
-        document.body.style.backgroundAttachment = 'fixed';
-        root.style.setProperty('--theme-bg-800', '15 23 42');
-        root.style.setProperty('--theme-bg-900', '10 15 30');
-        root.style.setProperty('--theme-bg-950', '5 8 20');
-      } else {
-        root.classList.add('dark');
-        if (currentMode === 'oled') {
-          root.style.setProperty('--theme-bg-800', '17 17 17');
-          root.style.setProperty('--theme-bg-900', '5 5 5');
-          root.style.setProperty('--theme-bg-950', '0 0 0');
-        } else {
-          // Standard Dark
-          root.style.setProperty('--theme-bg-800', '30 41 59');
-          root.style.setProperty('--theme-bg-900', '15 23 42');
-          root.style.setProperty('--theme-bg-950', '2 6 23');
-        }
+      // Preserve essential layout classes while resetting themes!
+      document.body.className = 'transition-colors duration-300 min-h-screen font-sans selection:bg-cyan-500 selection:text-black';
+      
+      if (currentMode !== 'dark') {
+        document.body.classList.add(`theme-${currentMode}`);
       }
 
+      if (t.isDark) {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+
+      const activeColor = accents[currentAccent] ? accents[currentAccent].hex : '#00f2fe';
+      
+      root.style.setProperty('--accent-color', activeColor);
+      root.style.setProperty('--bg-color', t.bg);
+      root.style.setProperty('--card-bg', t.card);
+      root.style.setProperty('--card-border', t.border);
+      root.style.setProperty('--glow-color', t.glow);
+      root.style.setProperty('--text-main', t.text);
+      
+      // Update active tab styling
+      const activeTabs = document.querySelectorAll('.nav-tab-btn.border-b-2');
+      activeTabs.forEach(tab => {
+        tab.style.borderColor = activeColor;
+        tab.style.color = activeColor;
+      });
+
       // --- DYNAMIC THEMED CURSORS ---
+      const colors = accents[currentAccent] || accents.cyan;
       const fillRgb = `rgb(${colors[500].split(' ').join(',')})`;
-      const strokeHex = currentMode === 'light' ? '#ffffff' : '#0f172a';
+      const strokeHex = t.isDark ? '#0f172a' : '#ffffff';
       
       let svgDefault = '';
       let svgPointer = '';
@@ -7363,30 +7213,6 @@
       let hotPointer = '12 12';
 
       switch(currentCursor) {
-          case 'spaceship':
-              svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><path d="M4,4 C8,4 16,8 18,12 L22,14 L18,16 L16,18 L14,22 L12,18 C8,16 4,8 4,4 Z" fill="${fillRgb}" stroke="#ffffff" stroke-width="1.5"/><circle cx="10" cy="10" r="2" fill="#ffffff"/></svg>`;
-              svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="10" fill="none" stroke="${fillRgb}" stroke-width="2"/><circle cx="14" cy="14" r="2" fill="#ffffff"/><line x1="14" y1="0" x2="14" y2="8" stroke="${fillRgb}" stroke-width="2"/><line x1="14" y1="20" x2="14" y2="28" stroke="${fillRgb}" stroke-width="2"/><line x1="0" y1="14" x2="8" y2="14" stroke="${fillRgb}" stroke-width="2"/><line x1="20" y1="14" x2="28" y2="14" stroke="${fillRgb}" stroke-width="2"/></svg>`;
-              hotDefault = '4 4';
-              hotPointer = '14 14';
-              break;
-          case 'minimal':
-              svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="none" stroke="${fillRgb}" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="${fillRgb}"/></svg>`;
-              svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="${fillRgb}" stroke-width="2" stroke-dasharray="4"/></svg>`;
-              hotDefault = '12 12';
-              hotPointer = '12 12';
-              break;
-          case 'retro':
-              svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M2,2 L2,20 L7,15 L11,23 L15,21 L11,13 L18,13 Z" fill="${fillRgb}" stroke="${strokeHex}" stroke-width="1.5"/></svg>`;
-              svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect x="10" y="2" width="4" height="20" fill="${fillRgb}"/><rect x="2" y="10" width="20" height="4" fill="${fillRgb}"/></svg>`;
-              hotDefault = '2 2';
-              hotPointer = '12 12';
-              break;
-          case 'magic':
-              svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M2,22 L22,2" stroke="${fillRgb}" stroke-width="3" stroke-linecap="round"/><circle cx="22" cy="2" r="4" fill="${strokeHex}" stroke="${fillRgb}" stroke-width="2"/></svg>`;
-              svgPointer = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12,0 L14,10 L24,12 L14,14 L12,24 L10,14 L0,12 L10,10 Z" fill="${fillRgb}"/></svg>`;
-              hotDefault = '22 2';
-              hotPointer = '12 12';
-              break;
           case 'modern':
           default:
               svgDefault = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><polygon points="2,2 20,8 11,11 8,20" fill="${fillRgb}" stroke="${strokeHex}" stroke-width="1.5"/></svg>`;
@@ -7413,6 +7239,8 @@
         input[type="text"], input[type="password"], input[type="email"], input[type="url"], input[type="number"], textarea { cursor: text !important; }
         iframe { cursor: auto; }
       `;
+      
+      return t.name;
     };
 
     window.showThemeModal = () => {
@@ -7424,14 +7252,9 @@
            else btn.classList.remove('ring-4', 'ring-offset-2', 'ring-offset-slate-100', 'dark:ring-offset-slate-900');
        });
        
-       document.querySelectorAll('.mode-btn').forEach(btn => {
-           if(btn.dataset.arg === currentMode) btn.classList.add('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
-           else btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
-       });
-
-       document.querySelectorAll('.cursor-btn').forEach(btn => {
-           if(btn.dataset.arg === currentCursor) btn.classList.add('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
-           else btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-slate-100', 'dark:bg-slate-800', 'text-indigo-600', 'dark:text-indigo-400');
+       document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+           if(btn.dataset.arg === currentMode) btn.classList.add('ring-2', 'ring-indigo-500', 'shadow-[0_0_15px_rgba(99,102,241,0.5)]');
+           else btn.classList.remove('ring-2', 'ring-indigo-500', 'shadow-[0_0_15px_rgba(99,102,241,0.5)]');
        });
     };
 
@@ -7439,21 +7262,16 @@
       currentAccent = color;
       localStorage.setItem('nexus_accent', color);
       window.applyTheme();
-      window.showThemeModal(); 
+      window.showThemeModal();
+      window.showToast('Accent color updated!', '', 'ph-palette', 'cyan');
     };
 
     window.setThemeMode = (mode) => {
       currentMode = mode;
       localStorage.setItem('nexus_mode', mode);
-      window.applyTheme();
+      const themeName = window.applyTheme();
       window.showThemeModal();
-    };
-
-    window.setCursorStyle = (cursor) => {
-      currentCursor = cursor;
-      localStorage.setItem('nexus_cursor', cursor);
-      window.applyTheme();
-      window.showThemeModal();
+      window.showToast(`Switched to ${themeName}`, '', 'ph-palette', 'cyan');
     };
 
     window.loadIdeTemplate = (templateName) => {
