@@ -198,6 +198,14 @@
     </div>
   </div>
 
+  <!-- Desktop Mode Bookmark -->
+  <button id="desktop-bookmark" data-click="toggleDesktopMode" class="hidden fixed top-1/2 -mt-16 right-0 z-50 bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-l-2xl shadow-xl hover:-translate-x-1 transition-transform group flex flex-col items-center gap-2 border border-r-0 border-indigo-400/30">
+    <div class="relative">
+      <i class="ph-fill ph-desktop text-2xl group-hover:animate-pulse"></i>
+    </div>
+    <span class="text-xs font-bold tracking-widest pb-1" style="writing-mode: vertical-rl; transform: rotate(180deg);">DESKTOP</span>
+  </button>
+
   <!-- Inbox Bookmark -->
   <button id="inbox-bookmark" data-click="toggleInboxPanel" class="hidden fixed top-1/2 mt-16 right-0 z-50 bg-pink-600 hover:bg-pink-500 text-white p-3 rounded-l-2xl shadow-xl hover:-translate-x-1 transition-transform group flex flex-col items-center gap-2 border border-r-0 border-pink-400/30">
     <div class="relative">
@@ -206,6 +214,7 @@
     </div>
     <span class="text-xs font-bold tracking-widest pb-1" style="writing-mode: vertical-rl; transform: rotate(180deg);">INBOX</span>
   </button>
+
 
   <!-- Inbox Sidebar Panel -->
   <div id="inbox-overlay" data-click="toggleInboxPanel" class="fixed inset-0 z-[105] bg-slate-900/50 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"></div>
