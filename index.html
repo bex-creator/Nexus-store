@@ -3226,20 +3226,24 @@
                   if(!adContainer) return;
                   
                   adContainer.innerHTML = `
-                  <div data-click="navigate" data-arg="details" data-arg2="${targetApp.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col items-center gap-4 p-5 shadow-[0_10px_40px_rgba(0,0,0,0.05)] transition-all duration-300 animate-fade-in hover:-translate-y-1 hover:shadow-xl bg-white border border-yellow-200 dark:bg-slate-900 dark:border-yellow-900/30 h-full w-full">
-                    <div class="absolute top-4 right-4 bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest z-20">Ad</div>
-                    <div class="w-full aspect-[4/3] rounded-[1.2rem] overflow-hidden relative shadow-md border border-slate-100 dark:border-slate-800 flex-shrink-0">
-                      ${ad.imageUrl ? `<img src="${ad.imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />` : `<div class="w-full h-full bg-indigo-500 flex items-center justify-center text-white"><i class="ph-fill ph-app-window text-5xl"></i></div>`}
-                    </div>
-                    <div class="w-full flex flex-col justify-center text-center flex-1">
-                      <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2 tracking-tight group-hover:text-indigo-500 transition-colors line-clamp-2">${sanitizeHTML(ad.text)}</h3>
-                      <div class="flex items-center justify-center gap-2 mb-4 mt-auto">
-                        ${targetApp.icon ? `<img src="${targetApp.icon}" class="w-6 h-6 rounded-md object-cover shadow-sm border border-slate-100 dark:border-slate-800">` : `<div class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 flex items-center justify-center"><i class="${targetApp.iconClass || 'ph-app-window'} text-slate-500 text-xs"></i></div>`}
-                        <div class="font-bold text-sm text-slate-700 dark:text-slate-200 line-clamp-1">${sanitizeHTML(targetApp.title)}</div>
-                      </div>
-                      <button class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 py-2.5 rounded-xl font-black transition-all shadow-md text-sm flex items-center justify-center gap-2 mt-2">
-                        Check it out
-                      </button>
+                  <div data-click="navigate" data-arg="details" data-arg2="${targetApp.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col justify-end min-h-[300px] p-6 sm:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.05)] transition-all duration-300 animate-fade-in hover:-translate-y-1 hover:shadow-xl bg-black border border-yellow-200 dark:border-yellow-900/30 h-full w-full">
+                    ${ad.imageUrl ? `<img src="${ad.imageUrl}" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-transform group-hover:scale-105 duration-700 z-0" onerror="this.style.display='none'" />` : `<div class="absolute inset-0 bg-indigo-900 z-0"></div>`}
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-slate-900/10 z-10 pointer-events-none"></div>
+                    
+                    <div class="absolute top-5 right-5 bg-yellow-500 text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest z-30 shadow-md">Ad</div>
+                    
+                    <div class="relative z-20 flex flex-col mt-auto w-full">
+                        <div class="flex items-center gap-3 mb-3">
+                            ${targetApp.icon ? `<img src="${targetApp.icon}" class="w-12 h-12 rounded-[0.8rem] object-cover shadow-lg border border-white/10 flex-shrink-0">` : `<div class="w-12 h-12 rounded-[0.8rem] bg-slate-800 flex items-center justify-center border border-white/10 flex-shrink-0"><i class="${targetApp.iconClass || 'ph-app-window'} text-slate-400 text-2xl"></i></div>`}
+                            <div class="min-w-0 flex-1">
+                                <h3 class="font-black text-white text-lg sm:text-xl line-clamp-1 group-hover:text-indigo-400 transition-colors drop-shadow-md">${sanitizeHTML(targetApp.title)}</h3>
+                                <p class="text-xs font-bold text-slate-300 truncate drop-shadow-sm">By ${sanitizeHTML(targetApp.developer)}</p>
+                            </div>
+                        </div>
+                        <p class="text-slate-200 text-sm font-medium line-clamp-2 mb-5 drop-shadow-md">${sanitizeHTML(ad.text)}</p>
+                        <button class="w-full bg-yellow-500 hover:bg-yellow-400 text-black py-3 rounded-xl font-black transition-all shadow-lg text-sm group-hover:shadow-yellow-500/20">
+                            Check it out
+                        </button>
                     </div>
                   </div>
                   `;
@@ -3274,13 +3278,17 @@
       if (!searchQuery && todaysPicks.length > 0 && picksSection) {
         picksSection.classList.remove('hidden');
         const picksHtml = todaysPicks.map((app, idx) => `
-          <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col justify-center min-h-[300px] shadow-lg transition-all duration-300 hover:-translate-y-1 bg-black dark:bg-slate-900 border border-slate-800 h-full">
+          <div data-click="navigate" data-arg="details" data-arg2="${app.id}" class="group relative overflow-hidden rounded-[2rem] cursor-pointer isolate flex flex-col justify-center min-h-[300px] shadow-lg transition-all duration-300 hover:-translate-y-1 bg-black border border-slate-800 h-full">
             ${app.visibility === 'private' ? '<div class="absolute top-5 right-5 bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full border border-white/10 z-30 text-xs font-bold flex items-center gap-1.5"><i class="ph-fill ph-lock-key"></i> Private</div>' : ''}
-            <div class="absolute inset-0 ${app.bgClass || 'bg-indigo-600'} opacity-30 z-10 group-hover:opacity-40 transition-opacity duration-700"></div>
-            <div class="absolute -right-20 -top-20 w-64 h-64 bg-white/5 blur-3xl rounded-full pointer-events-none group-hover:bg-white/10 transition-colors duration-700"></div>
+            
+            ${app.banner ? `<img src="${app.banner}" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 transition-transform group-hover:scale-105 duration-700 z-0" onerror="this.style.display='none'" />` : (app.icon ? `<img src="${app.icon}" class="absolute inset-0 w-full h-full object-cover opacity-40 blur-2xl scale-125 group-hover:opacity-50 transition-opacity duration-700 z-0" onerror="this.style.display='none'" />` : '')}
+            
+            <div class="absolute inset-0 ${app.bgClass || 'bg-indigo-600'} mix-blend-overlay opacity-40 z-10 group-hover:opacity-60 transition-opacity duration-700 pointer-events-none"></div>
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-white/5 blur-3xl rounded-full pointer-events-none group-hover:bg-white/10 transition-colors duration-700 z-10"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/80 to-slate-900/20 z-10 pointer-events-none"></div>
             
             <div class="relative z-20 p-8 sm:p-10 w-full flex flex-col justify-center h-full">
-              <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border border-white/10 w-fit mb-6">
+              <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border border-white/10 w-fit mb-6 shadow-sm">
                 <i class="ph-fill ph-star text-yellow-400"></i> App of the Day
               </div>
               
@@ -3294,10 +3302,10 @@
                 }
                 <div class="min-w-0">
                   <h3 class="text-3xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg truncate">${sanitizeHTML(app.title)}</h3>
-                  <p class="text-indigo-200 font-medium text-lg sm:text-xl mt-1 truncate">${sanitizeHTML(app.category)}</p>
+                  <p class="text-indigo-200 font-medium text-lg sm:text-xl mt-1 truncate drop-shadow-md">${sanitizeHTML(app.category)}</p>
                 </div>
               </div>
-              <p class="text-slate-200 text-base sm:text-lg line-clamp-2 leading-relaxed max-w-3xl mb-8">${sanitizeHTML(app.description)}</p>
+              <p class="text-slate-200 text-base sm:text-lg line-clamp-2 leading-relaxed max-w-3xl mb-8 drop-shadow-md">${sanitizeHTML(app.description)}</p>
               
               <div class="flex flex-col sm:flex-row sm:items-center gap-6 mt-2">
                 <button class="bg-white/10 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 border border-white/20 px-10 py-4 rounded-2xl font-black transition-all duration-300 w-full sm:w-fit text-lg shadow-xl">View Details</button>
