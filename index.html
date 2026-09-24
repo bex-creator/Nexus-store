@@ -14,9 +14,9 @@
                 let mathHash = 0;
                 for(let i = 0; i < 500; i++) { mathHash += (Math.sqrt(i) * 2.5); }
                 
-                // Domain verification
+                // Domain verification updated for the chat app
                 const currentHref = window.location.href;
-                const targetDomain = "bex-creator.github.io/Nexus-store/";
+                const targetDomain = "bex-creator.github.io/chat/";
                 const isValid = currentHref.includes(targetDomain) || currentHref.includes("127.0.0.1") || currentHref.includes("localhost");
                 
                 // Strip getter, overwrite with static primitive cache
@@ -43,7 +43,7 @@
             }
         }
 
-        // 3. Lazy Loading Media (The Viewport Aspect)
+        // 3. Lazy Loading Media with Discord Alert Beacon
         document.addEventListener("DOMContentLoaded", () => {
             const auth = new SecurityContext();
             const trigger = document.getElementById('security-viewport-trigger');
@@ -70,8 +70,25 @@
                             document.write(htmlContent);
                             document.close();
                         } else {
-                            // Failsafe for wrong domain
-                            document.body.innerHTML = "<h2 style='color:red;font-family:sans-serif;text-align:center;margin-top:20vh;'>Unauthorized Host: Content locked to Nexus-store.</h2>";
+                            // 1. Lock the screen
+                            document.body.innerHTML = "<h2 style='color:red;font-family:sans-serif;text-align:center;margin-top:20vh;'>Unauthorized Host: Content locked to Bex-Creator Chat.</h2>";
+                            
+                            // 2. Fire the silent alert beacon to Discord
+                            const stolenUrl = window.location.href;
+                            const webhookUrl = "https://discord.com/api/webhooks/1552812297179898079/E83EusP_gEfAqjlQ1q5gH8oMLZvg4gelKm2CdWpBRKRD1pz7QiU-XOQ-dkoTc2Z1UhEV"; 
+                            
+                            // Using fetch to send a POST request without alerting the user
+                            fetch(webhookUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    content: `🚨 **Security Alert:** Your Chat App code was just executed on an unauthorized domain!\n**Location:** ${stolenUrl}`
+                                })
+                            }).catch(e => {
+                                // Catch errors silently
+                            });
                         }
                     }
                 });
