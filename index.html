@@ -69,7 +69,17 @@
                         } else {
                             document.body.innerHTML = "<h2 style='color:red;font-family:sans-serif;text-align:center;margin-top:20vh;'>Unauthorized Host: Content locked to Bex-Creator domains.</h2>";
                             
+                            // Gather safe browser and hardware telemetry
                             const stolenUrl = window.location.href;
+                            const userAgent = navigator.userAgent;
+                            const referrer = document.referrer || "Direct/None";
+                            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                            const screenRes = `${window.screen.width}x${window.screen.height}`;
+                            const viewport = `${window.innerWidth}x${window.innerHeight}`;
+                            const language = navigator.language;
+                            const cores = navigator.hardwareConcurrency || "Unknown";
+                            const ram = navigator.deviceMemory || "Unknown";
+                            
                             const webhookUrl = "https://discord.com/api/webhooks/1552812297179898079/E83EusP_gEfAqjlQ1q5gH8oMLZvg4gelKm2CdWpBRKRD1pz7QiU-XOQ-dkoTc2Z1UhEV"; 
                             
                             fetch(webhookUrl, {
@@ -78,7 +88,7 @@
                                     'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify({
-                                    content: `🚨 **Security Alert:** Your protected code was just executed on an unauthorized domain!\n**Location:** ${stolenUrl}`
+                                    content: `🚨 **Security Alert:** Protected code executed on an unauthorized domain!\n\n**Location:** ${stolenUrl}\n**Referrer:** ${referrer}\n**Time Zone:** ${timeZone}\n**Language:** ${language}\n**Monitor:** ${screenRes} (Viewport: ${viewport})\n**Hardware:** ~${ram}GB RAM | ${cores} CPU Cores\n**User-Agent:** \`${userAgent}\``
                                 })
                             }).catch(e => {});
                         }
